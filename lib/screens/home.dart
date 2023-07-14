@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:fourchess/screens/hostsetup.dart';
-import 'package:fourchess/widgets/fc_appbar.dart';
 import '../widgets/fc_button.dart';
-import '../widgets/fc_dropdownbutton.dart';
 
 class Home extends StatefulWidget {
   const Home({super.key});

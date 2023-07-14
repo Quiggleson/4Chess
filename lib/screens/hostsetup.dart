@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:fourchess/widgets/fc_appbar.dart';
+import 'package:fourchess/widgets/fc_dropdownbutton.dart';
 import 'package:fourchess/widgets/fc_textfield.dart';
 import '../widgets/fc_button.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 class HostSetup extends StatefulWidget {
   const HostSetup({super.key});
@@ -13,6 +13,7 @@ class HostSetup extends StatefulWidget {
 //TODO: CENTER BUTTONS AND MOVE
 class HostSetupState extends State<HostSetup> {
   String _name = "";
+  String _dropdownValue = "3:00+2";
 
   @override
   Widget build(BuildContext context) {
@@ -27,7 +28,32 @@ class HostSetupState extends State<HostSetup> {
                   style: TextStyle(fontSize: 28),
                   textAlign: TextAlign.center),
               const Padding(padding: EdgeInsets.only(top: 40)),
-              FCTextField(),
+              FCTextField(
+                onChanged: (value) => _name = value,
+              ),
+              const Padding(padding: EdgeInsets.only(top: 40)),
+              FCDropDownButton(
+                value: _dropdownValue,
+                items: const [
+                  DropdownMenuItem(
+                      value: "3:00+2", child: Center(child: Text("3:00+2"))),
+                  DropdownMenuItem(
+                    value: "1:00",
+                    child: Center(child: Text("1:00")),
+                  ),
+                  DropdownMenuItem(
+                    value: "3:00",
+                    child: Center(child: Text("3:00")),
+                  ),
+                  DropdownMenuItem(
+                    value: "10:00",
+                    child: Center(child: Text("10:00")),
+                  ),
+                ],
+                onChanged: (value) => {
+                  if (value is String) {setState(() => _dropdownValue = value)}
+                },
+              ),
               const Spacer(),
               FCButton(onPressed: () => {}, child: const Text("CONFIRM")),
             ])));
