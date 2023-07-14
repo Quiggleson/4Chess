@@ -37,12 +37,7 @@ class FCAppBar extends AppBar {
       Clip? clipBehavior})
       : super(
             key: key,
-            leading: leading ??
-                const Padding(
-                    padding: EdgeInsets.all(10),
-                    child: Text("←",
-                        textAlign: TextAlign.center,
-                        style: TextStyle(fontSize: 56, fontFamily: "Arial"))),
+            leading: leading,
             automaticallyImplyLeading: automaticallyImplyLeading,
             title: title,
             actions: actions,
