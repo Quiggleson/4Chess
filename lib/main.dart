@@ -46,6 +46,8 @@ class _MyHomePageState extends State<MyHomePage> {
                     SizedBox(width: 10),
                       ElevatedButton(
                         onPressed: () {
+                          // This is hardcoded right now, first run the app and host
+                          // Then use one of those ip's here
                           client = Client('192.168.6.107', 48190);
                         },
                         child: Text('Join'),
