@@ -52,7 +52,7 @@ class _MyHomePageState extends State<MyHomePage> {
                       ),ElevatedButton(
                         onPressed: () {
                           // Note: connect to the hosts local ip address
-                          (client != null) ? client!.sendData('look at the data') : debugPrint('client is down)');
+                          (client != null) ? client!.sendData('Hello, World!') : debugPrint('client is down)');
                           //client?.sendData('Houston, we\'ve got data') ?? debugPrint('Alas the client is not set up');
                         },
                         child: Text('Send data'),

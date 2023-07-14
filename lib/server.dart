@@ -32,10 +32,10 @@ class Server {
     client.listen((List<int> data) {
 
       String message = String.fromCharCodes(data).trim();
-      debugPrint('Received message from client: $message');
+      debugPrint('Server: I have received: $message');
+      debugPrint('Server: Sending: This is a response to your message from earlier');
 
-      client.write('This is a response to your message\n$message');
-      client.write('Please reconnect');
+      client.write('This is a response to your message');
 
       }, onError: (error) {
       debugPrint('Error listening to client: $error');
