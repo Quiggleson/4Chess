@@ -7,6 +7,7 @@ import 'package:google_fonts/google_fonts.dart';
 class FCTextField extends TextField {
   FCTextField(
       {Key? key,
+      String? hintText,
       TextEditingController? controller,
       FocusNode? focusNode,
       UndoHistoryController? undoController,
@@ -75,7 +76,7 @@ class FCTextField extends TextField {
             undoController: undoController,
             decoration: decoration ??
                 InputDecoration(
-                  hintText: "NAME",
+                  hintText: hintText,
                   counterStyle: const TextStyle(fontSize: 24),
                   filled: true,
                   fillColor: const Color.fromRGBO(130, 195, 255, 1),
@@ -109,7 +110,7 @@ class FCTextField extends TextField {
             maxLines: maxLines,
             minLines: minLines,
             expands: expands,
-            maxLength: maxLength ?? 12,
+            maxLength: maxLength,
             maxLengthEnforcement: maxLengthEnforcement,
             onChanged: onChanged,
             onEditingComplete: onEditingComplete,

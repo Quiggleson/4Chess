@@ -29,6 +29,7 @@ class HostSetupState extends State<HostSetup> {
                   textAlign: TextAlign.center),
               const Padding(padding: EdgeInsets.only(top: 40)),
               FCTextField(
+                hintText: "NAME",
                 onChanged: (value) => _name = value,
               ),
               const Padding(padding: EdgeInsets.only(top: 40)),
