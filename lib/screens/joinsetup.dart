@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:fourchess/screens/joinlobby.dart';
 import 'package:fourchess/widgets/fc_appbar.dart';
 import 'package:fourchess/widgets/fc_dropdownbutton.dart';
 import 'package:fourchess/widgets/fc_textfield.dart';
@@ -40,7 +41,16 @@ class JoinSetupState extends State<JoinSetup> {
                 maxLength: 4,
               ),
               const Spacer(),
-              FCButton(onPressed: () => {}, child: const Text("JOIN")),
+              FCButton(
+                  onPressed: () => {
+                        //Scan for room code
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (context) => JoinLobby(),
+                          ),
+                        )
+                      },
+                  child: const Text("JOIN")),
             ])));
   }
 }

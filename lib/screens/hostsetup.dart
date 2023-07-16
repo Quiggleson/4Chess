@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:fourchess/screens/hostlobby.dart';
 import 'package:fourchess/widgets/fc_appbar.dart';
 import 'package:fourchess/widgets/fc_dropdownbutton.dart';
 import 'package:fourchess/widgets/fc_textfield.dart';
@@ -56,7 +57,16 @@ class HostSetupState extends State<HostSetup> {
                 },
               ),
               const Spacer(),
-              FCButton(onPressed: () => {}, child: const Text("CONFIRM")),
+              FCButton(
+                  onPressed: () => {
+                        //Scan for room code
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (context) => HostLobby(),
+                          ),
+                        )
+                      },
+                  child: const Text("CONFIRM")),
             ])));
   }
 }

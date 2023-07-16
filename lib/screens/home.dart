@@ -22,23 +22,21 @@ class HomeState extends State<Home> {
               const Padding(padding: EdgeInsets.only(top: 40)),
               FCButton(
                   onPressed: () => {
-                        Navigator.push<void>(
-                            context,
-                            MaterialPageRoute<void>(
-                              builder: (BuildContext context) =>
-                                  const HostSetup(),
-                            ))
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (context) => const HostSetup(),
+                          ),
+                        )
                       },
                   child: const Text("HOST GAME")),
               const Padding(padding: EdgeInsets.only(top: 40)),
               FCButton(
                   onPressed: () => {
-                        Navigator.push<void>(
-                            context,
-                            MaterialPageRoute<void>(
-                              builder: (BuildContext context) =>
-                                  const JoinSetup(),
-                            ))
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (context) => const JoinSetup(),
+                          ),
+                        )
                       },
                   child: const Text("JOIN GAME"))
             ])));
