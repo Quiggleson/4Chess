@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+import '../theme/fc_colors.dart';
+
 class FCAppBar extends AppBar {
   FCAppBar(
       {Key? key,
@@ -54,8 +56,7 @@ class FCAppBar extends AppBar {
                   bottomLeft: Radius.circular(15),
                   bottomRight: Radius.circular(15),
                 )),
-            backgroundColor:
-                backgroundColor ?? const Color.fromRGBO(130, 195, 255, 1),
+            backgroundColor: backgroundColor ?? FCColors.primaryBlue,
             foregroundColor: foregroundColor ?? Colors.black,
             iconTheme: iconTheme,
             actionsIconTheme: actionsIconTheme,

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:fourchess/theme/fc_colors.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class FCNumberedItem extends StatelessWidget {
@@ -10,9 +11,9 @@ class FCNumberedItem extends StatelessWidget {
       this.contentTextStyle,
       this.height = 90,
       this.numberWidth = 80,
-      this.numberBackColor = const Color.fromRGBO(68, 170, 255, 1),
+      this.numberBackColor = FCColors.accentBlue,
       this.numberColor,
-      this.contentBackColor = const Color.fromRGBO(130, 195, 255, 1),
+      this.contentBackColor = FCColors.primaryBlue,
       this.textColor})
       : super(key: key);
 

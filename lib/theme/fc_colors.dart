@@ -19,4 +19,10 @@ class FCColors {
     PlayerStatus.turn: FCColors.playerTurn,
     PlayerStatus.notTurn: FCColors.playerNotTurn,
   };
+
+  static const Color background = Color.fromRGBO(198, 221, 255, 1);
+  static const Color primaryBlue = Color.fromRGBO(130, 195, 255, 1);
+  static const Color primaryBlueDisabled = Color.fromRGBO(130, 195, 255, .5);
+  static const Color thinBorder = Color.fromRGBO(88, 155, 255, 1);
+  static const Color accentBlue = Color.fromRGBO(68, 170, 255, 1);
 }

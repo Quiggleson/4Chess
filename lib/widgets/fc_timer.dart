@@ -100,7 +100,7 @@ class FCTimerState extends State<FCTimer> {
       timeFormat = '${minutes.toString()}:'
           '${remainingSeconds.toString().padLeft(2, '0')}';
     } else {
-      timeFormat = '${remainingSeconds.toString()}';
+      timeFormat = '$remainingSeconds';
       if (remainingSeconds < 60) {
         timeFormat += '.${tenthsOfSecond.toString().padLeft(1, '0')}';
       }

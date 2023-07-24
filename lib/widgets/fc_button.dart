@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:fourchess/theme/fc_colors.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class FCButton extends FilledButton {
@@ -35,10 +36,10 @@ class FCButton extends FilledButton {
         backgroundColor: style?.backgroundColor ??
             MaterialStateProperty.resolveWith((Set<MaterialState> states) {
               if (states.contains(MaterialState.disabled)) {
-                return const Color.fromRGBO(130, 195, 255, .5);
+                return FCColors.primaryBlueDisabled;
               }
 
-              return const Color.fromRGBO(130, 195, 255, 1);
+              return FCColors.primaryBlue;
             }),
         foregroundColor: style?.foregroundColor ??
             MaterialStateProperty.resolveWith((Set<MaterialState> states) {
@@ -98,12 +99,11 @@ class FCButton extends FilledButton {
   }) {
     return FilledButton.styleFrom(
         foregroundColor: foregroundColor ?? Colors.black,
-        backgroundColor:
-            backgroundColor ?? const Color.fromRGBO(130, 195, 255, 1),
+        backgroundColor: backgroundColor ?? FCColors.primaryBlue,
         disabledForegroundColor:
             disabledForegroundColor ?? const Color.fromRGBO(0, 0, 0, .5),
         disabledBackgroundColor:
-            disabledBackgroundColor ?? const Color.fromRGBO(130, 195, 255, .5),
+            disabledBackgroundColor ?? FCColors.primaryBlueDisabled,
         shadowColor: shadowColor,
         surfaceTintColor: surfaceTintColor,
         elevation: elevation,

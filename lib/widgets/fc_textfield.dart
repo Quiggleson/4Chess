@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+import '../theme/fc_colors.dart';
+
 class FCTextField extends TextField {
   FCTextField(
       {Key? key,
@@ -79,14 +81,14 @@ class FCTextField extends TextField {
                   hintText: hintText,
                   counterStyle: const TextStyle(fontSize: 24),
                   filled: true,
-                  fillColor: const Color.fromRGBO(130, 195, 255, 1),
+                  fillColor: FCColors.primaryBlue,
                   enabledBorder: OutlineInputBorder(
                       borderSide: const BorderSide(
-                          color: Color.fromRGBO(88, 155, 255, 1), width: 3),
+                          color: FCColors.thinBorder, width: 3),
                       borderRadius: BorderRadius.circular(15)),
                   focusedBorder: OutlineInputBorder(
                       borderSide: const BorderSide(
-                          color: Color.fromRGBO(88, 155, 255, 1), width: 3),
+                          color: FCColors.thinBorder, width: 3),
                       borderRadius: BorderRadius.circular(15)),
                 ),
             keyboardType: keyboardType,

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+import '../theme/fc_colors.dart';
+
 //TODO: ADD STYLE DEFAULTSCUSTOMIZE FEATURES + CHANGE SELECTED COLOR
 class FCDropDownButton<T> extends StatefulWidget {
   const FCDropDownButton(
@@ -21,10 +23,10 @@ class FCDropDownButton<T> extends StatefulWidget {
       this.isDense = false,
       this.isExpanded = true,
       this.itemHeight = 90,
-      this.color = const Color.fromRGBO(68, 170, 255, 1),
+      this.color = FCColors.accentBlue,
       this.focusNode,
       this.autofocus = false,
-      this.dropdownColor = const Color.fromRGBO(130, 195, 255, 1),
+      this.dropdownColor = FCColors.primaryBlue,
       this.menuMaxHeight,
       this.enableFeedback,
       this.alignment = AlignmentDirectional.centerStart,
@@ -103,36 +105,3 @@ class FCDropdownButtonState<T> extends State<FCDropDownButton<T>> {
         )));
   }
 }
-
-    // return Container(
-    //     clipBehavior: Clip.hardEdge,
-    //     decoration: BoxDecoration(
-    //       border: Border.all(
-    //           width: 3,
-    //           color: const Color.fromRGBO(68, 170, 255, 1),
-    //           strokeAlign: BorderSide.strokeAlignInside),
-    //       color: const Color.fromRGBO(130, 195, 255, 1),
-    //       borderRadius: BorderRadius.circular(15),
-    //     ),
-    //     child: DropdownButtonHideUnderline(
-    //         child: DropdownButton(
-    //             icon: Container(
-    //                 constraints:
-    //                     const BoxConstraints(minHeight: 90, minWidth: 72),
-    //                 color: const Color.fromRGBO(68, 170, 255, 1),
-    //                 child:
-    //                     const Icon(Icons.arrow_drop_down, color: Colors.black)),
-    //             iconSize: 48,
-    //             isExpanded: true,
-    //             itemHeight: 90,
-    //             style: GoogleFonts.abel(
-    //               color: Colors.black,
-    //               fontSize: 56,
-    //             ),
-    //             borderRadius: BorderRadius.circular(15),
-    //             dropdownColor: const Color.fromRGBO(130, 195, 255, 1),
-    //             value: _dropdownValue,
-    //             onChanged: (selected) => {
-    //                   if (selected is String)
-    //                     {setState(() => _dropdownValue = selected)}
-    //                 })));
