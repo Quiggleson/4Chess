@@ -107,7 +107,7 @@ class FCButton extends FilledButton {
         shadowColor: shadowColor,
         surfaceTintColor: surfaceTintColor,
         elevation: elevation,
-        textStyle: textStyle ?? GoogleFonts.abel(),
+        textStyle: GoogleFonts.abel(fontSize: 56).merge(textStyle),
         padding: padding,
         minimumSize: minimumSize ?? const Size.fromHeight(90),
         fixedSize: fixedSize,

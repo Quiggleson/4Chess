@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:fourchess/screens/hostgame.dart';
 import 'package:fourchess/widgets/fc_appbar.dart';
 import 'package:fourchess/widgets/fc_button.dart';
 import 'package:fourchess/widgets/fc_numbereditem.dart';
@@ -11,26 +12,12 @@ class HostLobby extends StatefulWidget {
   HostLobbyState createState() => HostLobbyState();
 }
 
+// CREATE ORANGEG ANIMATION THINGY WHEN WE HAVE TIME
 class HostLobbyState extends State<HostLobby> {
   String _roomcode = "ZOLF";
   int _numPlayersJoined = 2;
 
   final List _names = ["WALDO", "AARON", "DEVEN", "ROBERT"];
-
-  Widget _proxyDecorator(Widget child, int index, Animation<double> animation) {
-    return AnimatedBuilder(
-      animation: animation,
-      builder: (BuildContext context, Widget? child) {
-        final double animValue = Curves.easeInOut.transform(animation.value);
-        final double elevation = lerpDouble(0, 6, animValue)!;
-        return Material(
-          elevation: elevation,
-          child: child,
-        );
-      },
-      child: child,
-    );
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -46,14 +33,19 @@ class HostLobbyState extends State<HostLobby> {
               Text("WAITING FOR ${4 - _numPlayersJoined} PLAYERS",
                   style: const TextStyle(fontSize: 28),
                   textAlign: TextAlign.center),
-              const Padding(padding: EdgeInsets.only(top: 40)),
+              const Padding(
+                  padding: EdgeInsets.only(
+                      top:
+                          30)), //This is 30 to account for the 10 padding on the list item below
               Expanded(
                   child: ReorderableListView(
-                proxyDecorator: _proxyDecorator,
                 children: <Widget>[
                   for (int i = 0; i < 4; i++)
-                    FCNumberedItem(
-                        content: _names[i], number: i + 1, key: Key("$i"))
+                    Padding(
+                      key: Key("$i"),
+                      padding: const EdgeInsets.only(top: 10, bottom: 10),
+                      child: FCNumberedItem(content: _names[i], number: i + 1),
+                    )
                 ],
                 onReorder: (int oldIndex, int newIndex) {
                   setState(() {
@@ -71,7 +63,16 @@ class HostLobbyState extends State<HostLobby> {
               const Text("DRAG AND DROP NAMES TO CHANGE PLAYER ORDER",
                   style: TextStyle(fontSize: 28), textAlign: TextAlign.center),
               const Padding(padding: EdgeInsets.only(top: 40)),
-              FCButton(onPressed: () => {}, child: const Text("START"))
+              FCButton(
+                  onPressed: () => {
+                        //Scan for room code
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (context) => Game(),
+                          ),
+                        )
+                      },
+                  child: const Text("START"))
             ])));
   }
 }
