@@ -26,11 +26,15 @@ class Client {
     debugPrint('Client: Sending: $data');
     server!.write(data);
 
-    server!.listen((event) {
+    var controller = server!.asBroadcastStream();
+    controller.listen((event) {
+      debugPrint('Client_broadcast: I have received: ${String.fromCharCodes(event).trim()}');
+    });
+    /*server!.listen((event) {
       debugPrint('Client: I have received: ${String.fromCharCodes(event).trim()}');
       debugPrint('Please reconnect');
-      server!.close();
-    });
+      //Client(host_ip, host_port);
+    });*/
   }
 
 }
