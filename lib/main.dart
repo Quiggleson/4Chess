@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:network_info_plus/network_info_plus.dart';
 import 'host.dart';
-import 'player.dart';
+import 'client.dart';
 
 
 void main() => runApp(MyApp());
@@ -69,13 +69,15 @@ class _HomePageState extends State<HomePage> {
             SizedBox(height: 20),
             ElevatedButton(
               onPressed: () {
-                Player(48100,textFieldValue,38383);
+                // Gotta wait for gamestate shenanigans
+                //Client(48100,textFieldValue,38383);
               },
               child: Text('Join'),
             ),
             ElevatedButton(
               onPressed: () {
-                Host(38383);
+                // Can't call right now, gotta do some gamestate shenanigans
+                // Host(38383, 0, 0);
               },
               child: Text('Host'),
             ),

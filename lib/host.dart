@@ -1,13 +1,17 @@
 import 'dart:convert';
 import 'dart:io';
+import 'gamestate.dart';
 import 'package:flutter/foundation.dart';
 import 'package:network_info_plus/network_info_plus.dart';
 import 'package:dart_ipify/dart_ipify.dart';
 
 class Host {
-  int port;
+  final int port;
+  final double time;
+  final int increment;
+  GameState gameState;
 
-  Host(this.port) {
+  Host(this.port, this.time, this.increment, this.gameState) {
     listen(port);
   }
 
