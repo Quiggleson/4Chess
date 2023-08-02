@@ -9,7 +9,6 @@ class Home extends StatefulWidget {
   HomeState createState() => HomeState();
 }
 
-//TODO: CENTER BUTTONS AND MOVE
 class HomeState extends State<Home> {
   @override
   Widget build(BuildContext context) {

@@ -21,10 +21,10 @@ class OtherPlayerTimer extends StatefulWidget {
   final GameStatus game;
 
   @override
-  State<OtherPlayerTimer> createState() => _OtherPlayerTimerState();
+  State<OtherPlayerTimer> createState() => OtherPlayerTimerState();
 }
 
-class _OtherPlayerTimerState extends State<OtherPlayerTimer> {
+class OtherPlayerTimerState extends State<OtherPlayerTimer> {
   final GlobalKey<FCTimerState> _timerState = GlobalKey();
 
   @override

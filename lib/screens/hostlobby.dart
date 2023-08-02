@@ -1,46 +1,51 @@
 import 'package:flutter/material.dart';
-import 'package:fourchess/screens/hostgame.dart';
+import 'package:fourchess/screens/game.dart';
+import 'package:fourchess/util/playerinfo.dart';
 import 'package:fourchess/widgets/fc_appbar.dart';
 import 'package:fourchess/widgets/fc_button.dart';
 import 'package:fourchess/widgets/fc_numbereditem.dart';
-import 'dart:ui';
+import 'dart:async';
 
 class HostLobby extends StatefulWidget {
-  HostLobby({super.key});
+  //HostLobby({super.key, required this.roomCode, required this.client});
+  HostLobby({super.key, required this.roomCode});
 
+  //Client client;
+  String roomCode;
   @override
   HostLobbyState createState() => HostLobbyState();
 }
 
 // CREATE ORANGEG ANIMATION THINGY WHEN WE HAVE TIME
 class HostLobbyState extends State<HostLobby> {
-  String _roomcode = "ZOLF";
-  int _numPlayersJoined = 2;
-
-  final List _names = ["WALDO", "AARON", "DEVEN", "ROBERT"];
+  List _names = <_TempPlayer>[];
 
   @override
   Widget build(BuildContext context) {
+    Timer.periodic(const Duration(milliseconds: 100), (Timer t) {
+      //This code will run 10 times a second when the host menu starts
+
+      //if(widget.client.isModified)
+      //_names = client.players (or something like that)
+    });
+
     return Scaffold(
         appBar: FCAppBar(
-          title: Text("HOST GAME\nCODE: $_roomcode"),
+          title: Text("HOST GAME\nCODE: ${widget.roomCode}"),
           toolbarHeight: 180,
         ),
         body: Padding(
             padding: const EdgeInsets.all(40),
             child:
                 Column(mainAxisAlignment: MainAxisAlignment.start, children: [
-              Text("WAITING FOR ${4 - _numPlayersJoined} PLAYERS",
+              Text("WAITING FOR ${4 - _names.length} PLAYERS",
                   style: const TextStyle(fontSize: 28),
                   textAlign: TextAlign.center),
-              const Padding(
-                  padding: EdgeInsets.only(
-                      top:
-                          30)), //This is 30 to account for the 10 padding on the list item below
+              const Padding(padding: EdgeInsets.only(top: 30)),
               Expanded(
                   child: ReorderableListView(
                 children: <Widget>[
-                  for (int i = 0; i < 4; i++)
+                  for (int i = 0; i < _names.length; i++)
                     Padding(
                       key: Key("$i"),
                       padding: const EdgeInsets.only(top: 10, bottom: 10),
@@ -55,7 +60,7 @@ class HostLobbyState extends State<HostLobby> {
                     String item = _names.removeAt(oldIndex);
                     _names.insert(newIndex, item);
 
-                    //SEND ORDER DATA TO CLIENTS
+                    //widget.client.reorder()
                   });
                 },
               )),
@@ -65,9 +70,11 @@ class HostLobbyState extends State<HostLobby> {
               const Padding(padding: EdgeInsets.only(top: 40)),
               FCButton(
                   onPressed: () => {
-                        //Scan for room code
+                        //Future<> status = widget.client.start() Should we return future here for confirmation?
                         Navigator.of(context).push(
                           MaterialPageRoute(
+                            //if (status.isGood)
+                            //builder: (context) => Game(widget.client, true),
                             builder: (context) => Game(),
                           ),
                         )
@@ -75,4 +82,14 @@ class HostLobbyState extends State<HostLobby> {
                   child: const Text("START"))
             ])));
   }
+}
+
+//class and references to be replaced with regular player class
+class _TempPlayer {
+  const _TempPlayer(this.name, this.ip, this.status, this.remainingTime);
+
+  final String name;
+  final String ip;
+  final GameStatus status;
+  final double remainingTime;
 }

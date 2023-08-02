@@ -12,6 +12,10 @@ class JoinLobbyState extends State<JoinLobby> {
   String _roomcode = "ZOLF";
   int _numPlayersJoined = 2;
 
+  //TIMER TO LISTEN FOR UPDATED LIST
+
+  //TODO: ITERATELIST DYNACMICALLY
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(

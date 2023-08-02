@@ -11,13 +11,23 @@ class HostSetup extends StatefulWidget {
   HostSetupState createState() => HostSetupState();
 }
 
-//TODO: CENTER BUTTONS AND MOVE
 class HostSetupState extends State<HostSetup> {
   String _name = "";
-  String _dropdownValue = "3:00+2";
 
+  final List<_TimeControl> _timeControls = [
+    _TimeControl(180, 3, "3:00 + 2"),
+    _TimeControl(60, 0, "1:00"),
+    _TimeControl(180, 0, "3:00"),
+    _TimeControl(600, 0, "10:00")
+  ];
+
+  _TimeControl? _dropdownValue;
+
+  //FINISH THIS
   @override
   Widget build(BuildContext context) {
+    _dropdownValue ??= _timeControls[0];
+
     return Scaffold(
         appBar: FCAppBar(title: const Text("HOST GAME")),
         body: Padding(
@@ -36,37 +46,42 @@ class HostSetupState extends State<HostSetup> {
               const Padding(padding: EdgeInsets.only(top: 40)),
               FCDropDownButton(
                 value: _dropdownValue,
-                items: const [
-                  DropdownMenuItem(
-                      value: "3:00+2", child: Center(child: Text("3:00+2"))),
-                  DropdownMenuItem(
-                    value: "1:00",
-                    child: Center(child: Text("1:00")),
-                  ),
-                  DropdownMenuItem(
-                    value: "3:00",
-                    child: Center(child: Text("3:00")),
-                  ),
-                  DropdownMenuItem(
-                    value: "10:00",
-                    child: Center(child: Text("10:00")),
-                  ),
+                items: [
+                  for (int i = 0; i < _timeControls.length; i++)
+                    DropdownMenuItem(
+                        value: _timeControls[i],
+                        child: Center(child: Text(_timeControls[i].display))),
                 ],
                 onChanged: (value) => {
-                  if (value is String) {setState(() => _dropdownValue = value)}
+                  if (value is _TimeControl)
+                    {setState(() => _dropdownValue = value)}
                 },
               ),
               const Spacer(),
               FCButton(
                   onPressed: () => {
-                        //Scan for room code
+                        //GameState gameState = new GameState( _dropDownValue.timeControl, _dropDownValue.increment, <Player>[], GameStatus.starting)
+                        //Host host = new Host(gameState)
+                        //String code = host.getRoomCode()
+                        //Client client = new Client(name, gameState)
+                        //TRIGGER LOADING ANIMATION
+                        //client.joinGame(code)
                         Navigator.of(context).push(
                           MaterialPageRoute(
-                            builder: (context) => HostLobby(),
+                            //builder: (context) => HostLobby(roomCode: initializerData.gameCode, client);
+                            builder: (context) => HostLobby(roomCode: "ZOLF"),
                           ),
                         )
                       },
                   child: const Text("CONFIRM")),
             ])));
   }
+}
+
+class _TimeControl {
+  _TimeControl(this.timeControl, this.increment, this.display);
+
+  final double timeControl;
+  final int increment;
+  final String display;
 }

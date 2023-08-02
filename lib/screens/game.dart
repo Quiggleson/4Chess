@@ -1,41 +1,59 @@
-import 'dart:collection';
-
 import 'package:flutter/material.dart';
 import 'package:fourchess/theme/fc_colors.dart';
 import 'package:fourchess/widgets/fc_button.dart';
 import 'package:fourchess/widgets/fc_timer.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
-
+import 'dart:async';
 import '../util/playerinfo.dart';
 import '../widgets/fc_otherplayertimer.dart';
 
 class Game extends StatefulWidget {
+  //Game(required this.client, this.isHost = false);
+
+  //Client client
+  //bool isHost
   @override
   GameState createState() => GameState();
 }
 
 class GameState extends State<Game> {
-  final GlobalKey<FCTimerState> _timerState = GlobalKey();
-
-  //TEMPORARY VALUE TO TEST RESET
-  bool _isFirst = true;
-
-  //Determined by host
-  int id = 0;
+  //update when request is heard
   List<PlayerInfo> players = [
-    PlayerInfo("Deven", PlayerStatus.first, 20),
+    PlayerInfo("Deven", PlayerStatus.lost, 180),
     PlayerInfo("Aaron", PlayerStatus.notTurn, 180),
     PlayerInfo("Robert", PlayerStatus.notTurn, 180),
     PlayerInfo("Waldo", PlayerStatus.notTurn, 180)
   ];
 
+  //id determined by users IP cross referenced with list sent from server
+  int id = 0;
+
+  //update when request is heard
+  GameStatus gameStatus = GameStatus.starting;
+
   late List<PlayerInfo> _rotatedPlayers;
 
-  GameStatus gameStatus = GameStatus.starting;
+  final GlobalKey<FCTimerState> _timerState = GlobalKey();
+
+  final GlobalKey<OtherPlayerTimerState> _player1 = GlobalKey();
+  final GlobalKey<OtherPlayerTimerState> _player2 = GlobalKey();
+  final GlobalKey<OtherPlayerTimerState> _player3 = GlobalKey();
 
   @override
   Widget build(BuildContext context) {
-    //players = Host.getData();
+    Timer.periodic(const Duration(milliseconds: 100), (timer) {
+      //if(client.isModified){
+      //gameState = client.getGameState()
+
+      //setState(()=>{
+      //players = gameState.players
+      //set other players times
+      //etc.
+      //});
+      //}
+    });
+
+    //Set this player to be the main screen
     _rotatedPlayers = _rotateArrayAroundIndex(players, id);
     PlayerInfo self = _rotatedPlayers[0];
 
@@ -54,25 +72,25 @@ class GameState extends State<Game> {
       }
     }
 
-    //
-
-    //print(_rotatedPlayers);
-    //print(gameStatus);
-
     return Scaffold(
         body: Column(
       children: [
         Row(children: [
           OtherPlayerTimer(
+            key: _player1,
             playerInfo: _rotatedPlayers[1],
             gameStatus: gameStatus,
           ),
           const Padding(padding: EdgeInsets.only(right: 20)),
           OtherPlayerTimer(
-              playerInfo: _rotatedPlayers[2], gameStatus: gameStatus),
+              key: _player2,
+              playerInfo: _rotatedPlayers[2],
+              gameStatus: gameStatus),
           const Padding(padding: EdgeInsets.only(right: 20)),
           OtherPlayerTimer(
-              playerInfo: _rotatedPlayers[3], gameStatus: gameStatus)
+              key: _player3,
+              playerInfo: _rotatedPlayers[3],
+              gameStatus: gameStatus)
         ]),
         Expanded(
             child: Padding(
@@ -91,23 +109,14 @@ class GameState extends State<Game> {
                       key: _timerState,
                       enabled: self.status == PlayerStatus.first ||
                           self.status == PlayerStatus.turn,
-                      onStart: (startTime) => setState(_onStart),
                       onStop: (stopTime) {
-                        //Ensures that the turn does not called twice, will likely not be necsesary in the end
-                        if (self.status == PlayerStatus.turn) setState(_onStop);
+                        //Client.next(myTime)
                       },
-                      onTick: (currentTime) {
-                        //LISTEN FOR REQUESTS FROM CLIENTS (PROBABLY)
+                      onTimeout: () => {
+                        //Client.lost()
                       },
-                      onTimeout: () => setState(() => _onTimeout(id)),
                     )))),
         ButtonBar(alignment: MainAxisAlignment.center, children: [
-          TextButton(
-              onPressed: () => setState(_nextPlayersTurn),
-              child: const Text("NEXT TURN")),
-          TextButton(
-              onPressed: () => setState(() => _won(0)),
-              child: const Text("WON")),
           IconButton(
             //PAUSE/RESUME
             iconSize: 80,
@@ -115,7 +124,7 @@ class GameState extends State<Game> {
                     gameStatus == GameStatus.finished
                 ? null
                 : () {
-                    //Host.onPause()
+                    //Client.onPause()
                     setState(() {
                       gameStatus = gameStatus == GameStatus.inProgress
                           ? GameStatus.paused
@@ -137,8 +146,7 @@ class GameState extends State<Game> {
             onPressed: gameStatus == GameStatus.starting
                 ? null
                 : () {
-                    //Host.onReset()
-                    setState(() => _reset(id, 180));
+                    //Client.gameReset()
                   },
             icon: const Icon(Icons.restore_sharp),
           ),
@@ -147,15 +155,15 @@ class GameState extends State<Game> {
               iconSize: 80,
               onPressed: gameStatus == GameStatus.finished
                   ? null
-                  : () => setState(() {
-                        //Host.onResigns()
-
-                        //IF RESIGNS RESULTS IN A WIN, THEN GAME IS FINISHED
-                        //OTHERWISE, WE CONTINUE
-                        if (self.status != PlayerStatus.lost) {
-                          _onLost(id);
-                        } else {}
-                      }),
+                  : () => {
+                        //Client.onLost
+                        if (self.status == PlayerStatus.lost)
+                          {
+                            setState(() {
+                              _showDialog();
+                            })
+                          }
+                      },
               icon: self.status == PlayerStatus.lost
                   ? const Icon(Icons.close)
                   : Icon(MdiIcons.skullOutline)),
@@ -180,70 +188,51 @@ class GameState extends State<Game> {
     return result;
   }
 
-  void _reset(int firstId, double initialTime) {
-    gameStatus = GameStatus.starting;
+  //ALERT DIALOGS
 
-    for (int i = 0; i < _rotatedPlayers.length; i++) {
-      PlayerInfo curr = _rotatedPlayers[i];
-      curr.time = initialTime;
-      curr.status = i == firstId ? PlayerStatus.first : PlayerStatus.notTurn;
-    }
-  }
-
-  void _onStart() {
-    //Host.onStart()
-
-    //FOR TESTING PURPOSES
-    PlayerInfo self = _rotatedPlayers[id];
-    if (self.status == PlayerStatus.first) {
-      gameStatus = GameStatus.inProgress;
-      self.status = PlayerStatus.turn;
-    }
-  }
-
-  void _onStop() {
-    //CALL FUNCTION Host.onStop()
-    _nextPlayersTurn();
-  }
-
-  void _onTimeout(int id) {
-    _onLost(id);
-  }
-
-  void _onLost(int id) {
-    //Host.onLost()
-
-    //FOR TESTING
-    PlayerInfo self = _rotatedPlayers[id];
-    self.status = PlayerStatus.lost;
-    _nextPlayersTurn();
-  }
-
-  //TEST METHODS - TO BE REMOVED
-  void _nextPlayersTurn() {
-    if (gameStatus == GameStatus.starting) {
-      gameStatus = GameStatus.inProgress;
-    }
-
-    int turnId = _rotatedPlayers
-        .indexWhere((player) => player.status == PlayerStatus.turn);
-
-    int nextId = (turnId + 1) % _rotatedPlayers.length;
-
-    _rotatedPlayers[turnId].status = PlayerStatus.notTurn;
-    _rotatedPlayers[nextId].status = PlayerStatus.turn;
-  }
-
-  //LOGIC WILL BE HANDLED BY SERVER
-  void _won(int id) {
-    gameStatus = GameStatus.finished;
-
-    for (int i = 0; i < _rotatedPlayers.length; i++) {
-      if (i == id) {
-        _rotatedPlayers[i].status = PlayerStatus.won;
-      } else {
-        _rotatedPlayers[i].status = PlayerStatus.lost;
-      }
-    }
+  //TODO: FIX ERROR EVERYTIME THIS GETS CALLED LMAO
+  void _showDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) => AlertDialog(
+          clipBehavior: Clip.hardEdge,
+          shape: RoundedRectangleBorder(
+              side: const BorderSide(color: FCColors.thinBorder, width: 3),
+              borderRadius: BorderRadius.circular(15)),
+          backgroundColor: FCColors.background,
+          titlePadding: EdgeInsets.zero,
+          contentPadding: const EdgeInsets.fromLTRB(30, 30, 30, 0),
+          actionsPadding: const EdgeInsets.all(30),
+          title: Expanded(
+              child: Container(
+                  decoration: BoxDecoration(
+                      color: FCColors.primaryBlue,
+                      borderRadius: BorderRadius.circular(15)),
+                  child: const Text(
+                    'CONFIRM',
+                    style: TextStyle(fontSize: 56),
+                    textAlign: TextAlign.center,
+                  ))),
+          content: const Text(
+              'ARE YOU SURE YOU WANT TO END THE GAME FOR ALL PLAYERS?'),
+          actions: <Widget>[
+            FCButton(
+              style: FCButton.styleFrom(
+                  textStyle: const TextStyle(fontSize: 28),
+                  minimumSize: const Size.fromHeight(55)),
+              onPressed: () =>
+                  Navigator.popUntil(context, ModalRoute.withName('/')),
+              child: const Text('Yes'),
+            ),
+            const Padding(padding: EdgeInsets.only(top: 15)),
+            FCButton(
+              style: FCButton.styleFrom(
+                  textStyle: const TextStyle(fontSize: 28),
+                  minimumSize: const Size.fromHeight(55)),
+              onPressed: () => Navigator.pop(context, 'No'),
+              child: const Text('No'),
+            ),
+          ]),
+    );
   }
 }

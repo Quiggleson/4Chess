@@ -24,10 +24,8 @@ class JoinSetupState extends State<JoinSetup> {
             padding: const EdgeInsets.all(40),
             child:
                 Column(mainAxisAlignment: MainAxisAlignment.start, children: [
-              const Text(
-                  "PICK A NAME AND TIME CONTROL, THEN CONFIRM TO GENERATE A GAME CODE",
-                  style: TextStyle(fontSize: 28),
-                  textAlign: TextAlign.center),
+              const Text("PICK A NAME AND ENTER A CODE TO JOIN A ROOM",
+                  style: TextStyle(fontSize: 28), textAlign: TextAlign.center),
               const Padding(padding: EdgeInsets.only(top: 40)),
               FCTextField(
                 hintText: "NAME",
@@ -43,7 +41,7 @@ class JoinSetupState extends State<JoinSetup> {
               const Spacer(),
               FCButton(
                   onPressed: () => {
-                        //Scan for room code
+                        //Client.joinGame()
                         Navigator.of(context).push(
                           MaterialPageRoute(
                             builder: (context) => JoinLobby(),

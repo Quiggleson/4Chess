@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:fourchess/widgets/fc_button.dart';
-import 'package:intl/intl.dart';
 import 'dart:async';
 
 class FCTimer extends StatefulWidget {

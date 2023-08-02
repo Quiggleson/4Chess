@@ -13,12 +13,16 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-        theme: ThemeData(
-            splashFactory: NoSplash.splashFactory,
-            scaffoldBackgroundColor: const Color.fromRGBO(198, 221, 255, 1),
-            textTheme: GoogleFonts.abelTextTheme(Theme.of(context)
-                .textTheme
-                .apply(bodyColor: Colors.black, displayColor: Colors.black))),
-        home: const Home()); //placeholder
+      initialRoute: '/',
+      routes: {
+        '/': (context) => const Home(),
+      },
+      theme: ThemeData(
+          splashFactory: NoSplash.splashFactory,
+          scaffoldBackgroundColor: const Color.fromRGBO(198, 221, 255, 1),
+          textTheme: GoogleFonts.abelTextTheme(Theme.of(context)
+              .textTheme
+              .apply(bodyColor: Colors.black, displayColor: Colors.black))),
+    ); //placeholder
   }
 }
