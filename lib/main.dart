@@ -3,7 +3,6 @@ import 'package:network_info_plus/network_info_plus.dart';
 import 'host.dart';
 import 'client.dart';
 
-
 void main() => runApp(MyApp());
 
 class MyApp extends StatelessWidget {

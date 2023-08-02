@@ -1,17 +1,16 @@
 import 'dart:convert';
 import 'dart:io';
 import 'gamestate.dart';
+import 'player.dart';
 import 'package:flutter/foundation.dart';
 import 'package:network_info_plus/network_info_plus.dart';
 import 'package:dart_ipify/dart_ipify.dart';
 
 class Host {
   final int port;
-  final double time;
-  final int increment;
   GameState gameState;
 
-  Host(this.port, this.time, this.increment, this.gameState) {
+  Host(this.port, this.gameState) {
     listen(port);
   }
 
@@ -44,13 +43,11 @@ class Host {
 
   // Interpret the call and call the appropriate method
   Future<String> interpret(Socket socket) async {
-
     // Response to client
     Future<String> response;
     response = onJoinGame();
 
     socket.listen((List<int> data) async {
-
       // Convert the message to a JSON object
       const JsonDecoder decoder = JsonDecoder();
       final String message = String.fromCharCodes(data).trim();
@@ -76,7 +73,7 @@ class Host {
           throw Error();
       }*/
 
-    // Handle errors
+      // Handle errors
     }, onError: (error) {
       debugPrint('Error listening to client: $error');
     }, onDone: () {
