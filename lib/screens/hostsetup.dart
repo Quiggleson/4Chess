@@ -69,7 +69,8 @@ class HostSetupState extends State<HostSetup> {
                         Navigator.of(context).push(
                           MaterialPageRoute(
                             //builder: (context) => HostLobby(roomCode: initializerData.gameCode, client);
-                            builder: (context) => HostLobby(roomCode: "ZOLF"),
+                            builder: (context) =>
+                                const HostLobby(roomCode: "ZOLF"),
                           ),
                         )
                       },
