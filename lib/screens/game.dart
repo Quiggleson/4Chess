@@ -9,9 +9,10 @@ import '../widgets/fc_otherplayertimer.dart';
 
 class Game extends StatefulWidget {
   //Game(required this.client, this.isHost = false);
-
+  Game({super.key, this.isHost = false});
   //Client client
-  //bool isHost
+
+  final bool isHost;
   @override
   GameState createState() => GameState();
 }
@@ -140,15 +141,19 @@ class GameState extends State<Game> {
                 ? Icons.pause_sharp
                 : Icons.play_arrow_sharp),
           ),
-          IconButton(
-            //RESET BUTTON
-            iconSize: 80,
-            onPressed: gameStatus == GameStatus.starting
-                ? null
-                : () {
-                    //Client.gameReset()
-                  },
-            icon: const Icon(Icons.restore_sharp),
+          Visibility(
+            //Must hide the reset button if we are not the host
+            visible: widget.isHost,
+            child: IconButton(
+              //RESET BUTTON
+              iconSize: 80,
+              onPressed: gameStatus == GameStatus.starting
+                  ? null
+                  : () {
+                      //Client.gameReset()
+                    },
+              icon: const Icon(Icons.restore_sharp),
+            ),
           ),
           IconButton(
               //RESIGNS
@@ -192,6 +197,9 @@ class GameState extends State<Game> {
 
   //TODO: FIX ERROR EVERYTIME THIS GETS CALLED LMAO
   void _showDialog() {
+    String message = widget.isHost
+        ? 'ARE YOU SURE YOU WANT TO END THE GAME FOR ALL PLAYERS?'
+        : 'ARE YOU SURE YOU WANT TO QUIT THE GAME?';
     showDialog(
       context: context,
       builder: (BuildContext context) => AlertDialog(
@@ -213,8 +221,7 @@ class GameState extends State<Game> {
                     style: TextStyle(fontSize: 56),
                     textAlign: TextAlign.center,
                   ))),
-          content: const Text(
-              'ARE YOU SURE YOU WANT TO END THE GAME FOR ALL PLAYERS?'),
+          content: Text(message),
           actions: <Widget>[
             FCButton(
               style: FCButton.styleFrom(

@@ -8,10 +8,10 @@ import 'dart:async';
 
 class HostLobby extends StatefulWidget {
   //HostLobby({super.key, required this.roomCode, required this.client});
-  HostLobby({super.key, required this.roomCode});
+  const HostLobby({super.key, required this.roomCode});
 
   //Client client;
-  String roomCode;
+  final String roomCode;
   @override
   HostLobbyState createState() => HostLobbyState();
 }

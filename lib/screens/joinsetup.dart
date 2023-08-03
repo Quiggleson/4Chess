@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:fourchess/screens/joinlobby.dart';
 import 'package:fourchess/widgets/fc_appbar.dart';
-import 'package:fourchess/widgets/fc_dropdownbutton.dart';
 import 'package:fourchess/widgets/fc_textfield.dart';
 import '../widgets/fc_button.dart';
 
@@ -11,7 +10,7 @@ class JoinSetup extends StatefulWidget {
   JoinSetupState createState() => JoinSetupState();
 }
 
-//TODO: CENTER BUTTONS AND MOVE
+//Todo: CENTER BUTTONS AND MOVE
 class JoinSetupState extends State<JoinSetup> {
   String _name = "";
   String _roomCode = "";
@@ -41,7 +40,7 @@ class JoinSetupState extends State<JoinSetup> {
               const Spacer(),
               FCButton(
                   onPressed: () => {
-                        //GameState gameState = new GameState( _dropDownValue.timeControl, _dropDownValue.increment, <Player>[], GameStatus.starting) ???
+                        //GameState gameState = new GameState(players: <Player>[], status: GameStatus.starting) ???
                         //Client client = new Client(name, gameState)
                         //TRIGGER LOADING ANIMATION
                         //client.joinGame(code)
