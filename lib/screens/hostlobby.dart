@@ -18,7 +18,7 @@ class HostLobby extends StatefulWidget {
 
 // CREATE ORANGEG ANIMATION THINGY WHEN WE HAVE TIME
 class HostLobbyState extends State<HostLobby> {
-  List _names = <_TempPlayer>[];
+  List _playerList = <_TempPlayer>[];
 
   @override
   Widget build(BuildContext context) {
@@ -38,29 +38,32 @@ class HostLobbyState extends State<HostLobby> {
             padding: const EdgeInsets.all(40),
             child:
                 Column(mainAxisAlignment: MainAxisAlignment.start, children: [
-              Text("WAITING FOR ${4 - _names.length} PLAYERS",
+              Text("WAITING FOR ${4 - _playerList.length} PLAYERS",
                   style: const TextStyle(fontSize: 28),
                   textAlign: TextAlign.center),
               const Padding(padding: EdgeInsets.only(top: 30)),
               Expanded(
                   child: ReorderableListView(
                 children: <Widget>[
-                  for (int i = 0; i < _names.length; i++)
+                  for (int i = 0; i < _playerList.length; i++)
                     Padding(
                       key: Key("$i"),
                       padding: const EdgeInsets.only(top: 10, bottom: 10),
-                      child: FCNumberedItem(content: _names[i], number: i + 1),
+                      child: FCNumberedItem(
+                          content: _playerList[i], number: i + 1),
                     )
                 ],
                 onReorder: (int oldIndex, int newIndex) {
+                  //----- this chunk may not be necessary depending on how fast the async update happens
                   setState(() {
                     if (oldIndex < newIndex) {
                       newIndex -= 1;
                     }
-                    String item = _names.removeAt(oldIndex);
-                    _names.insert(newIndex, item);
+                    String item = _playerList.removeAt(oldIndex);
+                    _playerList.insert(newIndex, item);
+                    //------
 
-                    //widget.client.reorder()
+                    //widget.client.reorder(_playerList)
                   });
                 },
               )),

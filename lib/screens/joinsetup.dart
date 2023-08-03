@@ -41,10 +41,15 @@ class JoinSetupState extends State<JoinSetup> {
               const Spacer(),
               FCButton(
                   onPressed: () => {
-                        //Client.joinGame()
+                        //GameState gameState = new GameState( _dropDownValue.timeControl, _dropDownValue.increment, <Player>[], GameStatus.starting) ???
+                        //Client client = new Client(name, gameState)
+                        //TRIGGER LOADING ANIMATION
+                        //client.joinGame(code)
                         Navigator.of(context).push(
                           MaterialPageRoute(
-                            builder: (context) => JoinLobby(),
+                            //builder: (context) => JoinLobby(client),
+                            builder: (context) =>
+                                JoinLobby(roomCode: _roomCode),
                           ),
                         )
                       },

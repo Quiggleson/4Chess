@@ -25,7 +25,7 @@ class GameState extends State<Game> {
     PlayerInfo("Waldo", PlayerStatus.notTurn, 180)
   ];
 
-  //id determined by users IP cross referenced with list sent from server
+  //id determined by users IP cross referenced with list sent from server??
   int id = 0;
 
   //update when request is heard
