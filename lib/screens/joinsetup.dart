@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:fourchess/screens/joinlobby.dart';
 import 'package:fourchess/widgets/fc_appbar.dart';
 import 'package:fourchess/widgets/fc_textfield.dart';
+import '../client.dart';
+import '../gamestate.dart';
+import '../player.dart';
 import '../widgets/fc_button.dart';
 
 class JoinSetup extends StatefulWidget {
@@ -39,19 +42,24 @@ class JoinSetupState extends State<JoinSetup> {
               ),
               const Spacer(),
               FCButton(
-                  onPressed: () => {
-                        //GameState gameState = new GameState(players: <Player>[], status: GameStatus.starting) ???
-                        //Client client = new Client(name, gameState)
-                        //TRIGGER LOADING ANIMATION
-                        //client.joinGame(code)
-                        Navigator.of(context).push(
-                          MaterialPageRoute(
-                            //builder: (context) => JoinLobby(client),
-                            builder: (context) =>
-                                JoinLobby(roomCode: _roomCode),
-                          ),
-                        )
-                      },
+                  onPressed: () {
+                    GameState gameState = GameState(
+                        players: <Player>[], status: GameStatus.starting);
+                    Client client = Client(name: _name, gameState: gameState);
+                    client.joinGame(_roomCode);
+
+                    //TRIGGER LOADING ANIMATION
+                    //when we get info
+
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (context) => JoinLobby(
+                          client: client,
+                          roomCode: _roomCode,
+                        ),
+                      ),
+                    );
+                  },
                   child: const Text("JOIN")),
             ])));
   }

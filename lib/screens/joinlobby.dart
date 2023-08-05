@@ -1,37 +1,45 @@
 import 'package:flutter/material.dart';
+import 'package:fourchess/gamestate.dart';
+import 'package:fourchess/screens/game.dart';
 import 'package:fourchess/widgets/fc_appbar.dart';
 import 'dart:async';
-import '../util/playerinfo.dart';
+import '../client.dart';
+import '../player.dart';
+import '../widgets/fc_numbereditem.dart';
 
 class JoinLobby extends StatefulWidget {
-  //JoinLobby({super.key, required this.client});
-  JoinLobby({super.key, required this.roomCode});
+  JoinLobby({super.key, required this.client, required this.roomCode})
+      : _playerList = client.getFakeGameState().players;
 
-  //final Client client;
+  final Client client;
   final String roomCode;
+  List<Player> _playerList;
   @override
   JoinLobbyState createState() => JoinLobbyState();
 }
 
 class JoinLobbyState extends State<JoinLobby> {
-  List _playerList = <_TempPlayer>[];
-
   @override
   Widget build(BuildContext context) {
     Timer.periodic(const Duration(milliseconds: 100), (Timer t) {
       //This code will run 10 times a second when the host menu starts
+      if (widget.client.isModified) {
+        //if game is ready to start, navigate to game screen.
 
-      //if(widget.client.isModified)
-      //_names = client.players (or something like that)
-
-      //if game is ready to start, navigate to game screen
-      /**
-        * Navigator.of(context).push(
-              MaterialPageRoute(
-               //builder: (context) => Game(widget.client);
-            ),
-          )
-       */
+        //Replace this with the condition of the game
+        if (widget.client.getGameState().status == false) {
+          Navigator.of(context).push(
+            MaterialPageRoute(
+                builder: (context) => Game(client: widget.client)),
+          );
+        } else {
+          setState(() {
+            widget._playerList = widget.client
+                .getFakeGameState()
+                .players; //uncomment when gameState/isModified works properly
+          });
+        }
+      }
     });
 
     return Scaffold(
@@ -45,19 +53,22 @@ class JoinLobbyState extends State<JoinLobby> {
                 Column(mainAxisAlignment: MainAxisAlignment.start, children: [
               Center(
                   //I HAVE NO IDEA WHY THE CENTER IS NEEDED, IT DOESN'T WORK OTHERWISE
-                  child: Text("WAITING FOR ${4 - _playerList.length} PLAYERS",
+                  child: Text(
+                      (4 - widget._playerList.length == 0)
+                          ? ("WAITING FOR HOST TO START GAME")
+                          : ("WAITING FOR ${4 - widget._playerList.length} PLAYERS"),
                       style: const TextStyle(fontSize: 28),
                       textAlign: TextAlign.center)),
+              const Padding(padding: EdgeInsets.only(top: 30)),
+              Expanded(
+                  child: ListView(children: [
+                for (int i = 0; i < widget._playerList.length; i++)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 10, bottom: 10),
+                    child: FCNumberedItem(
+                        content: widget._playerList[i].name, number: i + 1),
+                  )
+              ]))
             ])));
   }
-}
-
-//class and references to be replaced with regular player class
-class _TempPlayer {
-  const _TempPlayer(this.name, this.ip, this.status, this.remainingTime);
-
-  final String name;
-  final String ip;
-  final GameStatus status;
-  final double remainingTime;
 }

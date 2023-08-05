@@ -1,7 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
 import 'gamestate.dart';
-import 'player.dart';
 import 'package:flutter/foundation.dart';
 import 'package:network_info_plus/network_info_plus.dart';
 import 'package:dart_ipify/dart_ipify.dart';
@@ -10,7 +9,7 @@ class Host {
   final int port;
   GameState gameState;
 
-  Host(this.port, this.gameState) {
+  Host({this.port = 38383, required this.gameState}) {
     listen(port);
   }
 
@@ -84,6 +83,10 @@ class Host {
     debugPrint('I am the server; should be sending ${await response!}');
     // Return response
     return await response;
+  }
+
+  String getRoomCode() {
+    return "ZOLF";
   }
 
   String onStart(Map<String, dynamic> obj) {

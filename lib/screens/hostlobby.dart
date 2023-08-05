@@ -1,32 +1,35 @@
 import 'package:flutter/material.dart';
 import 'package:fourchess/screens/game.dart';
-import 'package:fourchess/util/playerinfo.dart';
 import 'package:fourchess/widgets/fc_appbar.dart';
 import 'package:fourchess/widgets/fc_button.dart';
 import 'package:fourchess/widgets/fc_numbereditem.dart';
 import 'dart:async';
 
-class HostLobby extends StatefulWidget {
-  //HostLobby({super.key, required this.roomCode, required this.client});
-  const HostLobby({super.key, required this.roomCode});
+import '../client.dart';
+import '../player.dart';
 
-  //Client client;
+class HostLobby extends StatefulWidget {
+  HostLobby({super.key, required this.roomCode, required this.client})
+      : _playerList = client.getFakeGameState().players;
+
+  final Client client;
   final String roomCode;
+  List<Player> _playerList;
   @override
   HostLobbyState createState() => HostLobbyState();
 }
 
 // CREATE ORANGEG ANIMATION THINGY WHEN WE HAVE TIME
 class HostLobbyState extends State<HostLobby> {
-  List _playerList = <_TempPlayer>[];
-
   @override
   Widget build(BuildContext context) {
     Timer.periodic(const Duration(milliseconds: 100), (Timer t) {
       //This code will run 10 times a second when the host menu starts
-
-      //if(widget.client.isModified)
-      //_names = client.players (or something like that)
+      if (widget.client.isModified) {
+        setState(() {
+          widget._playerList = widget.client.getGameState().players;
+        });
+      }
     });
 
     return Scaffold(
@@ -38,19 +41,22 @@ class HostLobbyState extends State<HostLobby> {
             padding: const EdgeInsets.all(40),
             child:
                 Column(mainAxisAlignment: MainAxisAlignment.start, children: [
-              Text("WAITING FOR ${4 - _playerList.length} PLAYERS",
+              Text(
+                  (4 - widget._playerList.length == 0)
+                      ? ("START GAME WHEN READY")
+                      : ("WAITING FOR ${4 - widget._playerList.length} PLAYERS"),
                   style: const TextStyle(fontSize: 28),
                   textAlign: TextAlign.center),
               const Padding(padding: EdgeInsets.only(top: 30)),
               Expanded(
                   child: ReorderableListView(
-                children: <Widget>[
-                  for (int i = 0; i < _playerList.length; i++)
+                children: [
+                  for (int i = 0; i < widget._playerList.length; i++)
                     Padding(
                       key: Key("$i"),
                       padding: const EdgeInsets.only(top: 10, bottom: 10),
                       child: FCNumberedItem(
-                          content: _playerList[i], number: i + 1),
+                          content: widget._playerList[i].name, number: i + 1),
                     )
                 ],
                 onReorder: (int oldIndex, int newIndex) {
@@ -59,11 +65,11 @@ class HostLobbyState extends State<HostLobby> {
                     if (oldIndex < newIndex) {
                       newIndex -= 1;
                     }
-                    String item = _playerList.removeAt(oldIndex);
-                    _playerList.insert(newIndex, item);
+                    Player item = widget._playerList.removeAt(oldIndex);
+                    widget._playerList.insert(newIndex, item);
                     //------
 
-                    //widget.client.reorder(_playerList)
+                    widget.client.reorder(widget._playerList);
                   });
                 },
               )),
@@ -72,27 +78,18 @@ class HostLobbyState extends State<HostLobby> {
                   style: TextStyle(fontSize: 28), textAlign: TextAlign.center),
               const Padding(padding: EdgeInsets.only(top: 40)),
               FCButton(
-                  onPressed: () => {
-                        //Future<> status = widget.client.start() Should we return future here for confirmation?
-                        Navigator.of(context).push(
-                          MaterialPageRoute(
-                            //if (status.isGood)
-                            //builder: (context) => Game(widget.client, true),
-                            builder: (context) => Game(),
-                          ),
-                        )
-                      },
+                  onPressed: () {
+                    //Should we return future from start for confirmation/error handling?
+                    widget.client.start();
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        //if (status.isGood)
+                        builder: (context) =>
+                            Game(client: widget.client, isHost: true),
+                      ),
+                    );
+                  },
                   child: const Text("START"))
             ])));
   }
-}
-
-//class and references to be replaced with regular player class
-class _TempPlayer {
-  const _TempPlayer(this.name, this.ip, this.status, this.remainingTime);
-
-  final String name;
-  final String ip;
-  final GameStatus status;
-  final double remainingTime;
 }

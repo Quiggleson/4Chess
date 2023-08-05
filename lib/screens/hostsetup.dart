@@ -1,9 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:fourchess/screens/hostlobby.dart';
 import 'package:fourchess/widgets/fc_appbar.dart';
 import 'package:fourchess/widgets/fc_dropdownbutton.dart';
 import 'package:fourchess/widgets/fc_textfield.dart';
+import '../client.dart';
+import '../gamestate.dart';
+import '../host.dart';
 import '../widgets/fc_button.dart';
+import '../player.dart';
+import 'hostlobby.dart';
 
 class HostSetup extends StatefulWidget {
   const HostSetup({super.key});
@@ -59,21 +63,27 @@ class HostSetupState extends State<HostSetup> {
               ),
               const Spacer(),
               FCButton(
-                  onPressed: () => {
-                        //GameState gameState = new GameState( _dropDownValue.timeControl, _dropDownValue.increment, <Player>[], GameStatus.starting)
-                        //Host host = new Host(gameState)
-                        //String code = host.getRoomCode()
-                        //Client client = new Client(name, gameState)
-                        //TRIGGER LOADING ANIMATION
-                        //client.joinGame(code)
-                        Navigator.of(context).push(
-                          MaterialPageRoute(
-                            //builder: (context) => HostLobby(roomCode: initializerData.gameCode, client);
-                            builder: (context) =>
-                                const HostLobby(roomCode: "ZOLF"),
-                          ),
-                        )
-                      },
+                  onPressed: () {
+                    GameState gameState = GameState(
+                        initTime: _dropdownValue!.timeControl,
+                        increment: _dropdownValue!.increment,
+                        players: <Player>[],
+                        status: GameStatus.starting);
+                    Host host = Host(gameState: gameState);
+                    String code = host.getRoomCode();
+                    Client client = Client(name: _name, gameState: gameState);
+                    client.joinGame(
+                        code); //should this return a value async when we connect?
+
+                    //TRIGGER LOADING ANIMATION
+                    //when we receive info (possibly)
+
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                          builder: (context) =>
+                              HostLobby(roomCode: code, client: client)),
+                    );
+                  },
                   child: const Text("CONFIRM")),
             ])));
   }
@@ -82,7 +92,7 @@ class HostSetupState extends State<HostSetup> {
 class _TimeControl {
   _TimeControl(this.timeControl, this.increment, this.display);
 
-  final double timeControl;
+  final int timeControl;
   final int increment;
   final String display;
 }

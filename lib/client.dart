@@ -10,11 +10,17 @@ class Client {
   int port;
   final int hostPort;
   final String hostIp;
-  GameState gameState;
+  GameState _gameState;
   bool isModified = false;
+  final String name;
 
-  Client(this.port, this.hostIp, this.hostPort, this.gameState) {
-    port = 46100;
+  Client(
+      {this.port = 46100,
+      this.hostIp = "DEFAULT IP",
+      this.hostPort = 38383,
+      required this.name,
+      required GameState gameState})
+      : _gameState = gameState {
     join(hostPort, hostIp);
   }
 
@@ -113,7 +119,7 @@ class Client {
     debugPrint("oi");
   }
 
-  next() {
+  next(double time) {
     debugPrint("oi");
   }
 
@@ -121,7 +127,7 @@ class Client {
     debugPrint("oi");
   }
 
-  joinGame(String code, String name) {
+  joinGame(String code) {
     debugPrint("oi");
   }
 
@@ -134,6 +140,20 @@ class Client {
   }
 
   GameState getGameState() {
-    return gameState;
+    return _gameState;
+  }
+
+  //For testing UI
+  GameState getFakeGameState() {
+    return GameState(
+        initTime: 180,
+        increment: 0,
+        players: [
+          Player("Deven", "1", PlayerStatus.first, 180),
+          Player("Robert", "1", PlayerStatus.notTurn, 180),
+          Player("Aaron", "1", PlayerStatus.notTurn, 180),
+          Player("Waldo", "1", PlayerStatus.notTurn, 180),
+        ],
+        status: GameStatus.starting);
   }
 }

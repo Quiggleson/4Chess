@@ -18,6 +18,6 @@ class MyApp extends StatelessWidget {
           textTheme: GoogleFonts.abelTextTheme(Theme.of(context)
               .textTheme
               .apply(bodyColor: Colors.black, displayColor: Colors.black))),
-    ); //placeholder
+    );
   }
 }
