@@ -4,9 +4,9 @@ import 'package:fourchess/widgets/fc_button.dart';
 import 'package:fourchess/widgets/fc_timer.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 import 'dart:async';
-import '../client.dart';
-import '../gamestate.dart';
-import '../player.dart';
+import '../backend/client.dart';
+import '../util/gamestate.dart';
+import '../util/player.dart';
 import '../widgets/fc_otherplayertimer.dart';
 
 class Game extends StatefulWidget {
@@ -90,11 +90,6 @@ class _GameState extends State<Game> {
                 ? null
                 : () {
                     widget.client.pause();
-                    setState(() {
-                      gameStatus == GameStatus.inProgress
-                          ? GameStatus.paused
-                          : GameStatus.inProgress;
-                    });
                   },
             icon: Icon(gameStatus == GameStatus.inProgress ||
                     gameStatus == GameStatus.finished
@@ -173,9 +168,7 @@ class _GameState extends State<Game> {
     return Row(children: bar);
   }
 
-  //ALERT DIALOGS
-
-  //TODO: FIX ERROR EVERYTIME THIS GETS CALLED LMAO
+  //Todo: understandand and fix warning that pops up whenever this is called
   void _showDialog() {
     String message = widget.isHost
         ? 'ARE YOU SURE YOU WANT TO END THE GAME FOR ALL PLAYERS?'

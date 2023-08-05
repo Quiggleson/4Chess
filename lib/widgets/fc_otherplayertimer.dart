@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import '../gamestate.dart';
-import '../player.dart';
+import '../util/gamestate.dart';
+import '../util/player.dart';
 import '../theme/fc_colors.dart';
 import 'fc_button.dart';
 import 'fc_timer.dart';

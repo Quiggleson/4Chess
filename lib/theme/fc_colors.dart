@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../player.dart';
+import '../util/player.dart';
 
 class FCColors {
   //Default Theme Colors

@@ -2,11 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:fourchess/widgets/fc_appbar.dart';
 import 'package:fourchess/widgets/fc_dropdownbutton.dart';
 import 'package:fourchess/widgets/fc_textfield.dart';
-import '../client.dart';
-import '../gamestate.dart';
-import '../host.dart';
+import '../backend/client.dart';
+import '../util/gamestate.dart';
+import '../backend/host.dart';
 import '../widgets/fc_button.dart';
-import '../player.dart';
+import '../util/player.dart';
 import 'hostlobby.dart';
 import 'dart:async';
 
@@ -64,46 +64,44 @@ class HostSetupState extends State<HostSetup> {
               ),
               const Spacer(),
               FCButton(
-                  onPressed: () {
-                    //When user presses
-                    GameState gameState = GameState(
-                        initTime: _dropdownValue!.timeControl,
-                        increment: _dropdownValue!.increment,
-                        players: <Player>[],
-                        status: GameStatus.setup);
-                    Host host = Host(gameState: gameState);
-                    String code = host.getRoomCode();
-                    Client client = Client(name: _name, gameState: gameState);
-                    client.joinGame(code);
-
-                    //Trigger loading animation
-
-                    double elapsedTime = 0;
-
-                    Timer.periodic(const Duration(milliseconds: 500), (timer) {
-                      //checks twice a second to see if have successfully joined the game
-                      elapsedTime += .5;
-
-                      if (client.isModified) {
-                        Navigator.of(context).push(
-                          MaterialPageRoute(
-                              builder: (context) =>
-                                  HostLobby(roomCode: code, client: client)),
-                        );
-                      }
-
-                      if (elapsedTime > 10) {
-                        //We have taken more than 10 seconds to connect, probably a network
-                        //issue
-                        timer.cancel();
-                      }
-                    });
-
-                    //TRIGGER LOADING ANIMATION
-                    //when we receive info (possibly)
-                  },
+                  onPressed: () => _onConfirm(context),
                   child: const Text("CONFIRM")),
             ])));
+  }
+
+  _onConfirm(BuildContext context) {
+    //When user presses
+    GameState gameState = GameState(
+        initTime: _dropdownValue!.timeControl,
+        increment: _dropdownValue!.increment,
+        players: <Player>[],
+        status: GameStatus.setup);
+    Host host = Host(gameState: gameState);
+    String code = host.getRoomCode();
+    Client client = Client(name: _name, gameState: gameState);
+    client.joinGame(code);
+
+    //Trigger loading animation
+
+    double elapsedTime = 0;
+
+    Timer.periodic(const Duration(milliseconds: 500), (timer) {
+      //checks twice a second to see if have successfully joined the game
+      elapsedTime += .5;
+
+      if (client.isModified) {
+        Navigator.of(context).push(
+          MaterialPageRoute(
+              builder: (context) => HostLobby(roomCode: code, client: client)),
+        );
+      }
+
+      if (elapsedTime > 10) {
+        //We have taken more than 10 seconds to connect, probably a network
+        //issue
+        timer.cancel();
+      }
+    });
   }
 }
 

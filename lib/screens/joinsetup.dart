@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:fourchess/screens/joinlobby.dart';
 import 'package:fourchess/widgets/fc_appbar.dart';
 import 'package:fourchess/widgets/fc_textfield.dart';
-import '../client.dart';
-import '../gamestate.dart';
-import '../player.dart';
+import '../backend/client.dart';
+import '../util/gamestate.dart';
+import '../util/player.dart';
 import '../widgets/fc_button.dart';
 import 'dart:async';
 
@@ -43,46 +43,47 @@ class JoinSetupState extends State<JoinSetup> {
               ),
               const Spacer(),
               FCButton(
-                  onPressed: () {
-                    //When user presses "JOIN GAME" to join a hosted game
-                    GameState gameState = GameState(
-                        players: <Player>[], status: GameStatus.starting);
-                    Client client = Client(name: _name, gameState: gameState);
-                    client.joinGame(_roomCode);
-
-                    //Trigger loading animation
-
-                    double elapsedTime = 0;
-
-                    Timer.periodic(const Duration(milliseconds: 500), (timer) {
-                      //checks twice a second to see if have successfully joined the game
-                      elapsedTime += .5;
-
-                      if (client.isModified) {
-                        Navigator.of(context).push(
-                          MaterialPageRoute(
-                              builder: (context) => JoinLobby(
-                                  roomCode: _roomCode, client: client)),
-                        );
-                      }
-
-                      if (elapsedTime > 10) {
-                        //We have taken more than 10 seconds to connect, probably a network
-                        //issue
-                        timer.cancel();
-                      }
-                    });
-
-                    Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (context) => JoinLobby(
-                          client: client,
-                          roomCode: _roomCode,
-                        ),
-                      ),
-                    );
-                  },
-                  child: const Text("JOIN")),
+                  onPressed: () => _onJoin(context), child: const Text("JOIN")),
             ])));
+  }
+
+  _onJoin(BuildContext context) {
+    //When user presses "JOIN GAME" to join a hosted game
+    GameState gameState =
+        GameState(players: <Player>[], status: GameStatus.setup);
+    Client client = Client(name: _name, gameState: gameState);
+    client.joinGame(_roomCode);
+
+    //Trigger loading animation
+
+    double elapsedTime = 0;
+
+    Timer.periodic(const Duration(milliseconds: 500), (timer) {
+      //checks twice a second to see if have successfully joined the game
+      elapsedTime += .5;
+
+      if (client.isModified) {
+        Navigator.of(context).push(
+          MaterialPageRoute(
+              builder: (context) =>
+                  JoinLobby(roomCode: _roomCode, client: client)),
+        );
+      }
+
+      if (elapsedTime > 10) {
+        //We have taken more than 10 seconds to connect, probably a network
+        //issue
+        timer.cancel();
+      }
+    });
+
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => JoinLobby(
+          client: client,
+          roomCode: _roomCode,
+        ),
+      ),
+    );
   }
 }
