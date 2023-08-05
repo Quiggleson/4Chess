@@ -5,6 +5,7 @@ import 'dart:async';
 class FCTimer extends StatefulWidget {
   const FCTimer(
       {required this.initialTime,
+      this.running = false,
       this.formatMethod,
       this.onTimeout,
       this.style,
@@ -17,6 +18,7 @@ class FCTimer extends StatefulWidget {
   final double initialTime;
   final ButtonStyle? style;
   final bool enabled;
+  final bool running;
   final Function(double)? formatMethod;
   final Function(double)? onStart;
   final Function(double)? onStop;
@@ -28,8 +30,16 @@ class FCTimer extends StatefulWidget {
 }
 
 class FCTimerState extends State<FCTimer> {
-  bool _timerRunning = false;
+  late bool _timerRunning;
   double? _time;
+
+  @override
+  initState() {
+    _timerRunning = !widget.running;
+    _time = widget.initialTime;
+    toggle();
+    super.initState();
+  }
 
   void toggle() {
     _timerRunning = !_timerRunning;

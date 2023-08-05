@@ -21,7 +21,7 @@ class OtherPlayerTimer extends StatefulWidget {
   final PlayerStatus status;
   final double time;
   final GameStatus game;
-  GlobalKey<FCTimerState> timer;
+  final GlobalKey<FCTimerState> timer;
 
   @override
   State<OtherPlayerTimer> createState() => OtherPlayerTimerState();
@@ -47,6 +47,7 @@ class OtherPlayerTimerState extends State<OtherPlayerTimer> {
                 const Padding(padding: EdgeInsets.only(top: 20)),
                 FCTimer(
                     //No events needed here, all events should be updated from the device that this timer represents.
+                    running: widget.status == PlayerStatus.turn,
                     enabled: false,
                     key: widget.timer,
                     initialTime: widget.time,

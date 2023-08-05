@@ -112,31 +112,31 @@ class Client {
   }
 
   start() {
-    debugPrint("oi");
+    debugPrint("Client Start");
   }
 
   pause() {
-    debugPrint("oi");
+    debugPrint("Client Pause");
   }
 
   next(double time) {
-    debugPrint("oi");
+    debugPrint("Client Next");
   }
 
   reorder(List<Player> players) {
-    debugPrint("oi");
+    debugPrint("Client Reorder");
   }
 
   joinGame(String code) {
-    debugPrint("oi");
+    debugPrint("Client Joingame");
   }
 
   lost() {
-    debugPrint("oi");
+    debugPrint("Client Lost");
   }
 
   reset() {
-    debugPrint("oi");
+    debugPrint("Client Reset");
   }
 
   GameState getGameState() {

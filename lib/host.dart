@@ -90,17 +90,17 @@ class Host {
   }
 
   String onStart(Map<String, dynamic> obj) {
-    debugPrint("oi");
+    debugPrint("Host onStart");
     return 'oi';
   }
 
   String onPause(Map<String, dynamic> obj) {
-    debugPrint("oi");
+    debugPrint("Host onPause");
     return 'oi';
   }
 
   String onNext(Map<String, dynamic> obj) {
-    debugPrint("oi");
+    debugPrint("Host onNext");
     return 'oi';
   }
 

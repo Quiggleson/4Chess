@@ -8,6 +8,7 @@ import '../host.dart';
 import '../widgets/fc_button.dart';
 import '../player.dart';
 import 'hostlobby.dart';
+import 'dart:async';
 
 class HostSetup extends StatefulWidget {
   const HostSetup({super.key});
@@ -64,25 +65,42 @@ class HostSetupState extends State<HostSetup> {
               const Spacer(),
               FCButton(
                   onPressed: () {
+                    //When user presses
                     GameState gameState = GameState(
                         initTime: _dropdownValue!.timeControl,
                         increment: _dropdownValue!.increment,
                         players: <Player>[],
-                        status: GameStatus.starting);
+                        status: GameStatus.setup);
                     Host host = Host(gameState: gameState);
                     String code = host.getRoomCode();
                     Client client = Client(name: _name, gameState: gameState);
-                    client.joinGame(
-                        code); //should this return a value async when we connect?
+                    client.joinGame(code);
+
+                    //Trigger loading animation
+
+                    double elapsedTime = 0;
+
+                    Timer.periodic(const Duration(milliseconds: 500), (timer) {
+                      //checks twice a second to see if have successfully joined the game
+                      elapsedTime += .5;
+
+                      if (client.isModified) {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                              builder: (context) =>
+                                  HostLobby(roomCode: code, client: client)),
+                        );
+                      }
+
+                      if (elapsedTime > 10) {
+                        //We have taken more than 10 seconds to connect, probably a network
+                        //issue
+                        timer.cancel();
+                      }
+                    });
 
                     //TRIGGER LOADING ANIMATION
                     //when we receive info (possibly)
-
-                    Navigator.of(context).push(
-                      MaterialPageRoute(
-                          builder: (context) =>
-                              HostLobby(roomCode: code, client: client)),
-                    );
                   },
                   child: const Text("CONFIRM")),
             ])));

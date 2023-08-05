@@ -1,6 +1,6 @@
 import 'player.dart';
 
-enum GameStatus { starting, inProgress, paused, finished }
+enum GameStatus { setup, starting, inProgress, paused, finished }
 
 class GameState {
   int? initTime;
@@ -16,5 +16,22 @@ class GameState {
 
   setPlayers(List<Player> players) {
     this.players = players;
+  }
+
+  @override
+  String toString() {
+    //For debugging
+    String output = "";
+
+    output += "--- GameState --- ";
+    output += "Initial time: $initTime\n";
+    output += "Increment: $increment\n";
+    output += "Game Status: $status\n";
+    output += "Players:\n";
+    for (Player player in players) {
+      output += "$player\n";
+    }
+
+    return output;
   }
 }

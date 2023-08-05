@@ -10,90 +10,53 @@ import '../player.dart';
 import '../widgets/fc_otherplayertimer.dart';
 
 class Game extends StatefulWidget {
-  Game({super.key, required Client client, this.isHost = false})
-      : _client = client {
-    gameState = _client.getFakeGameState();
-    _gameStatus = gameState.status;
-    _players = gameState.players;
+  Game({super.key, required this.client, this.isHost = false});
 
-    //Initialize Id somehow?? setting 0 as default
-    _id = 0;
-    _rotatedPlayers = _rotateArrayAroundIndex(_players, _id);
-    _timerKeys = [
-      for (int i = 0; i < _rotatedPlayers.length; i++) GlobalKey<FCTimerState>()
-    ];
-  }
-
-  late int _id;
-  final Client _client;
-  late GameState gameState;
-  late GameStatus _gameStatus;
-  late List<Player> _players;
-  late List<Player> _rotatedPlayers;
-  late List<GlobalKey<FCTimerState>> _timerKeys;
+  final Client client;
   final bool isHost;
 
   @override
   _GameState createState() => _GameState();
-
-  List<T> _rotateArrayAroundIndex<T>(List<T> array, int index) {
-    if (array.isEmpty || index < 0 || index >= array.length) {
-      throw ArgumentError('Invalid index or empty array');
-    }
-
-    List<T> result = [];
-
-    for (int i = 0; i < array.length; i++) {
-      int currIndex =
-          i + index < array.length ? i + index : i + index - array.length;
-      result.add(array[currIndex]);
-    }
-
-    return result;
-  }
 }
 
 class _GameState extends State<Game> {
-  //todo: id determined by users IP cross referenced with list sent from server??
+  late int id;
+  late GameState gameState;
+  late GameStatus gameStatus;
+  late List<Player> rotatedPlayers;
+  late List<GlobalKey<FCTimerState>> timerKeys;
 
   @override
-  Widget build(BuildContext context) {
+  void initState() {
+    //Initialize Id somehow?? setting 0 as default
+    id = 0;
+
+    rotatedPlayers =
+        _rotateArrayAroundIndex(widget.client.getFakeGameState().players, id);
+    timerKeys = [
+      for (int i = 0; i < rotatedPlayers.length; i++) GlobalKey<FCTimerState>()
+    ];
+
+    _updateUi();
+
     Timer.periodic(const Duration(milliseconds: 100), (timer) {
-      if (widget._client.isModified) {
-        widget.gameState = widget._client.getGameState();
-        setState(() {
-          widget._players = widget.gameState.players;
-          widget._rotatedPlayers =
-              widget._rotateArrayAroundIndex(widget._players, widget._id);
-          widget._gameStatus = widget.gameState.status;
-
-          for (int i = 0; i < widget._timerKeys.length; i++) {
-            //set appropriate timer state
-            GlobalKey<FCTimerState> timerKey = widget._timerKeys[i];
-            Player player = widget._rotatedPlayers[i];
-
-            timerKey.currentState!.setTime(player.time);
-
-            if (timerKey.currentState != null) {
-              if (player.status == PlayerStatus.turn &&
-                  widget._gameStatus == GameStatus.inProgress) {
-                timerKey.currentState!.start();
-              } else {
-                timerKey.currentState!.stop();
-              }
-            }
-          }
-        });
+      if (widget.client.isModified) {
+        _updateUi();
       }
     });
 
-    Player self = widget._rotatedPlayers[0];
-    GlobalKey<FCTimerState> selfTimer = widget._timerKeys[0];
+    super.initState();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    Player self = rotatedPlayers[0];
+    GlobalKey<FCTimerState> selfTimer = timerKeys[0];
 
     return Scaffold(
         body: Column(
       children: [
-        _buildPlayerRow(widget._timerKeys),
+        _buildPlayerRow(timerKeys),
         Expanded(
             child: Padding(
                 padding: const EdgeInsets.only(top: 20, bottom: 20),
@@ -102,6 +65,8 @@ class _GameState extends State<Game> {
                     decoration: const BoxDecoration(
                         color: Color.fromRGBO(130, 195, 255, .5)),
                     child: FCTimer(
+                      running: self.status == PlayerStatus.turn &&
+                          gameStatus == GameStatus.inProgress,
                       initialTime: self.time,
                       style: FCButton.styleFrom(
                           backgroundColor:
@@ -112,27 +77,27 @@ class _GameState extends State<Game> {
                       enabled: self.status == PlayerStatus.first ||
                           self.status == PlayerStatus.turn,
                       onStop: (stopTime) {
-                        widget._client.next(selfTimer.currentState!.getTime());
+                        widget.client.next(selfTimer.currentState!.getTime());
                       },
-                      onTimeout: () => {widget._client.lost()},
+                      onTimeout: () => {widget.client.lost()},
                     )))),
         ButtonBar(alignment: MainAxisAlignment.center, children: [
           IconButton(
             //PAUSE/RESUME
             iconSize: 80,
-            onPressed: widget._gameStatus == GameStatus.starting ||
-                    widget._gameStatus == GameStatus.finished
+            onPressed: gameStatus == GameStatus.starting ||
+                    gameStatus == GameStatus.finished
                 ? null
                 : () {
-                    widget._client.pause();
+                    widget.client.pause();
                     setState(() {
-                      widget._gameStatus == GameStatus.inProgress
+                      gameStatus == GameStatus.inProgress
                           ? GameStatus.paused
                           : GameStatus.inProgress;
                     });
                   },
-            icon: Icon(widget._gameStatus == GameStatus.inProgress ||
-                    widget._gameStatus == GameStatus.finished
+            icon: Icon(gameStatus == GameStatus.inProgress ||
+                    gameStatus == GameStatus.finished
                 ? Icons.pause_sharp
                 : Icons.play_arrow_sharp),
           ),
@@ -142,10 +107,10 @@ class _GameState extends State<Game> {
             child: IconButton(
               //RESET BUTTON
               iconSize: 80,
-              onPressed: widget._gameStatus == GameStatus.starting
+              onPressed: gameStatus == GameStatus.starting
                   ? null
                   : () {
-                      widget._client.reset();
+                      widget.client.reset();
                     },
               icon: const Icon(Icons.restore_sharp),
             ),
@@ -153,10 +118,10 @@ class _GameState extends State<Game> {
           IconButton(
               //RESIGNS
               iconSize: 80,
-              onPressed: widget._gameStatus == GameStatus.finished
+              onPressed: gameStatus == GameStatus.finished
                   ? null
                   : () {
-                      widget._client.lost();
+                      widget.client.lost();
                       if (self.status == PlayerStatus.lost) {
                         setState(() {
                           _showDialog();
@@ -171,18 +136,36 @@ class _GameState extends State<Game> {
     ));
   }
 
+  //update ui for everything that can change
+  void _updateUi() {
+    gameState = widget.client.getFakeGameState();
+    setState(() {
+      gameStatus = gameState.status;
+
+      for (int i = 0; i < timerKeys.length; i++) {
+        //set appropriate timer state
+        GlobalKey<FCTimerState> timerKey = timerKeys[i];
+        Player player = rotatedPlayers[i];
+
+        if (timerKey.currentState != null) {
+          timerKey.currentState!.setTime(player.time);
+        }
+      }
+    });
+  }
+
   //Build player row
   Row _buildPlayerRow(List<GlobalKey<FCTimerState>> timerKeys) {
     List<Widget> bar = [];
 
-    for (int i = 1; i < widget._rotatedPlayers.length; i++) {
+    for (int i = 1; i < rotatedPlayers.length; i++) {
       bar.add(OtherPlayerTimer(
         timerState: timerKeys[i],
-        playerInfo: widget._rotatedPlayers[i],
-        gameStatus: widget._gameStatus,
+        playerInfo: rotatedPlayers[i],
+        gameStatus: gameStatus,
       ));
 
-      if (i != widget._rotatedPlayers.length - 1) {
+      if (i != rotatedPlayers.length - 1) {
         bar.add(const Padding(padding: EdgeInsets.only(right: 20)));
       }
     }
@@ -238,5 +221,21 @@ class _GameState extends State<Game> {
             ),
           ]),
     );
+  }
+
+  List<T> _rotateArrayAroundIndex<T>(List<T> array, int index) {
+    if (array.isEmpty || index < 0 || index >= array.length) {
+      throw ArgumentError('Invalid index or empty array');
+    }
+
+    List<T> result = [];
+
+    for (int i = 0; i < array.length; i++) {
+      int currIndex =
+          i + index < array.length ? i + index : i + index - array.length;
+      result.add(array[currIndex]);
+    }
+
+    return result;
   }
 }

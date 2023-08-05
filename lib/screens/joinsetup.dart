@@ -6,6 +6,7 @@ import '../client.dart';
 import '../gamestate.dart';
 import '../player.dart';
 import '../widgets/fc_button.dart';
+import 'dart:async';
 
 class JoinSetup extends StatefulWidget {
   const JoinSetup({super.key});
@@ -43,13 +44,34 @@ class JoinSetupState extends State<JoinSetup> {
               const Spacer(),
               FCButton(
                   onPressed: () {
+                    //When user presses "JOIN GAME" to join a hosted game
                     GameState gameState = GameState(
                         players: <Player>[], status: GameStatus.starting);
                     Client client = Client(name: _name, gameState: gameState);
                     client.joinGame(_roomCode);
 
-                    //TRIGGER LOADING ANIMATION
-                    //when we get info
+                    //Trigger loading animation
+
+                    double elapsedTime = 0;
+
+                    Timer.periodic(const Duration(milliseconds: 500), (timer) {
+                      //checks twice a second to see if have successfully joined the game
+                      elapsedTime += .5;
+
+                      if (client.isModified) {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                              builder: (context) => JoinLobby(
+                                  roomCode: _roomCode, client: client)),
+                        );
+                      }
+
+                      if (elapsedTime > 10) {
+                        //We have taken more than 10 seconds to connect, probably a network
+                        //issue
+                        timer.cancel();
+                      }
+                    });
 
                     Navigator.of(context).push(
                       MaterialPageRoute(
