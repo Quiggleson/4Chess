@@ -72,7 +72,6 @@ class JoinSetupState extends State<JoinSetup> {
               builder: (context) =>
                   JoinLobby(roomCode: _roomCode, client: client)),
         );
-        client.isModified = false;
       }
 
       if (elapsedTime > 10) {

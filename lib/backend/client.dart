@@ -37,7 +37,16 @@ class Client {
   }
 
   String getHostIp() {
-    return '192.168.6.242';
+    return '192.168.6.107';
+  }
+
+  bool checkData() {
+    if (isModified) {
+      isModified = false;
+      return true;
+      //any other logic required
+    }
+    return false;
   }
 
   // Send player data
