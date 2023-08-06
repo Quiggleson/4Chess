@@ -21,7 +21,7 @@ class Client {
       this.socket = socket;
 
       // Populate ip
-      ip = socket.address.toString();
+      ip = socket.address.address.toString();
 
       // Make a player for gameState
       Player player = Player(name: name, ip: ip);
@@ -37,7 +37,7 @@ class Client {
   }
 
   String getHostIp() {
-    return '192.168.6.107';
+    return '192.168.6.242';
   }
 
   bool checkData() {
