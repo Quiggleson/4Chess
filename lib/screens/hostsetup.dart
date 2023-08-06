@@ -72,14 +72,14 @@ class HostSetupState extends State<HostSetup> {
   _onConfirm(BuildContext context) {
     //When user presses
     GameState gameState = GameState(
-        initTime: _dropdownValue!.timeControl,
-        increment: _dropdownValue!.increment,
-        players: <Player>[],
-        status: GameStatus.setup);
+      initTime: _dropdownValue!.timeControl,
+      increment: _dropdownValue!.increment,
+      players: <Player>[],
+    );
+    //status: GameStatus.setup); Don't need to set initial gameStatus, always setup
     Host host = Host(gameState: gameState);
     String code = host.getRoomCode();
-    Client client = Client(name: _name, gameState: gameState);
-    client.joinGame(code);
+    Client client = Client(name: _name, roomCode: host.getRoomCode());
 
     //Trigger loading animation
 
@@ -94,6 +94,7 @@ class HostSetupState extends State<HostSetup> {
           MaterialPageRoute(
               builder: (context) => HostLobby(roomCode: code, client: client)),
         );
+        client.isModified = false;
       }
 
       if (elapsedTime > 10) {

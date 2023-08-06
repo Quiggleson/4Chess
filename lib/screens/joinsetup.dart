@@ -49,10 +49,14 @@ class JoinSetupState extends State<JoinSetup> {
 
   _onJoin(BuildContext context) {
     //When user presses "JOIN GAME" to join a hosted game
-    GameState gameState =
-        GameState(players: <Player>[], status: GameStatus.setup);
-    Client client = Client(name: _name, gameState: gameState);
-    client.joinGame(_roomCode);
+    // GameState gameState =
+    //GameState(players: <Player>[], status: GameStatus.setup);
+    print('Making a new client');
+    Client client = Client(
+      name: _name,
+      roomCode: _roomCode,
+    ); // No longer need this, constructor takes care of it gameState: gameState);
+    // client.joinGame(_roomCode); Moved this to client constructor since there would never be a client that doesn't join
 
     //Trigger loading animation
 
@@ -68,6 +72,7 @@ class JoinSetupState extends State<JoinSetup> {
               builder: (context) =>
                   JoinLobby(roomCode: _roomCode, client: client)),
         );
+        client.isModified = false;
       }
 
       if (elapsedTime > 10) {

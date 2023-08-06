@@ -3,71 +3,97 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import '../util/player.dart';
 import '../util/gamestate.dart';
-import 'package:network_info_plus/network_info_plus.dart';
-import 'package:dart_ipify/dart_ipify.dart';
 
 class Client {
-  int port;
-  final int hostPort;
-  final String hostIp;
-  GameState _gameState;
+  final int port = 46100;
+  late final String ip;
+  // Flutter gets mad for no reason when this is late so throw a dummy gamestate in there
+  GameState gameState = GameState();
+  late Socket socket;
   bool isModified = false;
-  final String name;
 
-  Client(
-      {this.port = 46100,
-      this.hostIp = "DEFAULT IP",
-      this.hostPort = 38383,
-      required this.name,
-      required GameState gameState})
-      : _gameState = gameState {
-    join(hostPort, hostIp);
+  Client({required String name, required String roomCode}) {
+    // Connect to host - populate ip, gameState, and socket
+    Socket.connect(getHostIp(), 38383, sourceAddress: InternetAddress.anyIPv4)
+        .then((Socket socket) {
+      debugPrint('Client has connected to server');
+      // Populate socket
+      this.socket = socket;
+
+      // Populate ip
+      ip = socket.address.toString();
+
+      // Make a player for gameState
+      Player player = Player(name: name, ip: ip);
+
+      // Populate gameState
+      gameState = GameState(players: [player]);
+
+      // Join game
+      join(roomCode);
+    }, onError: (err) {
+      debugPrint('Oi there was an error connecting, $err');
+    });
+  }
+
+  String getHostIp() {
+    return '192.168.6.242';
   }
 
   // Send player data
-  join(int hostPort, String hostIp) {
-    Socket.connect(hostIp, hostPort, sourceAddress: InternetAddress.anyIPv4)
-        .then((Socket server) {
-      // Message to send to host
-      String message = '''
+  join(String roomCode) {
+    // Message to send to host
+    String message = '''
           {
-            "call": "join"
+            "call": "join",
+            "roomCode": "$roomCode",
+            "gameState" : $gameState
           }
         ''';
 
-      // Send the message
-      server.write(message);
+    debugPrint('Sending $message');
+    // Send the message
+    socket.write(message);
 
-      // Interpret the response
-      interpret(server);
-    }, onError: (error) {
-      debugPrint('$error');
+    // Listen for response
+    socket.listen((List<int> data) {
+      // Convert the message to a JSON object
+      const JsonDecoder decoder = JsonDecoder();
+      final String message = String.fromCharCodes(data).trim();
+      debugPrint('Received: $message');
+      final Map<String, dynamic> obj = decoder.convert(message);
+      debugPrint('status: ${obj["status"]}');
+      if (obj["status"] == '200') {
+        update(obj["gameState"]);
+      } else {
+        debugPrint(obj.toString());
+      }
     });
   }
 
-  // Listen for messages from the host
-  listen(int port) {
-    // Start the listener
-    ServerSocket.bind(InternetAddress.anyIPv4, port)
-        .then((ServerSocket listener) {
-      // Print ip if in debug mode
-      final info = NetworkInfo();
-      info.getWifiIP().then((ip) {
-        debugPrint('getwifiip: $ip');
-      });
-      Ipify.ipv4().then((ip) {
-        debugPrint('ipify: $ip');
-      });
-
-      // Listen
-      listener.listen((Socket socket) {
-        interpret(socket);
-      });
-    });
+  update(Map<String, dynamic> gameState) {
+    // Check if the proposed gameState is different and update the isModified flag
+    if (gameState != this.gameState.getJson()) {
+      this.gameState.initTime = gameState["initTime"];
+      this.gameState.increment = gameState["increment"];
+      this.gameState.status = GameStatus.values
+          .firstWhere((e) => e.toString() == gameState["status"]);
+      List<Player> players = [];
+      for (dynamic d in gameState["players"]) {
+        players.add(Player(
+            ip: d["ip"],
+            name: d["name"],
+            status: PlayerStatus.values
+                .firstWhere((e) => e.toString() == d["status"]),
+            time: d["time"]));
+      }
+      this.gameState.players = players;
+      isModified = true;
+    }
   }
 
   // Interpret the call and call the appropriate method
-  interpret(Socket socket) {
+  interpret() {
     socket.listen((List<int> data) {
       // Convert the message to a JSON object
       const JsonDecoder decoder = JsonDecoder();
@@ -85,9 +111,6 @@ class Client {
           break;
         case "join":
           break;
-        case "port":
-          newPort(obj);
-          break;
         default:
           throw Error();
       }
@@ -96,18 +119,6 @@ class Client {
     }, onDone: () {
       debugPrint('Client disconnected');
       socket.close();
-    });
-  }
-
-  newPort(Map<String, dynamic> obj) {
-    debugPrint('I am trying to connect to the hostPort ${obj["port"]}');
-    Socket.connect(hostIp, obj["port"],
-            sourceAddress: InternetAddress.anyIPv4, sourcePort: 0)
-        .then((Socket server) {
-      // Interpret the response
-      interpret(server);
-    }, onError: (error) {
-      debugPrint('$error');
     });
   }
 
@@ -127,10 +138,6 @@ class Client {
     debugPrint("Client Reorder");
   }
 
-  joinGame(String code) {
-    debugPrint("Client Joingame");
-  }
-
   lost() {
     debugPrint("Client Lost");
   }
@@ -140,20 +147,25 @@ class Client {
   }
 
   GameState getGameState() {
-    return _gameState;
+    return gameState;
   }
 
   //For testing UI
   GameState getFakeGameState() {
-    return GameState(
-        initTime: 180,
-        increment: 0,
-        players: [
-          Player("Deven", "1", PlayerStatus.first, 180),
+    GameState gs = GameState(initTime: 180, increment: 0, players: [
+      Player(name: "Deven", ip: '0.0.0.0'),
+      Player(name: "Robert", ip: '0.0.0.0'),
+      Player(name: "Aaron", ip: '0.0.0.0'),
+      Player(name: "Waldo", ip: '0.0.0.0'),
+      /*Player("Deven", "1", PlayerStatus.first, 180),
           Player("Robert", "1", PlayerStatus.notTurn, 180),
           Player("Aaron", "1", PlayerStatus.notTurn, 180),
-          Player("Waldo", "1", PlayerStatus.notTurn, 180),
-        ],
-        status: GameStatus.starting);
+          Player("Waldo", "1", PlayerStatus.notTurn, 180),*/
+    ]);
+    gs.players[0].status = PlayerStatus.first;
+    for (Player p in gs.players) {
+      p.time = 180;
+    }
+    return gs;
   }
 }
