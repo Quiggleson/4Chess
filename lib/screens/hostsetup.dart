@@ -97,12 +97,21 @@ class HostSetupState extends State<HostSetup> {
         client.isModified = false;
       }
 
+      debugPrint("Time elapsed since attempting to join game: $elapsedTime");
+
       if (elapsedTime > 10) {
         //We have taken more than 10 seconds to connect, probably a network
         //issue
+        debugPrint("Failed to join game");
         timer.cancel();
       }
     });
+
+    //FORCING THE JOIN OF THE NEXT PAGE - THIS IS PURELY FOR TESTING PURPOSES
+    Navigator.of(context).push(
+      MaterialPageRoute(
+          builder: (context) => HostLobby(roomCode: code, client: client)),
+    );
   }
 }
 

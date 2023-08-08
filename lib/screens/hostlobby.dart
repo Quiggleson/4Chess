@@ -24,7 +24,7 @@ class HostLobbyState extends State<HostLobby> {
 
   @override
   void initState() {
-    playerList = widget.client.getGameState().players;
+    playerList = widget.client.getFakeGameState().players;
     super.initState();
   }
 
@@ -57,6 +57,7 @@ class HostLobbyState extends State<HostLobby> {
               const Padding(padding: EdgeInsets.only(top: 30)),
               Expanded(
                   child: ReorderableListView(
+                proxyDecorator: (child, index, animation) => child,
                 children: [
                   for (int i = 0; i < playerList.length; i++)
                     Padding(
@@ -74,17 +75,19 @@ class HostLobbyState extends State<HostLobby> {
                   style: TextStyle(fontSize: 28), textAlign: TextAlign.center),
               const Padding(padding: EdgeInsets.only(top: 40)),
               FCButton(
-                  onPressed: () {
-                    //Should we return future from start for confirmation/error handling?
-                    widget.client.start();
-                    Navigator.of(context).push(
-                      MaterialPageRoute(
-                        //if (status.isGood)
-                        builder: (context) =>
-                            Game(client: widget.client, isHost: true),
-                      ),
-                    );
-                  },
+                  onPressed: playerList.length < 4
+                      ? null
+                      : () {
+                          //Should we return future from start for confirmation/error handling?
+                          widget.client.start();
+                          Navigator.of(context).push(
+                            MaterialPageRoute(
+                              //if (status.isGood)
+                              builder: (context) =>
+                                  Game(client: widget.client, isHost: true),
+                            ),
+                          );
+                        },
                   child: const Text("START"))
             ])));
   }
