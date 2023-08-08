@@ -16,7 +16,7 @@ class FCTextField extends TextField {
       InputDecoration? decoration,
       TextInputType? keyboardType,
       TextInputAction? textInputAction,
-      TextCapitalization textCapitalization = TextCapitalization.none,
+      TextCapitalization textCapitalization = TextCapitalization.characters,
       TextStyle? style,
       StrutStyle? strutStyle,
       TextAlign? textAlign,
@@ -118,7 +118,7 @@ class FCTextField extends TextField {
             onEditingComplete: onEditingComplete,
             onSubmitted: onSubmitted,
             onAppPrivateCommand: onAppPrivateCommand,
-            inputFormatters: inputFormatters,
+            inputFormatters: inputFormatters ?? [UpperCaseTextFormatter()],
             enabled: enabled,
             cursorWidth: cursorWidth,
             cursorHeight: cursorHeight,
@@ -152,6 +152,17 @@ class FCTextField extends TextField {
       BuildContext context, EditableTextState editableTextState) {
     return AdaptiveTextSelectionToolbar.editableText(
       editableTextState: editableTextState,
+    );
+  }
+}
+
+class UpperCaseTextFormatter extends TextInputFormatter {
+  @override
+  TextEditingValue formatEditUpdate(
+      TextEditingValue oldValue, TextEditingValue newValue) {
+    return TextEditingValue(
+      text: newValue.text.toUpperCase(),
+      selection: newValue.selection,
     );
   }
 }

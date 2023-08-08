@@ -46,7 +46,7 @@ class HostSetupState extends State<HostSetup> {
               const Padding(padding: EdgeInsets.only(top: 40)),
               FCTextField(
                 hintText: "NAME",
-                onChanged: (value) => _name = value,
+                onChanged: (value) => setState(() => _name = value),
               ),
               const Padding(padding: EdgeInsets.only(top: 40)),
               FCDropDownButton(
@@ -64,7 +64,7 @@ class HostSetupState extends State<HostSetup> {
               ),
               const Spacer(),
               FCButton(
-                  onPressed: () => _onConfirm(context),
+                  onPressed: _name.isEmpty ? null : () => _onConfirm(context),
                   child: const Text("CONFIRM")),
             ])));
   }

@@ -32,18 +32,21 @@ class JoinSetupState extends State<JoinSetup> {
               const Padding(padding: EdgeInsets.only(top: 40)),
               FCTextField(
                 hintText: "NAME",
-                onChanged: (value) => _name = value,
+                onChanged: (value) => setState(() => _name = value),
                 maxLength: 12,
               ),
               const Padding(padding: EdgeInsets.only(top: 40)),
               FCTextField(
                 hintText: "ROOM CODE",
-                onChanged: (value) => _roomCode = value,
+                onChanged: (value) => setState(() => _roomCode = value),
                 maxLength: 4,
               ),
               const Spacer(),
               FCButton(
-                  onPressed: () => _onJoin(context), child: const Text("JOIN")),
+                  onPressed: _name.isEmpty || _roomCode.length < 4
+                      ? null
+                      : () => _onJoin(context),
+                  child: const Text("JOIN")),
             ])));
   }
 
