@@ -35,9 +35,13 @@ class FCTimerState extends State<FCTimer> {
 
   @override
   initState() {
-    _timerRunning = !widget.running;
+    _timerRunning = widget.running;
     _time = widget.initialTime;
-    toggle();
+
+    if (_timerRunning) {
+      start();
+    }
+
     super.initState();
   }
 

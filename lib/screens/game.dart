@@ -10,17 +10,18 @@ import '../util/player.dart';
 import '../widgets/fc_otherplayertimer.dart';
 
 class Game extends StatefulWidget {
-  Game({super.key, required this.client, this.isHost = false});
+  const Game(
+      {super.key, required this.client, required this.id, this.isHost = false});
 
   final Client client;
   final bool isHost;
+  final int id;
 
   @override
   _GameState createState() => _GameState();
 }
 
 class _GameState extends State<Game> {
-  late int id;
   late GameState gameState;
   late GameStatus gameStatus;
   late List<Player> rotatedPlayers;
@@ -28,11 +29,11 @@ class _GameState extends State<Game> {
 
   @override
   void initState() {
-    //Initialize Id somehow?? setting 0 as default
-    id = 0;
+    super.initState();
 
-    rotatedPlayers =
-        _rotateArrayAroundIndex(widget.client.getFakeGameState().players, id);
+    rotatedPlayers = _rotateArrayAroundIndex(
+        widget.client.getFakeGameState().players, widget.id);
+
     timerKeys = [
       for (int i = 0; i < rotatedPlayers.length; i++) GlobalKey<FCTimerState>()
     ];
@@ -44,8 +45,6 @@ class _GameState extends State<Game> {
         _updateUi();
       }
     });
-
-    super.initState();
   }
 
   @override
@@ -56,7 +55,7 @@ class _GameState extends State<Game> {
     return Scaffold(
         body: Column(
       children: [
-        _buildPlayerRow(timerKeys),
+        _buildPlayerRow(),
         Expanded(
             child: Padding(
                 padding: const EdgeInsets.only(top: 20, bottom: 20),
@@ -150,7 +149,7 @@ class _GameState extends State<Game> {
   }
 
   //Build player row
-  Row _buildPlayerRow(List<GlobalKey<FCTimerState>> timerKeys) {
+  Row _buildPlayerRow() {
     List<Widget> bar = [];
 
     for (int i = 1; i < rotatedPlayers.length; i++) {

@@ -94,6 +94,7 @@ class HostSetupState extends State<HostSetup> {
           MaterialPageRoute(
               builder: (context) => HostLobby(roomCode: code, client: client)),
         );
+        timer.cancel();
         client.isModified = false;
       }
 

@@ -34,7 +34,7 @@ class JoinLobbyState extends State<JoinLobby> {
         if (widget.client.getGameState().status == GameStatus.starting) {
           Navigator.of(context).push(
             MaterialPageRoute(
-                builder: (context) => Game(client: widget.client)),
+                builder: (context) => Game(client: widget.client, id: 0)),
           );
         } else {
           //if game is not starting, then the host has reordered the players
