@@ -39,9 +39,7 @@ class JoinLobbyState extends State<JoinLobby> {
         } else {
           //if game is not starting, then the host has reordered the players
           setState(() {
-            playerList = widget.client
-                .getGameState()
-                .players; //uncomment when gameState/isModified works properly
+            playerList = widget.client.getGameState().players;
           });
         }
       }
@@ -50,10 +48,10 @@ class JoinLobbyState extends State<JoinLobby> {
     return Scaffold(
         appBar: FCAppBar(
           title: Text("JOIN GAME\nCODE: ${widget.roomCode}"),
-          toolbarHeight: 180,
+          toolbarHeight: 140,
         ),
         body: Padding(
-            padding: const EdgeInsets.all(40),
+            padding: const EdgeInsets.all(30),
             child:
                 Column(mainAxisAlignment: MainAxisAlignment.start, children: [
               Center(
@@ -62,7 +60,7 @@ class JoinLobbyState extends State<JoinLobby> {
                       (4 - playerList.length == 0)
                           ? ("WAITING FOR HOST TO START GAME")
                           : ("WAITING FOR ${4 - playerList.length} PLAYERS"),
-                      style: const TextStyle(fontSize: 28),
+                      style: const TextStyle(fontSize: 24),
                       textAlign: TextAlign.center)),
               const Padding(padding: EdgeInsets.only(top: 30)),
               Expanded(

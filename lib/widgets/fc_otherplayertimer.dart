@@ -34,7 +34,7 @@ class OtherPlayerTimerState extends State<OtherPlayerTimer> {
         flex: 1,
         child: Container(
             clipBehavior: Clip.hardEdge,
-            height: 180,
+            height: 140,
             decoration: BoxDecoration(
                 color: FCColors.fromPlayerStatus[widget.status],
                 borderRadius: const BorderRadius.only(
@@ -44,7 +44,6 @@ class OtherPlayerTimerState extends State<OtherPlayerTimer> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Text(widget.name, style: const TextStyle(fontSize: 32)),
-                const Padding(padding: EdgeInsets.only(top: 20)),
                 FCTimer(
                     //No events needed here, all events should be updated from the device that this timer represents.
                     running: widget.status == PlayerStatus.turn,

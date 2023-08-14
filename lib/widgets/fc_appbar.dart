@@ -66,11 +66,11 @@ class FCAppBar extends AppBar {
             titleSpacing: titleSpacing,
             toolbarOpacity: toolbarOpacity,
             bottomOpacity: bottomOpacity,
-            toolbarHeight: toolbarHeight ?? 90,
+            toolbarHeight: toolbarHeight ?? 70,
             leadingWidth: leadingWidth,
             toolbarTextStyle: toolbarTextStyle,
             titleTextStyle: titleTextStyle ??
-                GoogleFonts.abel(fontSize: 56, color: Colors.black),
+                GoogleFonts.abel(fontSize: 48, color: Colors.black),
             systemOverlayStyle: systemOverlayStyle,
             forceMaterialTransparency: forceMaterialTransparency,
             clipBehavior: clipBehavior);

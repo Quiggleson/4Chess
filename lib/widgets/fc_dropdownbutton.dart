@@ -22,7 +22,7 @@ class FCDropDownButton<T> extends StatefulWidget {
       this.iconSize = 48,
       this.isDense = false,
       this.isExpanded = true,
-      this.itemHeight = 90,
+      this.itemHeight = 60,
       this.color = FCColors.accentBlue,
       this.focusNode,
       this.autofocus = false,
@@ -75,7 +75,7 @@ class FCDropdownButtonState<T> extends State<FCDropDownButton<T>> {
           border: widget.border ??
               Border.all(
                   width: 3,
-                  color: widget.color,
+                  color: FCColors.thinBorder,
                   strokeAlign: BorderSide.strokeAlignInside),
           color: widget.dropdownColor,
           borderRadius: widget.borderRadius ?? BorderRadius.circular(15),
@@ -84,9 +84,13 @@ class FCDropdownButtonState<T> extends State<FCDropDownButton<T>> {
             child: DropdownButton(
           icon: widget.icon ??
               Container(
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.only(topRight: Radius.circular(12), bottomRight: Radius.circular(12)),
+                  color: widget.color,
+                ),
                   constraints: BoxConstraints(
                       minHeight: widget.itemHeight ?? 90, minWidth: 72),
-                  color: widget.color,
+
                   child:
                       const Icon(Icons.arrow_drop_down, color: Colors.black)),
           iconSize: widget.iconSize,
@@ -95,7 +99,7 @@ class FCDropdownButtonState<T> extends State<FCDropDownButton<T>> {
           style: widget.style ??
               GoogleFonts.abel(
                 color: Colors.black,
-                fontSize: 56,
+                fontSize: 36,
               ),
           borderRadius: widget.borderRadius,
           dropdownColor: widget.dropdownColor,

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:fourchess/theme/fc_colors.dart';
+import 'package:fourchess/widgets/fc_alartdialog.dart';
 import 'package:fourchess/widgets/fc_button.dart';
 import 'package:fourchess/widgets/fc_timer.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
@@ -68,6 +69,7 @@ class _GameState extends State<Game> {
                           gameStatus == GameStatus.inProgress,
                       initialTime: self.time,
                       style: FCButton.styleFrom(
+                        textStyle: TextStyle(fontSize: 56),
                           backgroundColor:
                               FCColors.fromPlayerStatus[self.status],
                           disabledBackgroundColor:
@@ -174,44 +176,7 @@ class _GameState extends State<Game> {
         : 'ARE YOU SURE YOU WANT TO QUIT THE GAME?';
     showDialog(
       context: context,
-      builder: (BuildContext context) => AlertDialog(
-          clipBehavior: Clip.hardEdge,
-          shape: RoundedRectangleBorder(
-              side: const BorderSide(color: FCColors.thinBorder, width: 3),
-              borderRadius: BorderRadius.circular(15)),
-          backgroundColor: FCColors.background,
-          titlePadding: EdgeInsets.zero,
-          contentPadding: const EdgeInsets.fromLTRB(30, 30, 30, 0),
-          actionsPadding: const EdgeInsets.all(30),
-          title: Expanded(
-              child: Container(
-                  decoration: BoxDecoration(
-                      color: FCColors.primaryBlue,
-                      borderRadius: BorderRadius.circular(15)),
-                  child: const Text(
-                    'CONFIRM',
-                    style: TextStyle(fontSize: 56),
-                    textAlign: TextAlign.center,
-                  ))),
-          content: Text(message),
-          actions: <Widget>[
-            FCButton(
-              style: FCButton.styleFrom(
-                  textStyle: const TextStyle(fontSize: 28),
-                  minimumSize: const Size.fromHeight(55)),
-              onPressed: () =>
-                  Navigator.popUntil(context, ModalRoute.withName('/')),
-              child: const Text('Yes'),
-            ),
-            const Padding(padding: EdgeInsets.only(top: 15)),
-            FCButton(
-              style: FCButton.styleFrom(
-                  textStyle: const TextStyle(fontSize: 28),
-                  minimumSize: const Size.fromHeight(55)),
-              onPressed: () => Navigator.pop(context, 'No'),
-              child: const Text('No'),
-            ),
-          ]),
+      builder: (BuildContext context) => FCAlertDialog(message: message)
     );
   }
 

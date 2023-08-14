@@ -78,6 +78,7 @@ class FCTextField extends TextField {
             undoController: undoController,
             decoration: decoration ??
                 InputDecoration(
+                  contentPadding: const EdgeInsets.symmetric(vertical: 12),
                   hintText: hintText,
                   counterStyle: const TextStyle(fontSize: 24),
                   filled: true,
@@ -95,7 +96,10 @@ class FCTextField extends TextField {
             textInputAction: textInputAction,
             textCapitalization: textCapitalization,
             style: style ??
-                GoogleFonts.aBeeZee(fontSize: 48, fontStyle: FontStyle.italic),
+                GoogleFonts.ubuntu(
+                    fontWeight: FontWeight.w300,
+                    fontSize: 34,
+                    fontStyle: FontStyle.italic),
             strutStyle: strutStyle,
             textAlign: textAlign ?? TextAlign.center,
             textAlignVertical: textAlignVertical,

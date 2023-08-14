@@ -32,7 +32,7 @@ class FCButton extends FilledButton {
   static ButtonStyle _buildButtonStyle(ButtonStyle? style) {
     return ButtonStyle(
         textStyle: style?.textStyle ??
-            MaterialStatePropertyAll(GoogleFonts.abel(fontSize: 56)),
+            MaterialStatePropertyAll(GoogleFonts.abel(fontSize: 36)),
         backgroundColor: style?.backgroundColor ??
             MaterialStateProperty.resolveWith((Set<MaterialState> states) {
               if (states.contains(MaterialState.disabled)) {
@@ -55,7 +55,7 @@ class FCButton extends FilledButton {
         elevation: style?.elevation,
         padding: style?.padding,
         minimumSize: style?.minimumSize ??
-            const MaterialStatePropertyAll(Size.fromHeight(90)),
+            const MaterialStatePropertyAll(Size.fromHeight(60)),
         fixedSize: style?.fixedSize,
         maximumSize: style?.maximumSize,
         iconColor: style?.iconColor,
@@ -107,9 +107,9 @@ class FCButton extends FilledButton {
         shadowColor: shadowColor,
         surfaceTintColor: surfaceTintColor,
         elevation: elevation,
-        textStyle: GoogleFonts.abel(fontSize: 56).merge(textStyle),
+        textStyle: GoogleFonts.abel(fontSize: 36).merge(textStyle),
         padding: padding,
-        minimumSize: minimumSize ?? const Size.fromHeight(90),
+        minimumSize: minimumSize ?? const Size.fromHeight(60),
         fixedSize: fixedSize,
         maximumSize: maximumSize,
         side: side,

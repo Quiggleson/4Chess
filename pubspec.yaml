@@ -33,6 +33,7 @@ dependencies:
   google_fonts: ^5.1.0
   material_design_icons_flutter: ^7.0.7296
   intl: ^0.18.1
+  
 
 
   # The following adds the Cupertino Icons font to your application.
@@ -40,6 +41,7 @@ dependencies:
   cupertino_icons: ^1.0.2
   network_info_plus: ^4.0.1
   dart_ipify: ^1.1.1
+  auto_size_text: ^3.0.0
 
 dev_dependencies:
   flutter_test:

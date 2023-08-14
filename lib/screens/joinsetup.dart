@@ -21,21 +21,25 @@ class JoinSetupState extends State<JoinSetup> {
 
   @override
   Widget build(BuildContext context) {
+    //For keyboard management
+    bool keyboard = MediaQuery.of(context).viewInsets.bottom != 0;
+
     return Scaffold(
+        resizeToAvoidBottomInset: false,
         appBar: FCAppBar(title: const Text("JOIN GAME")),
         body: Padding(
-            padding: const EdgeInsets.all(40),
+            padding: const EdgeInsets.all(30),
             child:
                 Column(mainAxisAlignment: MainAxisAlignment.start, children: [
               const Text("PICK A NAME AND ENTER A CODE TO JOIN A ROOM",
-                  style: TextStyle(fontSize: 28), textAlign: TextAlign.center),
-              const Padding(padding: EdgeInsets.only(top: 40)),
+                  style: TextStyle(fontSize: 24), textAlign: TextAlign.center),
+              const Padding(padding: EdgeInsets.only(top: 30)),
               FCTextField(
                 hintText: "NAME",
                 onChanged: (value) => setState(() => _name = value),
                 maxLength: 12,
               ),
-              const Padding(padding: EdgeInsets.only(top: 40)),
+              const Padding(padding: EdgeInsets.only(top: 30)),
               FCTextField(
                 hintText: "ROOM CODE",
                 onChanged: (value) => setState(() => _roomCode = value),
@@ -54,7 +58,7 @@ class JoinSetupState extends State<JoinSetup> {
     //When user presses "JOIN GAME" to join a hosted game
     // GameState gameState =
     //GameState(players: <Player>[], status: GameStatus.setup);
-    print('Making a new client');
+    debugPrint('Making a new client');
     Client client = Client(
       name: _name,
       roomCode: _roomCode,

@@ -42,21 +42,22 @@ class HostLobbyState extends State<HostLobby> {
     return Scaffold(
         appBar: FCAppBar(
           title: Text("HOST GAME\nCODE: ${widget.roomCode}"),
-          toolbarHeight: 180,
+          toolbarHeight: 140,
         ),
         body: Padding(
-            padding: const EdgeInsets.all(40),
+            padding: const EdgeInsets.all(30),
             child:
                 Column(mainAxisAlignment: MainAxisAlignment.start, children: [
               Text(
                   (4 - playerList.length == 0)
                       ? ("START GAME WHEN READY")
                       : ("WAITING FOR ${4 - playerList.length} PLAYERS"),
-                  style: const TextStyle(fontSize: 28),
+                  style: const TextStyle(fontSize: 24),
                   textAlign: TextAlign.center),
-              const Padding(padding: EdgeInsets.only(top: 30)),
+              const Padding(padding: EdgeInsets.only(top: 20)),
               Expanded(
                   child: ReorderableListView(
+                physics: BouncingScrollPhysics(),
                 proxyDecorator: (child, index, animation) => child,
                 children: [
                   for (int i = 0; i < playerList.length; i++)
@@ -70,10 +71,10 @@ class HostLobbyState extends State<HostLobby> {
                 onReorder: (int oldIndex, int newIndex) =>
                     _onReorder(oldIndex, newIndex),
               )),
-              const Padding(padding: EdgeInsets.only(top: 40)),
+              const Padding(padding: EdgeInsets.only(top: 20)),
               const Text("DRAG AND DROP NAMES TO CHANGE PLAYER ORDER",
-                  style: TextStyle(fontSize: 28), textAlign: TextAlign.center),
-              const Padding(padding: EdgeInsets.only(top: 40)),
+                  style: TextStyle(fontSize: 24), textAlign: TextAlign.center),
+              const Padding(padding: EdgeInsets.only(top: 20)),
               FCButton(
                   onPressed: playerList.length < 4
                       ? null

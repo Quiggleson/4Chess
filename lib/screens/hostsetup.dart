@@ -34,21 +34,23 @@ class HostSetupState extends State<HostSetup> {
     _dropdownValue ??= _timeControls[0];
 
     return Scaffold(
+        resizeToAvoidBottomInset: false,
         appBar: FCAppBar(title: const Text("HOST GAME")),
         body: Padding(
-            padding: const EdgeInsets.all(40),
+            padding: const EdgeInsets.all(30),
             child:
                 Column(mainAxisAlignment: MainAxisAlignment.start, children: [
               const Text(
                   "PICK A NAME AND TIME CONTROL, THEN CONFIRM TO GENERATE A GAME CODE",
-                  style: TextStyle(fontSize: 28),
+                  style: TextStyle(fontSize: 24),
                   textAlign: TextAlign.center),
-              const Padding(padding: EdgeInsets.only(top: 40)),
+              const Padding(padding: EdgeInsets.only(top: 30)),
               FCTextField(
+                maxLength: 12,
                 hintText: "NAME",
                 onChanged: (value) => setState(() => _name = value),
               ),
-              const Padding(padding: EdgeInsets.only(top: 40)),
+              const Padding(padding: EdgeInsets.only(top: 30)),
               FCDropDownButton(
                 value: _dropdownValue,
                 items: [
