@@ -39,7 +39,7 @@ class HostSetupState extends State<HostSetup> {
         body: Padding(
             padding: const EdgeInsets.all(30),
             child:
-                Column(mainAxisAlignment: MainAxisAlignment.start, children: [
+                Column(mainAxisAlignment: MainAxisAlignment.center, children: [
               const Text(
                   "PICK A NAME AND TIME CONTROL, THEN CONFIRM TO GENERATE A GAME CODE",
                   style: TextStyle(fontSize: 24),

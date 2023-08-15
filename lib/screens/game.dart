@@ -69,7 +69,7 @@ class _GameState extends State<Game> {
                           gameStatus == GameStatus.inProgress,
                       initialTime: self.time,
                       style: FCButton.styleFrom(
-                        textStyle: TextStyle(fontSize: 56),
+                          textStyle: TextStyle(fontSize: 56),
                           backgroundColor:
                               FCColors.fromPlayerStatus[self.status],
                           disabledBackgroundColor:
@@ -175,9 +175,8 @@ class _GameState extends State<Game> {
         ? 'ARE YOU SURE YOU WANT TO END THE GAME FOR ALL PLAYERS?'
         : 'ARE YOU SURE YOU WANT TO QUIT THE GAME?';
     showDialog(
-      context: context,
-      builder: (BuildContext context) => FCAlertDialog(message: message)
-    );
+        context: context,
+        builder: (BuildContext context) => FCAlertDialog(message: message));
   }
 
   List<T> _rotateArrayAroundIndex<T>(List<T> array, int index) {

@@ -34,7 +34,7 @@ class OtherPlayerTimerState extends State<OtherPlayerTimer> {
         flex: 1,
         child: Container(
             clipBehavior: Clip.hardEdge,
-            height: 140,
+            height: 140 + MediaQuery.of(context).viewPadding.top,
             decoration: BoxDecoration(
                 color: FCColors.fromPlayerStatus[widget.status],
                 borderRadius: const BorderRadius.only(

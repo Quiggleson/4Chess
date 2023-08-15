@@ -14,7 +14,7 @@ class JoinSetup extends StatefulWidget {
   JoinSetupState createState() => JoinSetupState();
 }
 
-//Todo: CENTER BUTTONS AND MOVE
+//Todo: CENTER BUTTONS AND MOVEs
 class JoinSetupState extends State<JoinSetup> {
   String _name = "";
   String _roomCode = "";
@@ -58,7 +58,7 @@ class JoinSetupState extends State<JoinSetup> {
     //When user presses "JOIN GAME" to join a hosted game
     // GameState gameState =
     //GameState(players: <Player>[], status: GameStatus.setup);
-    debugPrint('Making a new client');
+    print('Making a new client');
     Client client = Client(
       name: _name,
       roomCode: _roomCode,
@@ -79,20 +79,15 @@ class JoinSetupState extends State<JoinSetup> {
               builder: (context) =>
                   JoinLobby(roomCode: _roomCode, client: client)),
         );
-        timer.cancel();
       }
 
-      debugPrint("Time elapsed since attempting to join game: $elapsedTime");
-
-      if (elapsedTime >= 10) {
+      if (elapsedTime > 10) {
         //We have taken more than 10 seconds to connect, probably a network
         //issue
-        debugPrint("Failed to join game");
         timer.cancel();
       }
     });
 
-    //FORCING THE JOIN OF THE NEXT PAGE - THIS IS PURELY FOR TESTING PURPOSES
     Navigator.of(context).push(
       MaterialPageRoute(
         builder: (context) => JoinLobby(
