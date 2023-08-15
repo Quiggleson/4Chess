@@ -59,7 +59,7 @@ class _GameState extends State<Game> {
         _buildPlayerRow(),
         Expanded(
             child: Padding(
-                padding: const EdgeInsets.only(top: 20, bottom: 20),
+                padding: const EdgeInsets.only(top: 20, bottom: 10),
                 child: Container(
                     padding: const EdgeInsets.all(20),
                     decoration: const BoxDecoration(
@@ -127,7 +127,8 @@ class _GameState extends State<Game> {
               icon: self.status == PlayerStatus.lost
                   ? const Icon(Icons.close)
                   : Icon(MdiIcons.skullOutline)),
-        ])
+        ]),
+        const Padding(padding: EdgeInsets.only(bottom: 20))
       ],
     ));
   }
