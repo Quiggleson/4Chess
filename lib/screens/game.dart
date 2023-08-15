@@ -128,7 +128,7 @@ class _GameState extends State<Game> {
                   ? const Icon(Icons.close)
                   : Icon(MdiIcons.skullOutline)),
         ]),
-        const Padding(padding: EdgeInsets.only(bottom: 20))
+        const Padding(padding: EdgeInsets.only(bottom: 10))
       ],
     ));
   }
