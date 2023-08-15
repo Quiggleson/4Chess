@@ -42,7 +42,11 @@ class _GameState extends State<Game> {
     _updateUi();
 
     Timer.periodic(const Duration(milliseconds: 100), (timer) {
-      if (widget.client.isModified) {
+      if (!mounted) {
+        timer.cancel();
+        debugPrint("User has left the game screen");
+      }
+      if (widget.client.isModified && mounted) {
         _updateUi();
       }
     });

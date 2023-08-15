@@ -3,10 +3,10 @@ import 'package:fourchess/screens/joinlobby.dart';
 import 'package:fourchess/widgets/fc_appbar.dart';
 import 'package:fourchess/widgets/fc_textfield.dart';
 import '../backend/client.dart';
-import '../util/gamestate.dart';
-import '../util/player.dart';
 import '../widgets/fc_button.dart';
 import 'dart:async';
+
+import '../widgets/fc_loadinganimation.dart';
 
 class JoinSetup extends StatefulWidget {
   const JoinSetup({super.key});
@@ -18,6 +18,7 @@ class JoinSetup extends StatefulWidget {
 class JoinSetupState extends State<JoinSetup> {
   String _name = "";
   String _roomCode = "";
+  bool loading = false;
 
   @override
   Widget build(BuildContext context) {
@@ -46,11 +47,13 @@ class JoinSetupState extends State<JoinSetup> {
                 maxLength: 4,
               ),
               const Spacer(),
-              FCButton(
-                  onPressed: _name.isEmpty || _roomCode.length < 4
-                      ? null
-                      : () => _onJoin(context),
-                  child: const Text("JOIN")),
+              loading
+                  ? const FCLoadingAnimation()
+                  : FCButton(
+                      onPressed: _name.isEmpty || _roomCode.length < 4
+                          ? null
+                          : () => _onJoin(context),
+                      child: const Text("JOIN")),
             ])));
   }
 
@@ -58,14 +61,14 @@ class JoinSetupState extends State<JoinSetup> {
     //When user presses "JOIN GAME" to join a hosted game
     // GameState gameState =
     //GameState(players: <Player>[], status: GameStatus.setup);
-    print('Making a new client');
+    debugPrint('Making a new client');
     Client client = Client(
       name: _name,
       roomCode: _roomCode,
     ); // No longer need this, constructor takes care of it gameState: gameState);
     // client.joinGame(_roomCode); Moved this to client constructor since there would never be a client that doesn't join
 
-    //Trigger loading animation
+    setState(() => loading = true);
 
     double elapsedTime = 0;
 
@@ -73,7 +76,15 @@ class JoinSetupState extends State<JoinSetup> {
       //checks twice a second to see if have successfully joined the game
       elapsedTime += .5;
 
-      if (client.isModified) {
+      //Mounted checks if the widget is still in the build tree i.e make sure we're still on this screen before we do
+      //any funny stuff
+
+      if (!mounted) {
+        timer.cancel();
+        debugPrint("User has left the join setup screen");
+      }
+
+      if (client.isModified && mounted) {
         Navigator.of(context).push(
           MaterialPageRoute(
               builder: (context) =>
@@ -81,20 +92,21 @@ class JoinSetupState extends State<JoinSetup> {
         );
       }
 
-      if (elapsedTime > 10) {
+      if (elapsedTime > 10 && mounted) {
         //We have taken more than 10 seconds to connect, probably a network
         //issue
         timer.cancel();
+        setState(() => loading = false);
       }
     });
 
-    Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (context) => JoinLobby(
-          client: client,
-          roomCode: _roomCode,
-        ),
-      ),
-    );
+    // Navigator.of(context).push(
+    //   MaterialPageRoute(
+    //     builder: (context) => JoinLobby(
+    //       client: client,
+    //       roomCode: _roomCode,
+    //     ),
+    //   ),
+    // );
   }
 }

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:fourchess/screens/game.dart';
 import 'package:fourchess/widgets/fc_appbar.dart';
 import 'package:fourchess/widgets/fc_button.dart';
+import 'package:fourchess/widgets/fc_loadinganimation.dart';
 import 'package:fourchess/widgets/fc_numbereditem.dart';
 import 'dart:async';
 
@@ -21,6 +22,8 @@ class HostLobby extends StatefulWidget {
 // CREATE ORANGEG ANIMATION THINGY WHEN WE HAVE TIME
 class HostLobbyState extends State<HostLobby> {
   late List<Player> playerList;
+
+  bool loading = false;
 
   @override
   void initState() {
@@ -75,21 +78,13 @@ class HostLobbyState extends State<HostLobby> {
               const Text("DRAG AND DROP NAMES TO CHANGE PLAYER ORDER",
                   style: TextStyle(fontSize: 24), textAlign: TextAlign.center),
               const Padding(padding: EdgeInsets.only(top: 20)),
-              FCButton(
-                  onPressed: playerList.length < 4
-                      ? null
-                      : () {
-                          //Should we return future from start for confirmation/error handling?
-                          widget.client.start();
-                          Navigator.of(context).push(
-                            MaterialPageRoute(
-                              //if (status.isGood)
-                              builder: (context) => Game(
-                                  client: widget.client, id: 0, isHost: true),
-                            ),
-                          );
-                        },
-                  child: const Text("START"))
+              loading
+                  ? const FCLoadingAnimation()
+                  : FCButton(
+                      onPressed: playerList.length < 4
+                          ? null
+                          : () => _onStart(context),
+                      child: const Text("START"))
             ])));
   }
 
@@ -105,5 +100,58 @@ class HostLobbyState extends State<HostLobby> {
 
       widget.client.reorder(playerList);
     });
+  }
+
+  _onStart(BuildContext context) {
+    Client client = widget.client;
+
+    client.start();
+
+    setState(() => loading = true);
+
+    double elapsedTime = 0;
+
+    Timer.periodic(const Duration(milliseconds: 500), (timer) {
+      //checks twice a second to see if have successfully joined the game
+      elapsedTime += .5;
+
+      //Mounted checks if the widget is still in the build tree i.e make sure we're still on this screen before we do
+      //any funny stuff
+
+      if (!mounted) {
+        timer.cancel();
+        debugPrint("User has left the join setup screen");
+      }
+
+      if (client.isModified && mounted) {
+        Navigator.of(context).push(
+          MaterialPageRoute(
+            //if (status.isGood)
+            builder: (context) =>
+                Game(client: widget.client, id: 0, isHost: true),
+          ),
+        );
+        timer.cancel();
+        client.isModified = false;
+      }
+
+      debugPrint("Time elapsed since attempting to start game: $elapsedTime");
+
+      if (elapsedTime > 10 && mounted) {
+        //We have taken more than 10 seconds to connect, probably a network
+        //issue
+        debugPrint("Failed to start game");
+        setState(() => loading = false);
+        timer.cancel();
+      }
+    });
+
+    //FORCING THE JOIN OF THE NEXT PAGE - THIS IS PURELY FOR TESTING PURPOSES
+    // Navigator.of(context).push(
+    //   MaterialPageRoute(
+    //     //if (status.isGood)
+    //     builder: (context) => Game(client: widget.client, id: 0, isHost: true),
+    //   ),
+    // );
   }
 }

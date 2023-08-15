@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:fourchess/widgets/fc_appbar.dart';
 import 'package:fourchess/widgets/fc_dropdownbutton.dart';
+import 'package:fourchess/widgets/fc_loadinganimation.dart';
 import 'package:fourchess/widgets/fc_textfield.dart';
+import 'package:loading_animation_widget/loading_animation_widget.dart';
 import '../backend/client.dart';
 import '../util/gamestate.dart';
 import '../backend/host.dart';
@@ -27,6 +29,8 @@ class HostSetupState extends State<HostSetup> {
   ];
 
   _TimeControl? _dropdownValue;
+
+  bool loading = false;
 
   //FINISH THIS
   @override
@@ -65,9 +69,12 @@ class HostSetupState extends State<HostSetup> {
                 },
               ),
               const Spacer(),
-              FCButton(
-                  onPressed: _name.isEmpty ? null : () => _onConfirm(context),
-                  child: const Text("CONFIRM")),
+              loading
+                  ? const FCLoadingAnimation()
+                  : FCButton(
+                      onPressed:
+                          _name.isEmpty ? null : () => _onConfirm(context),
+                      child: const Text("CONFIRM")),
             ])));
   }
 
@@ -83,7 +90,7 @@ class HostSetupState extends State<HostSetup> {
     String code = host.getRoomCode();
     Client client = Client(name: _name, roomCode: host.getRoomCode());
 
-    //Trigger loading animation
+    setState(() => loading = true);
 
     double elapsedTime = 0;
 
@@ -91,7 +98,15 @@ class HostSetupState extends State<HostSetup> {
       //checks twice a second to see if have successfully joined the game
       elapsedTime += .5;
 
-      if (client.isModified) {
+      //Mounted checks if the widget is still in the build tree i.e make sure we're still on this screen before we do
+      //any funny stuff
+
+      if (!mounted) {
+        timer.cancel();
+        debugPrint("User has left the join setup screen");
+      }
+
+      if (client.isModified && mounted) {
         Navigator.of(context).push(
           MaterialPageRoute(
               builder: (context) => HostLobby(roomCode: code, client: client)),
@@ -100,21 +115,22 @@ class HostSetupState extends State<HostSetup> {
         client.isModified = false;
       }
 
-      debugPrint("Time elapsed since attempting to join game: $elapsedTime");
+      debugPrint("Time elapsed since attempting to host game: $elapsedTime");
 
-      if (elapsedTime > 10) {
+      if (elapsedTime > 10 && mounted) {
         //We have taken more than 10 seconds to connect, probably a network
         //issue
-        debugPrint("Failed to join game");
+        debugPrint("Failed to host game");
+        setState(() => loading = false);
         timer.cancel();
       }
     });
 
     //FORCING THE JOIN OF THE NEXT PAGE - THIS IS PURELY FOR TESTING PURPOSES
-    Navigator.of(context).push(
-      MaterialPageRoute(
-          builder: (context) => HostLobby(roomCode: code, client: client)),
-    );
+    // Navigator.of(context).push(
+    //   MaterialPageRoute(
+    //       builder: (context) => HostLobby(roomCode: code, client: client)),
+    // );
   }
 }
 
