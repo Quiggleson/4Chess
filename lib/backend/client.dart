@@ -14,7 +14,8 @@ class Client {
 
   Client({required String name, required String roomCode}) {
     // Connect to host - populate ip, gameState, and socket
-    Socket.connect(getHostIp(), 38383, sourceAddress: InternetAddress.anyIPv4)
+    Socket.connect(getHostIp(roomCode), 38383,
+            sourceAddress: InternetAddress.anyIPv4)
         .then((Socket socket) {
       debugPrint('Client has connected to server');
       // Populate socket
@@ -36,8 +37,11 @@ class Client {
     });
   }
 
-  String getHostIp() {
-    return '192.168.6.242';
+  String getHostIp(String roomCode) {
+    int part3 = int.parse(roomCode.substring(0, 2), radix: 16);
+    int part4 = int.parse(roomCode.substring(2, 4), radix: 16);
+
+    return '192.168.$part3.$part4';
   }
 
   bool checkData() {
