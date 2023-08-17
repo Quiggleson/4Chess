@@ -27,7 +27,7 @@ class HostLobbyState extends State<HostLobby> {
 
   @override
   void initState() {
-    playerList = widget.client.getFakeGameState().players;
+    playerList = widget.client.getGameState().players;
     super.initState();
   }
 
@@ -81,7 +81,7 @@ class HostLobbyState extends State<HostLobby> {
               loading
                   ? const FCLoadingAnimation()
                   : FCButton(
-                      onPressed: playerList.length < 4
+                      onPressed: playerList.length < 1
                           ? null
                           : () => _onStart(context),
                       child: const Text("START"))

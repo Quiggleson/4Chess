@@ -10,6 +10,7 @@ class Host {
   final int port = 38383;
   late String roomCode;
   GameState gameState;
+  List<Socket> sockets = [];
 
   Host({required this.gameState}) {
     roomCode = 'FHQW';
@@ -20,6 +21,8 @@ class Host {
     // Start the server
     ServerSocket.bind(InternetAddress.anyIPv4, port)
         .then((ServerSocket server) {
+      debugPrint('the address frfr: ${server.address.address.toString()}');
+
       // Print ip if in debug mode
       final info = NetworkInfo();
       info.getWifiIP().then((ip) {
@@ -33,6 +36,7 @@ class Host {
 
       // Listen
       server.listen((Socket socket) {
+        if (!sockets.contains(socket)) sockets.add(socket);
         interpret(socket);
       });
     });
@@ -50,7 +54,8 @@ class Host {
       // Call the appropriate method
       switch (obj["call"]) {
         case "start":
-          //response = onStart(obj);
+          updateGameState(obj["gameState"]);
+          onStart(obj);
           break;
         case "pause":
           //response = onPause(obj);
@@ -61,6 +66,9 @@ class Host {
         case "join":
           onJoinGame(socket, obj);
           break;
+        case "reorder":
+          updateGameState(obj["gameState"]);
+          onReorder(obj);
         default:
           throw Error();
       }
@@ -78,6 +86,24 @@ class Host {
     return roomCode;
   }
 
+  updateGameState(Map<String, dynamic> gameState) {
+    this.gameState.initTime = gameState["initTime"];
+    this.gameState.increment = gameState["increment"];
+    this.gameState.status = GameStatus.values
+        .firstWhere((e) => e.toString() == gameState["status"]);
+    List<Player> players = [];
+    for (dynamic d in gameState["players"]) {
+      debugPrint('Host adding player $d');
+      players.add(Player(
+          ip: d["ip"],
+          name: d["name"],
+          status: PlayerStatus.values
+              .firstWhere((e) => e.toString() == d["status"]),
+          time: d["time"]));
+    }
+    this.gameState.players = players;
+  }
+
   bool onJoinGame(Socket socket, Map<String, dynamic> obj) {
     if (obj["roomCode"] == roomCode) {
       Player player = Player(
@@ -85,12 +111,14 @@ class Host {
           ip: socket.remoteAddress.toString());
       player.time = gameState.initTime.toDouble();
       gameState.addPlayer(player);
-      socket.write('''{
+      sockets.forEach((s) {
+        s.write('''{
         "status": "200",
         "call": "join",
         "gameState" : $gameState
-      }
+        }
       ''');
+      });
       return true;
     } else {
       socket.write('{"status": "403"}');
@@ -98,9 +126,14 @@ class Host {
     }
   }
 
-  String onStart(Map<String, dynamic> obj) {
+  bool onStart(Map<String, dynamic> obj) {
     debugPrint("Host onStart");
-    return 'oi';
+    sockets.forEach((socket) => socket.write('''{
+        "status": "200",
+        "call": "start",
+        "gameState": $gameState
+      }'''));
+    return true;
   }
 
   String onPause(Map<String, dynamic> obj) {
@@ -111,5 +144,14 @@ class Host {
   String onNext(Map<String, dynamic> obj) {
     debugPrint("Host onNext");
     return 'oi';
+  }
+
+  bool onReorder(Map<String, dynamic> obj) {
+    sockets.forEach((socket) => socket.write('''{
+        "status": "200",
+        "call": "reorder",
+        "gameState": $gameState
+      }'''));
+    return true;
   }
 }

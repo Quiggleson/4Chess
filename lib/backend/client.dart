@@ -7,7 +7,7 @@ import '../util/gamestate.dart';
 class Client {
   final int port = 46100;
   late final String ip;
-  // Flutter gets mad for no reason when this is late so throw a dummy gamestate in there
+  // Flutter gets mad when this is late so throw a dummy gamestate in there
   GameState gameState = GameState();
   late Socket socket;
   bool isModified = false;
@@ -49,6 +49,26 @@ class Client {
     return false;
   }
 
+  int getPlayerIndex() {
+    for (final (index, player) in gameState.players.indexed) {
+      if (player.status == PlayerStatus.turn) {
+        return index;
+      }
+    }
+    return -1;
+  }
+
+  int getNextIndex(int initial) {
+    for (int current = initial + 1;
+        current != initial;
+        current = (current + 1) % gameState.players.length) {
+      if (gameState.players[current].status == PlayerStatus.notTurn) {
+        return current;
+      }
+    }
+    return -1;
+  }
+
   // Send player data
   join(String roomCode) {
     // Message to send to host
@@ -66,12 +86,12 @@ class Client {
 
     // Listen for response
     socket.listen((List<int> data) {
+      debugPrint('I heard something ${String.fromCharCodes(data).trim()}');
       // Convert the message to a JSON object
       const JsonDecoder decoder = JsonDecoder();
       final String message = String.fromCharCodes(data).trim();
       debugPrint('Received: $message');
       final Map<String, dynamic> obj = decoder.convert(message);
-      debugPrint('status: ${obj["status"]}');
       if (obj["status"] == '200') {
         update(obj["gameState"]);
       } else {
@@ -101,54 +121,80 @@ class Client {
     }
   }
 
-  // Interpret the call and call the appropriate method
-  interpret() {
-    socket.listen((List<int> data) {
-      // Convert the message to a JSON object
-      const JsonDecoder decoder = JsonDecoder();
-      final String message = String.fromCharCodes(data).trim();
-      debugPrint('Received: $message');
-      final Map<String, dynamic> obj = decoder.convert(message);
-
-      // Call the appropriate method
-      switch (obj["call"]) {
-        case "start":
-          break;
-        case "pause":
-          break;
-        case "next":
-          break;
-        case "join":
-          break;
-        default:
-          throw Error();
-      }
-    }, onError: (error) {
-      debugPrint('Error listening to host: $error');
-    }, onDone: () {
-      debugPrint('Client disconnected');
-      socket.close();
-    });
-  }
-
   start() {
     debugPrint("Client Start");
+    gameState.status = GameStatus.starting;
+    socket.write('''
+    {
+      "call": "start",
+      "gameState": $gameState
+    }
+    ''');
   }
 
   pause() {
     debugPrint("Client Pause");
+    gameState.status = GameStatus.paused;
+    socket.write('''
+    {
+      "call": "start",
+      "gameState": $gameState
+    }
+    ''');
   }
 
   next(double time) {
     debugPrint("Client Next");
+    int playerIndex = getPlayerIndex();
+    int nextIndex = getNextIndex(playerIndex);
+    if (nextIndex == playerIndex) {
+      gameState.status = GameStatus.finished;
+    } else {
+      Player player = gameState.players[playerIndex];
+      player.time = time;
+      player.status = PlayerStatus.notTurn;
+
+      gameState.players[nextIndex].status = PlayerStatus.turn;
+    }
+
+    socket.write('''
+    {
+      "call": "next",
+      "gameState": $gameState
+    }
+    ''');
   }
 
   reorder(List<Player> players) {
     debugPrint("Client Reorder");
+    socket.write('''
+      {
+        "call": "reorder",
+        "gameState": $gameState
+      }
+    ''');
   }
 
   lost() {
     debugPrint("Client Lost");
+    int playerIndex = getPlayerIndex();
+    int nextIndex = getNextIndex(playerIndex);
+    if (nextIndex == playerIndex) {
+      gameState.status = GameStatus.finished;
+    } else {
+      Player player = gameState.players[playerIndex];
+      player.status = PlayerStatus.lost;
+      gameState.players[nextIndex].status = PlayerStatus.turn;
+
+      gameState.players[nextIndex].status = PlayerStatus.turn;
+    }
+
+    socket.write('''
+    {
+      "call": "next",
+      "gameState": $gameState
+    }
+    ''');
   }
 
   reset() {
