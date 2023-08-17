@@ -103,7 +103,7 @@ class HostSetupState extends State<HostSetup> {
 
       if (!mounted) {
         timer.cancel();
-        debugPrint("User has left the join setup screen");
+        debugPrint("User has left the host setup screen");
       }
 
       if (client.isModified && mounted) {

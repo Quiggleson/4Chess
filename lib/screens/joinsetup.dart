@@ -20,11 +20,11 @@ class JoinSetupState extends State<JoinSetup> {
   String _roomCode = "";
   bool loading = false;
 
+  FocusNode nameFocusNode = FocusNode();
+  FocusNode roomCodeFocusNode = FocusNode();
+
   @override
   Widget build(BuildContext context) {
-    //For keyboard management
-    bool keyboard = MediaQuery.of(context).viewInsets.bottom != 0;
-
     return Scaffold(
         resizeToAvoidBottomInset: false,
         appBar: FCAppBar(title: const Text("JOIN GAME")),
@@ -35,18 +35,30 @@ class JoinSetupState extends State<JoinSetup> {
               const Text("PICK A NAME AND ENTER A CODE TO JOIN A ROOM",
                   style: TextStyle(fontSize: 24), textAlign: TextAlign.center),
               const Padding(padding: EdgeInsets.only(top: 30)),
-              FCTextField(
-                hintText: "NAME",
-                onChanged: (value) => setState(() => _name = value),
-                maxLength: 12,
+              Expanded(
+                child: ListView(physics: BouncingScrollPhysics(), children: [
+                  FCTextField(
+                    focusNode: nameFocusNode,
+                    hintText: "NAME",
+                    onChanged: (value) => setState(() => _name = value),
+                    maxLength: 12,
+                  ),
+                  const Padding(padding: EdgeInsets.only(top: 30)),
+                  FCTextField(
+                    focusNode: roomCodeFocusNode,
+                    scrollPadding: const EdgeInsets.only(
+                        bottom: double
+                            .infinity), //Makes sure the counter text is in view
+                    hintText: "ROOM CODE",
+                    onChanged: (value) => setState(() => _roomCode = value),
+                    maxLength: 4,
+                  ),
+                ]),
               ),
-              const Padding(padding: EdgeInsets.only(top: 30)),
-              FCTextField(
-                hintText: "ROOM CODE",
-                onChanged: (value) => setState(() => _roomCode = value),
-                maxLength: 4,
-              ),
-              const Spacer(),
+              SizedBox(
+                  height: nameFocusNode.hasFocus
+                      ? 0
+                      : MediaQuery.of(context).viewInsets.bottom),
               loading
                   ? const FCLoadingAnimation()
                   : FCButton(
