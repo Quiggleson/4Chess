@@ -60,7 +60,7 @@ class HostLobbyState extends State<HostLobby> {
               const Padding(padding: EdgeInsets.only(top: 20)),
               Expanded(
                   child: ReorderableListView(
-                physics: BouncingScrollPhysics(),
+                physics: const BouncingScrollPhysics(),
                 proxyDecorator: (child, index, animation) => child,
                 children: [
                   for (int i = 0; i < playerList.length; i++)
