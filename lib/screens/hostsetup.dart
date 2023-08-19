@@ -78,7 +78,7 @@ class HostSetupState extends State<HostSetup> {
             ])));
   }
 
-  _onConfirm(BuildContext context) {
+  _onConfirm(BuildContext context) async {
     //When user presses
     GameState gameState = GameState(
       initTime: _dropdownValue!.timeControl,
@@ -87,8 +87,8 @@ class HostSetupState extends State<HostSetup> {
     );
     //status: GameStatus.setup); Don't need to set initial gameStatus, always setup
     Host host = Host(gameState: gameState);
-    String code = host.getRoomCode();
-    Client client = Client(name: _name, roomCode: host.getRoomCode());
+    String code = await host.getRoomCode();
+    Client client = Client(name: _name, roomCode: await host.getRoomCode());
 
     setState(() => loading = true);
 
@@ -106,13 +106,12 @@ class HostSetupState extends State<HostSetup> {
         debugPrint("User has left the host setup screen");
       }
 
-      if (client.isModified && mounted) {
+      if (client.isDirty() && mounted) {
         Navigator.of(context).push(
           MaterialPageRoute(
               builder: (context) => HostLobby(roomCode: code, client: client)),
         );
         timer.cancel();
-        client.isModified = false;
       }
 
       debugPrint("Time elapsed since attempting to host game: $elapsedTime");

@@ -33,7 +33,7 @@ class _GameState extends State<Game> {
     super.initState();
 
     rotatedPlayers = _rotateArrayAroundIndex(
-        widget.client.getFakeGameState().players, widget.id);
+        widget.client.getGameState().players, widget.id);
 
     timerKeys = [
       for (int i = 0; i < rotatedPlayers.length; i++) GlobalKey<FCTimerState>()
@@ -46,7 +46,7 @@ class _GameState extends State<Game> {
         timer.cancel();
         debugPrint("User has left the game screen");
       }
-      if (widget.client.isModified && mounted) {
+      if (widget.client.isDirty() && mounted) {
         _updateUi();
       }
     });
@@ -139,7 +139,7 @@ class _GameState extends State<Game> {
 
   //update ui for everything that can change
   void _updateUi() {
-    gameState = widget.client.getFakeGameState();
+    gameState = widget.client.getGameState();
     setState(() {
       gameStatus = gameState.status;
 

@@ -96,7 +96,7 @@ class JoinSetupState extends State<JoinSetup> {
         debugPrint("User has left the join setup screen");
       }
 
-      if (client.isModified && mounted) {
+      if (client.isDirty() && mounted) {
         Navigator.of(context).push(
           MaterialPageRoute(
               builder: (context) =>
