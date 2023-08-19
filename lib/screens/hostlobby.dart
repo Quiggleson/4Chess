@@ -35,7 +35,7 @@ class HostLobbyState extends State<HostLobby> {
   Widget build(BuildContext context) {
     Timer.periodic(const Duration(milliseconds: 100), (Timer t) {
       //This code will run 10 times a second when the host menu starts
-      if (widget.client.isModified) {
+      if (widget.client.isDirty()) {
         setState(() {
           playerList = widget.client.getGameState().players;
         });
@@ -123,7 +123,8 @@ class HostLobbyState extends State<HostLobby> {
         debugPrint("User has left the join setup screen");
       }
 
-      if (client.isModified && mounted) {
+      if (client.isDirty() && mounted) {
+        debugPrint('I am the front end and I heard client is dirty');
         Navigator.of(context).push(
           MaterialPageRoute(
             //if (status.isGood)
@@ -132,7 +133,6 @@ class HostLobbyState extends State<HostLobby> {
           ),
         );
         timer.cancel();
-        client.isModified = false;
       }
 
       debugPrint("Time elapsed since attempting to start game: $elapsedTime");

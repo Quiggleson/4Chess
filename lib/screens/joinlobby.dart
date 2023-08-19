@@ -29,9 +29,10 @@ class JoinLobbyState extends State<JoinLobby> {
   Widget build(BuildContext context) {
     Timer.periodic(const Duration(milliseconds: 100), (Timer t) {
       //This code will run 10 times a second when the host menu starts
-      if (widget.client.isModified) {
+      if (widget.client.isDirty()) {
         //We move to game screen when we game is starting
         if (widget.client.getGameState().status == GameStatus.starting) {
+          debugPrint('Im the front end and I know the game state is starting');
           Navigator.of(context).push(
             MaterialPageRoute(
                 builder: (context) => Game(client: widget.client, id: 0)),

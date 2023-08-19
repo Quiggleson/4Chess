@@ -46,7 +46,7 @@ class _GameState extends State<Game> {
         timer.cancel();
         debugPrint("User has left the game screen");
       }
-      if (widget.client.isModified && mounted) {
+      if (widget.client.isDirty() && mounted) {
         _updateUi();
       }
     });

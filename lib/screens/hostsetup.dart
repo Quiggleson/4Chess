@@ -106,13 +106,12 @@ class HostSetupState extends State<HostSetup> {
         debugPrint("User has left the join setup screen");
       }
 
-      if (client.isModified && mounted) {
+      if (client.isDirty() && mounted) {
         Navigator.of(context).push(
           MaterialPageRoute(
               builder: (context) => HostLobby(roomCode: code, client: client)),
         );
         timer.cancel();
-        client.isModified = false;
       }
 
       debugPrint("Time elapsed since attempting to host game: $elapsedTime");

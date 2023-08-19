@@ -10,7 +10,7 @@ class Client {
   // Flutter gets mad when this is late so throw a dummy gamestate in there
   GameState gameState = GameState();
   late Socket socket;
-  bool isModified = false;
+  bool _isModified = false;
 
   Client({required String name, required String roomCode}) {
     // Connect to host - populate ip, gameState, and socket
@@ -44,9 +44,10 @@ class Client {
     return '192.168.$part3.$part4';
   }
 
-  bool checkData() {
-    if (isModified) {
-      isModified = false;
+  bool isDirty() {
+    debugPrint('Checking isdirty. _ismodified: $_isModified');
+    if (_isModified) {
+      _isModified = false;
       return true;
       //any other logic required
     }
@@ -121,13 +122,15 @@ class Client {
             time: d["time"]));
       }
       this.gameState.players = players;
-      isModified = true;
+      _isModified = true;
     }
   }
 
   start() {
     debugPrint("Client Start");
     gameState.status = GameStatus.starting;
+    gameState.players[0].status = PlayerStatus.first;
+    _isModified = true;
     socket.write('''
     {
       "call": "start",
