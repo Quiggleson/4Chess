@@ -12,7 +12,7 @@ class FCNumberedItem extends StatelessWidget {
       this.numberTextStyle,
       this.contentTextStyle,
       this.height = 40,
-      this.maxHeight = 80,
+      this.maxHeight = 120,
       this.minHeight = 40,
       this.numberWidth = 80,
       this.numberBackColor = FCColors.accentBlue,
