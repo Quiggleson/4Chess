@@ -27,7 +27,7 @@ class HostLobbyState extends State<HostLobby> {
 
   @override
   void initState() {
-    playerList = widget.client.getGameState().players;
+    playerList = widget.client.getFakeGameState().players;
     super.initState();
   }
 
@@ -58,22 +58,28 @@ class HostLobbyState extends State<HostLobby> {
                   style: const TextStyle(fontSize: 24),
                   textAlign: TextAlign.center),
               const Padding(padding: EdgeInsets.only(top: 20)),
-              Expanded(
-                  child: ReorderableListView(
-                physics: const BouncingScrollPhysics(),
-                proxyDecorator: (child, index, animation) => child,
-                children: [
-                  for (int i = 0; i < playerList.length; i++)
-                    Padding(
-                      key: Key("$i"),
-                      padding: const EdgeInsets.only(top: 10, bottom: 10),
-                      child: FCNumberedItem(
-                          content: playerList[i].name, number: i + 1),
-                    )
-                ],
-                onReorder: (int oldIndex, int newIndex) =>
-                    _onReorder(oldIndex, newIndex),
-              )),
+              Expanded(child: LayoutBuilder(builder: (context, constraints) {
+                debugPrint('HEIGHT ${constraints.maxHeight.toString()}');
+                return ReorderableListView(
+                  physics: const BouncingScrollPhysics(),
+                  proxyDecorator: (child, index, animation) => child,
+                  children: [
+                    for (int i = 0; i < playerList.length; i++)
+                      Padding(
+                        key: Key("$i"),
+                        padding: const EdgeInsets.only(top: 10, bottom: 10),
+                        child: FCNumberedItem(
+                            height: (constraints.maxHeight -
+                                    (playerList.length) * 20) /
+                                4,
+                            content: playerList[i].name,
+                            number: i + 1),
+                      )
+                  ],
+                  onReorder: (int oldIndex, int newIndex) =>
+                      _onReorder(oldIndex, newIndex),
+                );
+              })),
               const Padding(padding: EdgeInsets.only(top: 20)),
               const Text("DRAG AND DROP NAMES TO CHANGE PLAYER ORDER",
                   style: TextStyle(fontSize: 24), textAlign: TextAlign.center),
@@ -81,9 +87,8 @@ class HostLobbyState extends State<HostLobby> {
               loading
                   ? const FCLoadingAnimation()
                   : FCButton(
-                      onPressed: playerList.length < 1
-                          ? null
-                          : () => _onStart(context),
+                      onPressed:
+                          playerList.isEmpty ? null : () => _onStart(context),
                       child: const Text("START"))
             ])));
   }

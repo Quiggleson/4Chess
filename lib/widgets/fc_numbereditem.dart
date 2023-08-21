@@ -1,15 +1,19 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:fourchess/theme/fc_colors.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class FCNumberedItem extends StatelessWidget {
-  FCNumberedItem(
+  const FCNumberedItem(
       {Key? key,
       required this.content,
       required this.number,
       this.numberTextStyle,
       this.contentTextStyle,
-      this.height = 60,
+      this.height = 40,
+      this.maxHeight = 80,
+      this.minHeight = 40,
       this.numberWidth = 80,
       this.numberBackColor = FCColors.accentBlue,
       this.numberColor,
@@ -20,6 +24,8 @@ class FCNumberedItem extends StatelessWidget {
   final String content;
   final int number;
   final double height;
+  final double maxHeight;
+  final double minHeight;
   final double numberWidth;
   final Color numberBackColor;
   final Color? numberColor;
@@ -36,8 +42,10 @@ class FCNumberedItem extends StatelessWidget {
       child: Row(children: [
         Container(
             alignment: Alignment.center,
-            height: height,
-            width: numberWidth,
+            constraints: BoxConstraints(
+              maxHeight: _calcHeight(height, maxHeight, minHeight),
+              maxWidth: numberWidth,
+            ),
             color: numberBackColor,
             child: Text(
               "$number",
@@ -50,7 +58,8 @@ class FCNumberedItem extends StatelessWidget {
         Expanded(
             child: Container(
                 alignment: Alignment.center,
-                height: height,
+                constraints: BoxConstraints(
+                    maxHeight: _calcHeight(height, maxHeight, minHeight)),
                 color: contentBackColor,
                 child: Text(
                   content,
@@ -62,5 +71,17 @@ class FCNumberedItem extends StatelessWidget {
                 ))),
       ]),
     );
+  }
+
+  double _calcHeight(double height, double maxHeight, double minHeight) {
+    if (minHeight < height && height < maxHeight) {
+      return height;
+    }
+
+    if (height < minHeight) {
+      return minHeight;
+    }
+
+    return maxHeight;
   }
 }

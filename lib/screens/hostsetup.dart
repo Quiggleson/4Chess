@@ -79,6 +79,14 @@ class HostSetupState extends State<HostSetup> {
   }
 
   _onConfirm(BuildContext context) async {
+    //FORCING THE JOIN OF THE NEXT PAGE - THIS IS PURELY FOR TESTING PURPOSES
+    Navigator.of(context).push(
+      MaterialPageRoute(
+          builder: (context) => HostLobby(
+              roomCode: "ABCD",
+              client: Client(name: "Deven", roomCode: "ABCD"))),
+    );
+
     //When user presses
     GameState gameState = GameState(
       initTime: _dropdownValue!.timeControl,
@@ -124,12 +132,6 @@ class HostSetupState extends State<HostSetup> {
         timer.cancel();
       }
     });
-
-    //FORCING THE JOIN OF THE NEXT PAGE - THIS IS PURELY FOR TESTING PURPOSES
-    // Navigator.of(context).push(
-    //   MaterialPageRoute(
-    //       builder: (context) => HostLobby(roomCode: code, client: client)),
-    // );
   }
 }
 

@@ -45,7 +45,7 @@ class Client {
   }
 
   bool isDirty() {
-    debugPrint('Checking isdirty. _ismodified: $_isModified');
+    //debugPrint('Checking isdirty. _ismodified: $_isModified');
     if (_isModified) {
       _isModified = false;
       return true;
