@@ -152,11 +152,11 @@ class HostLobbyState extends State<HostLobby> {
     });
 
     //FORCING THE JOIN OF THE NEXT PAGE - THIS IS PURELY FOR TESTING PURPOSES
-    // Navigator.of(context).push(
-    //   MaterialPageRoute(
-    //     //if (status.isGood)
-    //     builder: (context) => Game(client: widget.client, id: 0, isHost: true),
-    //   ),
-    // );
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        //if (status.isGood)
+        builder: (context) => Game(client: widget.client, id: 0, isHost: true),
+      ),
+    );
   }
 }

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:auto_size_text/auto_size_text.dart';
 import '../util/gamestate.dart';
 import '../util/player.dart';
 import '../theme/fc_colors.dart';
@@ -43,7 +44,11 @@ class OtherPlayerTimerState extends State<OtherPlayerTimer> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Text(widget.name, style: const TextStyle(fontSize: 32)),
+                AutoSizeText(
+                  widget.name,
+                  style: const TextStyle(fontSize: 32),
+                  maxLines: 1,
+                ),
                 FCTimer(
                     //No events needed here, all events should be updated from the device that this timer represents.
                     running: widget.status == PlayerStatus.turn,

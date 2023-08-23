@@ -129,14 +129,14 @@ class Client {
   start() {
     debugPrint("Client Start");
     gameState.status = GameStatus.starting;
-    gameState.players[0].status = PlayerStatus.first;
+    //gameState.players[0].status = PlayerStatus.first;
     _isModified = true;
-    socket.write('''
-    {
-      "call": "start",
-      "gameState": $gameState
-    }
-    ''');
+    // socket.write('''
+    // {
+    //   "call": "start",
+    //   "gameState": $gameState
+    // }
+    // ''');
   }
 
   pause() {
