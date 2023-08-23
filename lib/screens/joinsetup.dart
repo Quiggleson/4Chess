@@ -7,6 +7,7 @@ import '../widgets/fc_button.dart';
 import 'dart:async';
 
 import '../widgets/fc_loadinganimation.dart';
+import '../widgets/only_on_focus_scroll_physics.dart';
 
 class JoinSetup extends StatefulWidget {
   const JoinSetup({super.key});
@@ -36,7 +37,7 @@ class JoinSetupState extends State<JoinSetup> {
                   style: TextStyle(fontSize: 24), textAlign: TextAlign.center),
               const Padding(padding: EdgeInsets.only(top: 30)),
               Expanded(
-                child: ListView(physics: BouncingScrollPhysics(), children: [
+                child: ListView(physics: OnlyOnFocusScrollPhysics(), children: [
                   FCTextField(
                     focusNode: nameFocusNode,
                     hintText: "NAME",
@@ -58,7 +59,7 @@ class JoinSetupState extends State<JoinSetup> {
               SizedBox(
                   height: nameFocusNode.hasFocus
                       ? 0
-                      : MediaQuery.of(context).viewInsets.bottom),
+                      : MediaQuery.of(context).viewInsets.bottom * .9),
               loading
                   ? const FCLoadingAnimation()
                   : FCButton(
