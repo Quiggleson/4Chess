@@ -63,16 +63,22 @@ class JoinLobbyState extends State<JoinLobby> {
                           : ("WAITING FOR ${4 - playerList.length} PLAYERS"),
                       style: const TextStyle(fontSize: 24),
                       textAlign: TextAlign.center)),
-              const Padding(padding: EdgeInsets.only(top: 30)),
-              Expanded(
-                  child: ListView(children: [
-                for (int i = 0; i < playerList.length; i++)
-                  Padding(
-                    padding: const EdgeInsets.only(top: 10, bottom: 10),
-                    child: FCNumberedItem(
-                        content: playerList[i].name, number: i + 1),
-                  )
-              ]))
+              const Padding(padding: EdgeInsets.only(top: 20)),
+              Expanded(child: LayoutBuilder(builder: (context, constraints) {
+                debugPrint('HEIGHT ${constraints.maxHeight.toString()}');
+                return ListView(children: [
+                  for (int i = 0; i < playerList.length; i++)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 10, bottom: 10),
+                      child: FCNumberedItem(
+                          height: (constraints.maxHeight -
+                                  (playerList.length) * 20) /
+                              4,
+                          content: playerList[i].name,
+                          number: i + 1),
+                    )
+                ]);
+              }))
             ])));
   }
 }

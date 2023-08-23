@@ -112,13 +112,13 @@ class JoinSetupState extends State<JoinSetup> {
       }
     });
 
-    // Navigator.of(context).push(
-    //   MaterialPageRoute(
-    //     builder: (context) => JoinLobby(
-    //       client: client,
-    //       roomCode: _roomCode,
-    //     ),
-    //   ),
-    // );
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => JoinLobby(
+          client: client,
+          roomCode: _roomCode,
+        ),
+      ),
+    );
   }
 }
