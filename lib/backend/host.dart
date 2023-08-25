@@ -67,10 +67,12 @@ class Host {
           onStart(obj);
           break;
         case "pause":
-          //response = onPause(obj);
+          updateGameState(obj["gameState"]);
+          onPause(obj);
           break;
         case "next":
-          //response = onNext(obj);
+          updateGameState(obj["gameState"]);
+          onNext(obj);
           break;
         case "join":
           onJoinGame(socket, obj);
@@ -128,7 +130,7 @@ class Host {
     if (obj["roomCode"] == roomCode) {
       Player player = Player(
           name: obj["gameState"]["players"][0]["name"],
-          ip: socket.remoteAddress.toString());
+          ip: socket.remoteAddress.address.toString());
       player.time = gameState.initTime.toDouble();
       gameState.addPlayer(player);
       sockets.forEach((s) {
@@ -156,14 +158,24 @@ class Host {
     return true;
   }
 
-  String onPause(Map<String, dynamic> obj) {
+  bool onPause(Map<String, dynamic> obj) {
     debugPrint("Host onPause");
-    return 'oi';
+    sockets.forEach((socket) => socket.write('''{
+        "status": "200",
+        "call": "pause",
+        "gameState": $gameState
+      }'''));
+    return true;
   }
 
-  String onNext(Map<String, dynamic> obj) {
+  bool onNext(Map<String, dynamic> obj) {
     debugPrint("Host onNext");
-    return 'oi';
+    sockets.forEach((socket) => socket.write('''{
+        "status": "200",
+        "call": "next",
+        "gameState": $gameState
+      }'''));
+    return true;
   }
 
   bool onReorder(Map<String, dynamic> obj) {
