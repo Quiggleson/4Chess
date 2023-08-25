@@ -19,6 +19,7 @@ class MyApp extends StatelessWidget {
         '/': (context) => const Home(),
       },
       theme: ThemeData(
+          useMaterial3: true,
           splashFactory: NoSplash.splashFactory,
           scaffoldBackgroundColor: const Color.fromRGBO(198, 221, 255, 1),
           textTheme: GoogleFonts.abelTextTheme(Theme.of(context)
