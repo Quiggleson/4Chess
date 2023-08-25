@@ -5,7 +5,7 @@ import 'package:fourchess/widgets/fc_button.dart';
 import 'package:fourchess/widgets/fc_loadinganimation.dart';
 import 'package:fourchess/widgets/fc_numbereditem.dart';
 import 'dart:async';
-
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import '../backend/client.dart';
 import '../util/player.dart';
 
@@ -44,7 +44,7 @@ class HostLobbyState extends State<HostLobby> {
 
     return Scaffold(
         appBar: FCAppBar(
-          title: Text("HOST GAME\nCODE: ${widget.roomCode}"),
+          title: Text(AppLocalizations.of(context).code(widget.roomCode)),
           toolbarHeight: 140,
         ),
         body: Padding(
@@ -53,13 +53,14 @@ class HostLobbyState extends State<HostLobby> {
                 Column(mainAxisAlignment: MainAxisAlignment.start, children: [
               Text(
                   (4 - playerList.length == 0)
-                      ? ("START GAME WHEN READY")
-                      : ("WAITING FOR ${4 - playerList.length} PLAYERS"),
+                      ? AppLocalizations.of(context).startGame
+                      : AppLocalizations.of(context)
+                          .nPlayers(4 - playerList.length),
                   style: const TextStyle(fontSize: 24),
                   textAlign: TextAlign.center),
               const Padding(padding: EdgeInsets.only(top: 20)),
               Expanded(child: LayoutBuilder(builder: (context, constraints) {
-                debugPrint('HEIGHT ${constraints.maxHeight.toString()}');
+                //debugPrint('HEIGHT ${constraints.maxHeight.toString()}');
                 return ReorderableListView(
                   physics: const BouncingScrollPhysics(),
                   proxyDecorator: (child, index, animation) => child,
@@ -81,15 +82,16 @@ class HostLobbyState extends State<HostLobby> {
                 );
               })),
               const Padding(padding: EdgeInsets.only(top: 20)),
-              const Text("DRAG AND DROP NAMES TO CHANGE PLAYER ORDER",
-                  style: TextStyle(fontSize: 24), textAlign: TextAlign.center),
+              Text(AppLocalizations.of(context).dragDrop,
+                  style: const TextStyle(fontSize: 24),
+                  textAlign: TextAlign.center),
               const Padding(padding: EdgeInsets.only(top: 20)),
               loading
                   ? const FCLoadingAnimation()
                   : FCButton(
                       onPressed:
                           playerList.isEmpty ? null : () => _onStart(context),
-                      child: const Text("START"))
+                      child: Text(AppLocalizations.of(context).start))
             ])));
   }
 

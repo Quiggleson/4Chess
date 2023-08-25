@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:fourchess/screens/hostsetup.dart';
 import 'package:fourchess/screens/joinsetup.dart';
 import '../widgets/fc_button.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class Home extends StatefulWidget {
   const Home({super.key});
@@ -17,7 +18,8 @@ class HomeState extends State<Home> {
             padding: const EdgeInsets.all(30),
             child:
                 Column(mainAxisAlignment: MainAxisAlignment.center, children: [
-              const Text("4Chess", style: TextStyle(fontSize: 96)),
+              Text(AppLocalizations.of(context).fourChess,
+                  style: const TextStyle(fontSize: 96)),
               const Padding(padding: EdgeInsets.only(top: 40)),
               FCButton(
                   onPressed: () => {
@@ -27,7 +29,7 @@ class HomeState extends State<Home> {
                           ),
                         )
                       },
-                  child: const Text("HOST GAME")),
+                  child: Text(AppLocalizations.of(context).hostGame)),
               const Padding(padding: EdgeInsets.only(top: 20)),
               FCButton(
                   onPressed: () => {
@@ -37,7 +39,7 @@ class HomeState extends State<Home> {
                           ),
                         )
                       },
-                  child: const Text("JOIN GAME"))
+                  child: Text(AppLocalizations.of(context).joinGame))
             ])));
   }
 }

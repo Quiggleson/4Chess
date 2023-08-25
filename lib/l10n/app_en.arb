@@ -1,0 +1,42 @@
+{
+    "fourChess": "4Chess",
+    "hostGame": "HOST GAME",
+    "joinGame": "JOIN GAME",
+    "dragDrop": "DRAG AND DROP NAMES TO CHANGE PLAYER ORDER",
+    "start": "START",
+    "confirm": "CONFIRM",
+    "joinInstructions": "PICK A NAME AND ENTER A CODE TO JOIN A ROOM",
+    "hostInstructions": "PICK A NAME AND TIME CONTROL, THEN CONFIRM TO GENERATE A GAME CODE",
+    "join": "JOIN",
+    "yes": "YES",
+    "no": "NO",
+    "endGameForAll": "ARE YOU SURE YOU WANT TO END THE GAME FOR ALL PLAYERS?",
+    "quitGame": "ARE YOU SURE YOU WANT TO QUIT THE GAME?",
+    "code" : "code {code}",
+    "name": "NAME",
+    "roomCode": "ROOM CODE",
+    "timeControl": "TIME CONTROL",
+    "increment": "INCREMENT",
+    "@code": {
+        "description": "Generates proper roomcode message",
+        "placeholders": {
+            "code": {
+                "type": "String",
+                "example": "SMPL"
+            }
+        }
+
+    },
+    "waitingForHost": "WAITING FOR HOST TO START GAME",
+    "startGame": "START GAME WHEN READY",
+    "nPlayers" : "{numPlayers, plural, =1{WAITING ON 1 PLAYER} other{WAITING ON {numPlayers} PLAYERS}}",
+    "@nPlayers" : {
+        "description": "Indicates how many players are in the game, or tells user that they are waiting on host if everyone has joined",
+        "placeholders": {
+            "numPlayers":{
+                "type": "num",
+                "format": "compact"
+            }
+        }
+    }
+}

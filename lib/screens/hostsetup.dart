@@ -3,7 +3,6 @@ import 'package:fourchess/widgets/fc_appbar.dart';
 import 'package:fourchess/widgets/fc_dropdownbutton.dart';
 import 'package:fourchess/widgets/fc_loadinganimation.dart';
 import 'package:fourchess/widgets/fc_textfield.dart';
-import 'package:loading_animation_widget/loading_animation_widget.dart';
 import '../backend/client.dart';
 import '../util/gamestate.dart';
 import '../backend/host.dart';
@@ -11,6 +10,7 @@ import '../widgets/fc_button.dart';
 import '../util/player.dart';
 import 'hostlobby.dart';
 import 'dart:async';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class HostSetup extends StatefulWidget {
   const HostSetup({super.key});
@@ -39,19 +39,18 @@ class HostSetupState extends State<HostSetup> {
 
     return Scaffold(
         resizeToAvoidBottomInset: false,
-        appBar: FCAppBar(title: const Text("HOST GAME")),
+        appBar: FCAppBar(title: Text(AppLocalizations.of(context).hostGame)),
         body: Padding(
             padding: const EdgeInsets.all(30),
             child:
                 Column(mainAxisAlignment: MainAxisAlignment.center, children: [
-              const Text(
-                  "PICK A NAME AND TIME CONTROL, THEN CONFIRM TO GENERATE A GAME CODE",
-                  style: TextStyle(fontSize: 24),
+              Text(AppLocalizations.of(context).hostInstructions,
+                  style: const TextStyle(fontSize: 24),
                   textAlign: TextAlign.center),
               const Padding(padding: EdgeInsets.only(top: 30)),
               FCTextField(
                 maxLength: 12,
-                hintText: "NAME",
+                hintText: AppLocalizations.of(context).name,
                 onChanged: (value) => setState(() => _name = value),
               ),
               const Padding(padding: EdgeInsets.only(top: 30)),
@@ -74,7 +73,7 @@ class HostSetupState extends State<HostSetup> {
                   : FCButton(
                       onPressed:
                           _name.isEmpty ? null : () => _onConfirm(context),
-                      child: const Text("CONFIRM")),
+                      child: Text(AppLocalizations.of(context).confirm)),
             ])));
   }
 

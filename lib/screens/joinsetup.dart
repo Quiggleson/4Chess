@@ -5,7 +5,7 @@ import 'package:fourchess/widgets/fc_textfield.dart';
 import '../backend/client.dart';
 import '../widgets/fc_button.dart';
 import 'dart:async';
-
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import '../widgets/fc_loadinganimation.dart';
 import '../widgets/only_on_focus_scroll_physics.dart';
 
@@ -28,33 +28,36 @@ class JoinSetupState extends State<JoinSetup> {
   Widget build(BuildContext context) {
     return Scaffold(
         resizeToAvoidBottomInset: false,
-        appBar: FCAppBar(title: const Text("JOIN GAME")),
+        appBar: FCAppBar(title: Text(AppLocalizations.of(context).joinGame)),
         body: Padding(
             padding: const EdgeInsets.all(30),
             child:
                 Column(mainAxisAlignment: MainAxisAlignment.start, children: [
-              const Text("PICK A NAME AND ENTER A CODE TO JOIN A ROOM",
-                  style: TextStyle(fontSize: 24), textAlign: TextAlign.center),
+              Text(AppLocalizations.of(context).joinInstructions,
+                  style: const TextStyle(fontSize: 24),
+                  textAlign: TextAlign.center),
               const Padding(padding: EdgeInsets.only(top: 30)),
               Expanded(
-                child: ListView(physics: OnlyOnFocusScrollPhysics(), children: [
-                  FCTextField(
-                    focusNode: nameFocusNode,
-                    hintText: "NAME",
-                    onChanged: (value) => setState(() => _name = value),
-                    maxLength: 12,
-                  ),
-                  const Padding(padding: EdgeInsets.only(top: 30)),
-                  FCTextField(
-                    focusNode: roomCodeFocusNode,
-                    scrollPadding: const EdgeInsets.only(
-                        bottom: double
-                            .infinity), //Makes sure the counter text is in view
-                    hintText: "ROOM CODE",
-                    onChanged: (value) => setState(() => _roomCode = value),
-                    maxLength: 4,
-                  ),
-                ]),
+                child: ListView(
+                    physics: const OnlyOnFocusScrollPhysics(),
+                    children: [
+                      FCTextField(
+                        focusNode: nameFocusNode,
+                        hintText: AppLocalizations.of(context).name,
+                        onChanged: (value) => setState(() => _name = value),
+                        maxLength: 12,
+                      ),
+                      const Padding(padding: EdgeInsets.only(top: 30)),
+                      FCTextField(
+                        focusNode: roomCodeFocusNode,
+                        scrollPadding: const EdgeInsets.only(
+                            bottom: double
+                                .infinity), //Makes sure the counter text is in view
+                        hintText: AppLocalizations.of(context).roomCode,
+                        onChanged: (value) => setState(() => _roomCode = value),
+                        maxLength: 4,
+                      ),
+                    ]),
               ),
               SizedBox(
                   height: nameFocusNode.hasFocus
@@ -66,7 +69,7 @@ class JoinSetupState extends State<JoinSetup> {
                       onPressed: _name.isEmpty || _roomCode.length < 4
                           ? null
                           : () => _onJoin(context),
-                      child: const Text("JOIN")),
+                      child: Text(AppLocalizations.of(context).join)),
             ])));
   }
 

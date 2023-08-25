@@ -6,6 +6,7 @@ import 'dart:async';
 import '../backend/client.dart';
 import '../util/player.dart';
 import '../widgets/fc_numbereditem.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class JoinLobby extends StatefulWidget {
   JoinLobby({super.key, required this.client, required this.roomCode});
@@ -48,7 +49,8 @@ class JoinLobbyState extends State<JoinLobby> {
 
     return Scaffold(
         appBar: FCAppBar(
-          title: Text("JOIN GAME\nCODE: ${widget.roomCode}"),
+          title: Text(
+              "${AppLocalizations.of(context).joinGame}\n${AppLocalizations.of(context).code(widget.roomCode)}"),
           toolbarHeight: 140,
         ),
         body: Padding(
@@ -59,13 +61,14 @@ class JoinLobbyState extends State<JoinLobby> {
                   //I HAVE NO IDEA WHY THE CENTER IS NEEDED, IT DOESN'T WORK OTHERWISE
                   child: Text(
                       (4 - playerList.length == 0)
-                          ? ("WAITING FOR HOST TO START GAME")
-                          : ("WAITING FOR ${4 - playerList.length} PLAYERS"),
+                          ? AppLocalizations.of(context).waitingForHost
+                          : AppLocalizations.of(context)
+                              .nPlayers(4 - playerList.length),
                       style: const TextStyle(fontSize: 24),
                       textAlign: TextAlign.center)),
               const Padding(padding: EdgeInsets.only(top: 20)),
               Expanded(child: LayoutBuilder(builder: (context, constraints) {
-                debugPrint('HEIGHT ${constraints.maxHeight.toString()}');
+                //debugPrint('HEIGHT ${constraints.maxHeight.toString()}');
                 return ListView(children: [
                   for (int i = 0; i < playerList.length; i++)
                     Padding(
