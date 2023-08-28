@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:fourchess/screens/game.dart';
+import 'package:fourchess/util/gamestate.dart';
 import 'package:fourchess/widgets/fc_appbar.dart';
 import 'package:fourchess/widgets/fc_button.dart';
 import 'package:fourchess/widgets/fc_loadinganimation.dart';
@@ -23,25 +24,58 @@ class HostLobby extends StatefulWidget {
 class HostLobbyState extends State<HostLobby> {
   late List<Player> playerList;
 
-  bool loading = false;
+  bool starting = false;
+  double elapsedTime = 0;
 
   @override
   void initState() {
     playerList = widget.client.getFakeGameState().players;
+    Timer.periodic(const Duration(milliseconds: 500), (Timer timer) {
+      //This code will run 10 times a second when the host menu starts
+      if (widget.client.isDirty()) {
+        setState(() {
+          if (widget.client.gameState.status == GameStatus.setup) {
+            playerList = widget.client.getGameState().players;
+          }
+          if (starting) {
+            elapsedTime += .5;
+
+            if (mounted &&
+                widget.client.gameState.status == GameStatus.starting) {
+              debugPrint('I am the front end and I heard client is dirty');
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  //if (status.isGood)
+                  builder: (context) =>
+                      Game(client: widget.client, id: 0, isHost: true),
+                ),
+              );
+              timer.cancel();
+            }
+
+            debugPrint(
+                "Time elapsed since attempting to start game: $elapsedTime");
+
+            if (elapsedTime > 10 && mounted) {
+              //We have taken more than 10 seconds to connect, probably a network
+              //issue
+              debugPrint("Failed to start game");
+              starting = false;
+              elapsedTime = 0;
+            }
+          }
+          if (!mounted) {
+            debugPrint("User has left the host lobby screen");
+            timer.cancel();
+          }
+        });
+      }
+    });
     super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
-    Timer.periodic(const Duration(milliseconds: 100), (Timer t) {
-      //This code will run 10 times a second when the host menu starts
-      if (widget.client.isDirty()) {
-        setState(() {
-          playerList = widget.client.getGameState().players;
-        });
-      }
-    });
-
     return Scaffold(
         appBar: FCAppBar(
           title: Text(AppLocalizations.of(context).code(widget.roomCode)),
@@ -86,7 +120,7 @@ class HostLobbyState extends State<HostLobby> {
                   style: const TextStyle(fontSize: 24),
                   textAlign: TextAlign.center),
               const Padding(padding: EdgeInsets.only(top: 20)),
-              loading
+              starting
                   ? const FCLoadingAnimation()
                   : FCButton(
                       onPressed:
@@ -110,55 +144,15 @@ class HostLobbyState extends State<HostLobby> {
   }
 
   _onStart(BuildContext context) {
-    Client client = widget.client;
-
-    client.start();
-
-    setState(() => loading = true);
-
-    double elapsedTime = 0;
-
-    Timer.periodic(const Duration(milliseconds: 500), (timer) {
-      //checks twice a second to see if have successfully joined the game
-      elapsedTime += .5;
-
-      //Mounted checks if the widget is still in the build tree i.e make sure we're still on this screen before we do
-      //any funny stuff
-
-      if (!mounted) {
-        timer.cancel();
-        debugPrint("User has left the join setup screen");
-      }
-
-      if (client.isDirty() && mounted) {
-        debugPrint('I am the front end and I heard client is dirty');
-        Navigator.of(context).push(
-          MaterialPageRoute(
-            //if (status.isGood)
-            builder: (context) =>
-                Game(client: widget.client, id: 0, isHost: true),
-          ),
-        );
-        timer.cancel();
-      }
-
-      debugPrint("Time elapsed since attempting to start game: $elapsedTime");
-
-      if (elapsedTime > 10 && mounted) {
-        //We have taken more than 10 seconds to connect, probably a network
-        //issue
-        debugPrint("Failed to start game");
-        setState(() => loading = false);
-        timer.cancel();
-      }
-    });
+    widget.client.start();
+    setState(() => starting = true);
 
     //FORCING THE JOIN OF THE NEXT PAGE - THIS IS PURELY FOR TESTING PURPOSES
-    Navigator.of(context).push(
-      MaterialPageRoute(
-        //if (status.isGood)
-        builder: (context) => Game(client: widget.client, id: 0, isHost: true),
-      ),
-    );
+    // Navigator.of(context).push(
+    //   MaterialPageRoute(
+    //     //if (status.isGood)
+    //     builder: (context) => Game(client: widget.client, id: 0, isHost: true),
+    //   ),
+    // );
   }
 }
