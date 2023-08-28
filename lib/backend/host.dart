@@ -10,6 +10,7 @@ class Host {
   final int port = 38383;
   //late Future<String> roomCode;
   late String roomCode;
+  late ServerSocket server;
   GameState gameState;
   List<Socket> sockets = [];
 
@@ -23,8 +24,7 @@ class Host {
     // Start the server
     ServerSocket.bind(InternetAddress.anyIPv4, port)
         .then((ServerSocket server) {
-      debugPrint('the address frfr: ${server.address.address.toString()}');
-
+      this.server = server;
       // Print ip if in debug mode
       final info = NetworkInfo();
       info.getWifiIP().then((ip) {
@@ -185,5 +185,9 @@ class Host {
         "gameState": $gameState
       }'''));
     return true;
+  }
+
+  stop() {
+    server.close();
   }
 }
