@@ -46,8 +46,10 @@ class HostLobbyState extends State<HostLobby> {
               Navigator.of(context).push(
                 MaterialPageRoute(
                   //if (status.isGood)
-                  builder: (context) =>
-                      Game(client: widget.client, id: 0, isHost: true),
+                  builder: (context) => Game(
+                      client: widget.client,
+                      id: widget.client.getPlayerIndex(),
+                      isHost: true),
                 ),
               );
               timer.cancel();
