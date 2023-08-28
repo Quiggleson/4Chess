@@ -239,4 +239,8 @@ class Client {
     }
     return gs;
   }
+
+  stop() {
+    socket.close();
+  }
 }
