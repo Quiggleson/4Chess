@@ -151,6 +151,12 @@ class _GameState extends State<Game> {
 
         if (timerKey.currentState != null) {
           timerKey.currentState!.setTime(player.time);
+
+          if (player.status != PlayerStatus.turn) {
+            timerKey.currentState!.stop();
+          } else {
+            timerKey.currentState!.start();
+          }
         }
       }
     });

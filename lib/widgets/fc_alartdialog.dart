@@ -4,9 +4,10 @@ import '../theme/fc_colors.dart';
 import 'fc_button.dart';
 
 class FCAlertDialog extends StatelessWidget {
-  const FCAlertDialog({super.key, required this.message});
+  const FCAlertDialog({super.key, required this.message, this.actions});
 
   final String message;
+  final List<Widget>? actions;
 
   @override
   Widget build(BuildContext context) {
@@ -30,17 +31,6 @@ class FCAlertDialog extends StatelessWidget {
                   textAlign: TextAlign.center,
                 ))),
         content: Text(message),
-        actions: <Widget>[
-          FCButton(
-            onPressed: () =>
-                Navigator.popUntil(context, ModalRoute.withName('/')),
-            child: const Text('Yes'),
-          ),
-          const Padding(padding: EdgeInsets.only(top: 20)),
-          FCButton(
-            onPressed: () => Navigator.pop(context, 'No'),
-            child: const Text('No'),
-          ),
-        ]);
+        actions: actions);
   }
 }
