@@ -56,7 +56,7 @@ class Host {
     socket.listen((List<int> data) {
       // Convert the message to a JSON object
       const JsonDecoder decoder = JsonDecoder();
-      final String message = String.fromCharCodes(data).trim();
+      final String message = utf8.decode(data).trim();
       final Map<String, dynamic> obj = decoder.convert(message);
       debugPrint('I am the host, I received object: $obj');
 

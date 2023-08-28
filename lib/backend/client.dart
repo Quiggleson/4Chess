@@ -91,10 +91,9 @@ class Client {
 
     // Listen for response - everytime host sends out, this is where it listens
     socket.listen((List<int> data) {
-      debugPrint('I heard something ${String.fromCharCodes(data).trim()}');
       // Convert the message to a JSON object
       const JsonDecoder decoder = JsonDecoder();
-      final String message = String.fromCharCodes(data).trim();
+      final String message = utf8.decode(data).trim();
       debugPrint('Received: $message');
       final Map<String, dynamic> obj = decoder.convert(message);
       if (obj["status"] == '200') {
