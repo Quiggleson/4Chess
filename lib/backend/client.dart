@@ -45,18 +45,18 @@ class Client {
   }
 
   bool isDirty() {
-    //debugPrint('Checking isdirty. _ismodified: $_isModified');
+    // debugPrint('Checking isdirty. _ismodified: $_isModified');
     if (_isModified) {
       _isModified = false;
       return true;
-      //any other logic required
     }
     return false;
   }
 
   int getPlayerIndex() {
     for (final (index, player) in gameState.players.indexed) {
-      if (player.status == PlayerStatus.turn) {
+      debugPrint('myip: $ip and playerip: ${player.ip}');
+      if (player.ip == ip) {
         return index;
       }
     }
@@ -64,10 +64,10 @@ class Client {
   }
 
   int getNextIndex(int initial) {
-    for (int current = initial + 1;
-        current != initial;
-        current = (current + 1) % gameState.players.length) {
-      if (gameState.players[current].status == PlayerStatus.notTurn) {
+    for (int i = 1; i <= gameState.players.length; i++) {
+      int current = (initial + i) % gameState.players.length;
+      if (gameState.players[current].status == PlayerStatus.notTurn ||
+          current == initial) {
         return current;
       }
     }
@@ -89,12 +89,11 @@ class Client {
     // Send the message
     socket.write(message);
 
-    // Listen for response
+    // Listen for response - everytime host sends out, this is where it listens
     socket.listen((List<int> data) {
-      debugPrint('I heard something ${String.fromCharCodes(data).trim()}');
       // Convert the message to a JSON object
       const JsonDecoder decoder = JsonDecoder();
-      final String message = String.fromCharCodes(data).trim();
+      final String message = utf8.decode(data).trim();
       debugPrint('Received: $message');
       final Map<String, dynamic> obj = decoder.convert(message);
       if (obj["status"] == '200') {
@@ -152,17 +151,27 @@ class Client {
 
   next(double time) {
     debugPrint("Client Next");
+
     int playerIndex = getPlayerIndex();
     int nextIndex = getNextIndex(playerIndex);
+
+    if (nextIndex == -1) {
+      debugPrint('Something horribly wrong has happened');
+      return;
+    }
+
     if (nextIndex == playerIndex) {
       gameState.status = GameStatus.finished;
     } else {
+      // Update current player
       Player player = gameState.players[playerIndex];
       player.time = time;
       player.status = PlayerStatus.notTurn;
 
+      // Update next player
       gameState.players[nextIndex].status = PlayerStatus.turn;
     }
+    debugPrint('gs after next: $gameState');
 
     socket.write('''
     {
@@ -229,5 +238,9 @@ class Client {
       p.time = 180;
     }
     return gs;
+  }
+
+  stop() {
+    socket.close();
   }
 }
