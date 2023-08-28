@@ -11,6 +11,8 @@ class FCNumberedItem extends StatelessWidget {
       required this.number,
       this.numberTextStyle,
       this.contentTextStyle,
+      this.leading,
+      this.leadingWidth = 60,
       this.height = 40,
       this.maxHeight = 120,
       this.minHeight = 40,
@@ -21,6 +23,8 @@ class FCNumberedItem extends StatelessWidget {
       this.textColor})
       : super(key: key);
 
+  final Widget? leading;
+  final double leadingWidth;
   final String content;
   final int number;
   final double height;
@@ -69,6 +73,16 @@ class FCNumberedItem extends StatelessWidget {
                         fontSize: 24,
                       ),
                 ))),
+        Visibility(
+            visible: leading != null,
+            child: Container(
+                alignment: Alignment.center,
+                constraints: BoxConstraints(
+                  maxHeight: _calcHeight(height, maxHeight, minHeight),
+                  maxWidth: leadingWidth,
+                ),
+                color: contentBackColor,
+                child: leading))
       ]),
     );
   }

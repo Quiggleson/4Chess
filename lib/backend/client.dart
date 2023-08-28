@@ -183,12 +183,12 @@ class Client {
 
   reorder(List<Player> players) {
     debugPrint("Client Reorder");
-    socket.write('''
-      {
-        "call": "reorder",
-        "gameState": $gameState
-      }
-    ''');
+    // socket.write('''
+    //   {
+    //     "call": "reorder",
+    //     "gameState": $gameState
+    //   }
+    // ''');
   }
 
   lost() {

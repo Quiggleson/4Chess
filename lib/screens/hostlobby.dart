@@ -29,7 +29,7 @@ class HostLobbyState extends State<HostLobby> {
 
   @override
   void initState() {
-    playerList = widget.client.getGameState().players;
+    playerList = widget.client.getFakeGameState().players;
     Timer.periodic(const Duration(milliseconds: 500), (Timer timer) {
       //This code will run 10 times a second when the host menu starts
       if (widget.client.isDirty()) {
@@ -98,6 +98,7 @@ class HostLobbyState extends State<HostLobby> {
               Expanded(child: LayoutBuilder(builder: (context, constraints) {
                 //debugPrint('HEIGHT ${constraints.maxHeight.toString()}');
                 return ReorderableListView(
+                  buildDefaultDragHandles: false,
                   physics: const BouncingScrollPhysics(),
                   proxyDecorator: (child, index, animation) => child,
                   children: [
@@ -106,6 +107,10 @@ class HostLobbyState extends State<HostLobby> {
                         key: Key("$i"),
                         padding: const EdgeInsets.only(top: 10, bottom: 10),
                         child: FCNumberedItem(
+                            leading: ReorderableDragStartListener(
+                              index: i,
+                              child: const Icon(Icons.drag_handle),
+                            ),
                             height: (constraints.maxHeight -
                                     (playerList.length) * 20) /
                                 4,
