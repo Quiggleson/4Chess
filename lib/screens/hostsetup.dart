@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:fourchess/theme/fc_colors.dart';
 import 'package:fourchess/widgets/fc_appbar.dart';
 import 'package:fourchess/widgets/fc_dropdownbutton.dart';
 import 'package:fourchess/widgets/fc_loadinganimation.dart';
@@ -31,6 +32,7 @@ class HostSetupState extends State<HostSetup> {
   _TimeControl? _dropdownValue;
 
   bool loading = false;
+  bool error = false;
 
   //FINISH THIS
   @override
@@ -68,6 +70,12 @@ class HostSetupState extends State<HostSetup> {
                 },
               ),
               const Spacer(),
+              Visibility(
+                  visible: error,
+                  child: Text(AppLocalizations.of(context)!.unableToCreate,
+                      style: const TextStyle(
+                          fontSize: 16, color: FCColors.error))),
+              const Padding(padding: EdgeInsets.only(top: 10)),
               loading
                   ? const FCLoadingAnimation()
                   : FCButton(
@@ -87,6 +95,11 @@ class HostSetupState extends State<HostSetup> {
     // );
     // return;
 
+    setState(() {
+      loading = true;
+      error = false;
+    });
+
     //When user presses
     GameState gameState = GameState(
       initTime: _dropdownValue!.timeControl,
@@ -97,8 +110,6 @@ class HostSetupState extends State<HostSetup> {
     Host host = Host(gameState: gameState);
     String code = await host.getRoomCode();
     Client client = Client(name: _name, roomCode: await host.getRoomCode());
-
-    setState(() => loading = true);
 
     double elapsedTime = 0;
 
@@ -128,7 +139,10 @@ class HostSetupState extends State<HostSetup> {
         //We have taken more than 10 seconds to connect, probably a network
         //issue
         debugPrint("Failed to host game");
-        setState(() => loading = false);
+        setState(() {
+          loading = false;
+          error = true;
+        });
         timer.cancel();
       }
     });

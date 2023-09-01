@@ -38,5 +38,7 @@
                 "format": "compact"
             }
         }
-    }
+    },
+    "unableToCreate": "AN ERROR OCCURED DURING GAME CREATION",
+    "invalidGamecode": "INVALID GAME CODE"
 }

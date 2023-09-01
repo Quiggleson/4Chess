@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:fourchess/screens/joinlobby.dart';
+import 'package:fourchess/theme/fc_colors.dart';
 import 'package:fourchess/widgets/fc_appbar.dart';
 import 'package:fourchess/widgets/fc_textfield.dart';
 import '../backend/client.dart';
@@ -20,6 +21,8 @@ class JoinSetupState extends State<JoinSetup> {
   String _name = "";
   String _roomCode = "";
   bool loading = false;
+  bool error = false;
+  bool invalidGameCode = false;
 
   FocusNode nameFocusNode = FocusNode();
   FocusNode roomCodeFocusNode = FocusNode();
@@ -32,7 +35,7 @@ class JoinSetupState extends State<JoinSetup> {
         body: Padding(
             padding: const EdgeInsets.all(30),
             child:
-                Column(mainAxisAlignment: MainAxisAlignment.start, children: [
+                Column(mainAxisAlignment: MainAxisAlignment.center, children: [
               Text(AppLocalizations.of(context)!.joinInstructions,
                   style: const TextStyle(fontSize: 24),
                   textAlign: TextAlign.center),
@@ -48,6 +51,14 @@ class JoinSetupState extends State<JoinSetup> {
                         maxLength: 12,
                       ),
                       const Padding(padding: EdgeInsets.only(top: 30)),
+                      Visibility(
+                          visible: invalidGameCode,
+                          child: Text(
+                              AppLocalizations.of(context)!.invalidGamecode,
+                              textAlign: TextAlign.center,
+                              style: const TextStyle(
+                                  fontSize: 16, color: FCColors.error))),
+                      const Padding(padding: EdgeInsets.only(top: 10)),
                       FCTextField(
                         focusNode: roomCodeFocusNode,
                         scrollPadding: const EdgeInsets.only(
@@ -63,6 +74,13 @@ class JoinSetupState extends State<JoinSetup> {
                   height: nameFocusNode.hasFocus
                       ? 0
                       : MediaQuery.of(context).viewInsets.bottom * .9),
+              Visibility(
+                  visible: error,
+                  child: Text(AppLocalizations.of(context)!.unableToCreate,
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(
+                          fontSize: 16, color: FCColors.error))),
+              const Padding(padding: EdgeInsets.only(top: 10)),
               loading
                   ? const FCLoadingAnimation()
                   : FCButton(
@@ -78,13 +96,31 @@ class JoinSetupState extends State<JoinSetup> {
     // GameState gameState =
     //GameState(players: <Player>[], status: GameStatus.setup);
     debugPrint('Making a new client');
-    Client client = Client(
-      name: _name,
-      roomCode: _roomCode,
-    ); // No longer need this, constructor takes care of it gameState: gameState);
-    // client.joinGame(_roomCode); Moved this to client constructor since there would never be a client that doesn't join
+    Client client;
 
-    setState(() => loading = true);
+    try {
+      client = Client(
+        name: _name,
+        roomCode: _roomCode,
+      ); // No longer need this, constructor takes care of it gameState: gameState);
+      // client.joinGame(_roomCode); Moved this to client constructor since there would never be a client that doesn't join
+    } catch (e) {
+      setState(() {
+        if (e is FormatException) {
+          invalidGameCode = true;
+        } else {
+          error = true;
+        }
+      });
+
+      return;
+    }
+
+    setState(() {
+      loading = true;
+      error = false;
+      invalidGameCode = false;
+    });
 
     double elapsedTime = 0;
 
@@ -112,7 +148,12 @@ class JoinSetupState extends State<JoinSetup> {
         //We have taken more than 10 seconds to connect, probably a network
         //issue
         timer.cancel();
-        setState(() => loading = false);
+        setState(() {
+          error = true;
+          loading = false;
+        });
+
+        debugPrint("ERROR HAS BEEN REACHED: ${error.toString()}");
       }
     });
 
