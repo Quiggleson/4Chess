@@ -51,7 +51,7 @@ class JoinLobbyState extends State<JoinLobby> {
     return Scaffold(
         appBar: FCAppBar(
           title: Text(
-              "${AppLocalizations.of(context).joinGame}\n${AppLocalizations.of(context).code(widget.roomCode)}"),
+              "${AppLocalizations.of(context)!.joinGame}\n${AppLocalizations.of(context)!.code(widget.roomCode)}"),
           toolbarHeight: 140,
         ),
         body: Padding(
@@ -62,8 +62,8 @@ class JoinLobbyState extends State<JoinLobby> {
                   //I HAVE NO IDEA WHY THE CENTER IS NEEDED, IT DOESN'T WORK OTHERWISE
                   child: Text(
                       (4 - playerList.length == 0)
-                          ? AppLocalizations.of(context).waitingForHost
-                          : AppLocalizations.of(context)
+                          ? AppLocalizations.of(context)!.waitingForHost
+                          : AppLocalizations.of(context)!
                               .nPlayers(4 - playerList.length),
                       style: const TextStyle(fontSize: 24),
                       textAlign: TextAlign.center)),

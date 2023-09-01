@@ -184,8 +184,8 @@ class _GameState extends State<Game> {
   //Todo: understandand and fix warning that pops up whenever this is called
   void _showDialog() {
     String message = widget.isHost
-        ? AppLocalizations.of(context).endGameForAll
-        : AppLocalizations.of(context).quitGame;
+        ? AppLocalizations.of(context)!.endGameForAll
+        : AppLocalizations.of(context)!.quitGame;
     showDialog(
         context: context,
         builder: (BuildContext context) =>
@@ -193,12 +193,12 @@ class _GameState extends State<Game> {
               FCButton(
                 onPressed: () =>
                     Navigator.popUntil(context, ModalRoute.withName('/')),
-                child: Text(AppLocalizations.of(context).yes),
+                child: Text(AppLocalizations.of(context)!.yes),
               ),
               const Padding(padding: EdgeInsets.only(top: 20)),
               FCButton(
                 onPressed: () => Navigator.pop(context, 'No'),
-                child: Text(AppLocalizations.of(context).no),
+                child: Text(AppLocalizations.of(context)!.no),
               ),
             ]));
   }

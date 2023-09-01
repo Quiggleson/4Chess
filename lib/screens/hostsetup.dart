@@ -39,18 +39,18 @@ class HostSetupState extends State<HostSetup> {
 
     return Scaffold(
         resizeToAvoidBottomInset: false,
-        appBar: FCAppBar(title: Text(AppLocalizations.of(context).hostGame)),
+        appBar: FCAppBar(title: Text(AppLocalizations.of(context)!.hostGame)),
         body: Padding(
             padding: const EdgeInsets.all(30),
             child:
                 Column(mainAxisAlignment: MainAxisAlignment.center, children: [
-              Text(AppLocalizations.of(context).hostInstructions,
+              Text(AppLocalizations.of(context)!.hostInstructions,
                   style: const TextStyle(fontSize: 24),
                   textAlign: TextAlign.center),
               const Padding(padding: EdgeInsets.only(top: 30)),
               FCTextField(
                 maxLength: 12,
-                hintText: AppLocalizations.of(context).name,
+                hintText: AppLocalizations.of(context)!.name,
                 onChanged: (value) => setState(() => _name = value),
               ),
               const Padding(padding: EdgeInsets.only(top: 30)),
@@ -73,7 +73,7 @@ class HostSetupState extends State<HostSetup> {
                   : FCButton(
                       onPressed:
                           _name.isEmpty ? null : () => _onConfirm(context),
-                      child: Text(AppLocalizations.of(context).confirm)),
+                      child: Text(AppLocalizations.of(context)!.confirm)),
             ])));
   }
 

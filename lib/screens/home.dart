@@ -18,7 +18,7 @@ class HomeState extends State<Home> {
             padding: const EdgeInsets.all(30),
             child:
                 Column(mainAxisAlignment: MainAxisAlignment.center, children: [
-              Text(AppLocalizations.of(context).fourChess,
+              Text(AppLocalizations.of(context)!.fourChess,
                   style: const TextStyle(fontSize: 96)),
               const Padding(padding: EdgeInsets.only(top: 40)),
               FCButton(
@@ -29,7 +29,7 @@ class HomeState extends State<Home> {
                           ),
                         )
                       },
-                  child: Text(AppLocalizations.of(context).hostGame)),
+                  child: Text(AppLocalizations.of(context)!.hostGame)),
               const Padding(padding: EdgeInsets.only(top: 20)),
               FCButton(
                   onPressed: () => {
@@ -39,7 +39,7 @@ class HomeState extends State<Home> {
                           ),
                         )
                       },
-                  child: Text(AppLocalizations.of(context).joinGame))
+                  child: Text(AppLocalizations.of(context)!.joinGame))
             ])));
   }
 }

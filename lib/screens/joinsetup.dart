@@ -28,12 +28,12 @@ class JoinSetupState extends State<JoinSetup> {
   Widget build(BuildContext context) {
     return Scaffold(
         resizeToAvoidBottomInset: false,
-        appBar: FCAppBar(title: Text(AppLocalizations.of(context).joinGame)),
+        appBar: FCAppBar(title: Text(AppLocalizations.of(context)!.joinGame)),
         body: Padding(
             padding: const EdgeInsets.all(30),
             child:
                 Column(mainAxisAlignment: MainAxisAlignment.start, children: [
-              Text(AppLocalizations.of(context).joinInstructions,
+              Text(AppLocalizations.of(context)!.joinInstructions,
                   style: const TextStyle(fontSize: 24),
                   textAlign: TextAlign.center),
               const Padding(padding: EdgeInsets.only(top: 30)),
@@ -43,7 +43,7 @@ class JoinSetupState extends State<JoinSetup> {
                     children: [
                       FCTextField(
                         focusNode: nameFocusNode,
-                        hintText: AppLocalizations.of(context).name,
+                        hintText: AppLocalizations.of(context)!.name,
                         onChanged: (value) => setState(() => _name = value),
                         maxLength: 12,
                       ),
@@ -53,7 +53,7 @@ class JoinSetupState extends State<JoinSetup> {
                         scrollPadding: const EdgeInsets.only(
                             bottom: double
                                 .infinity), //Makes sure the counter text is in view
-                        hintText: AppLocalizations.of(context).roomCode,
+                        hintText: AppLocalizations.of(context)!.roomCode,
                         onChanged: (value) => setState(() => _roomCode = value),
                         maxLength: 4,
                       ),
@@ -69,7 +69,7 @@ class JoinSetupState extends State<JoinSetup> {
                       onPressed: _name.isEmpty || _roomCode.length < 4
                           ? null
                           : () => _onJoin(context),
-                      child: Text(AppLocalizations.of(context).join)),
+                      child: Text(AppLocalizations.of(context)!.join)),
             ])));
   }
 

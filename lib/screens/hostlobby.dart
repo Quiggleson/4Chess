@@ -80,7 +80,7 @@ class HostLobbyState extends State<HostLobby> {
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: FCAppBar(
-          title: Text(AppLocalizations.of(context).code(widget.roomCode)),
+          title: Text(AppLocalizations.of(context)!.code(widget.roomCode)),
           toolbarHeight: 140,
         ),
         body: Padding(
@@ -89,8 +89,8 @@ class HostLobbyState extends State<HostLobby> {
                 Column(mainAxisAlignment: MainAxisAlignment.start, children: [
               Text(
                   (4 - playerList.length == 0)
-                      ? AppLocalizations.of(context).startGame
-                      : AppLocalizations.of(context)
+                      ? AppLocalizations.of(context)!.startGame
+                      : AppLocalizations.of(context)!
                           .nPlayers(4 - playerList.length),
                   style: const TextStyle(fontSize: 24),
                   textAlign: TextAlign.center),
@@ -123,7 +123,7 @@ class HostLobbyState extends State<HostLobby> {
                 );
               })),
               const Padding(padding: EdgeInsets.only(top: 20)),
-              Text(AppLocalizations.of(context).dragDrop,
+              Text(AppLocalizations.of(context)!.dragDrop,
                   style: const TextStyle(fontSize: 24),
                   textAlign: TextAlign.center),
               const Padding(padding: EdgeInsets.only(top: 20)),
@@ -132,7 +132,7 @@ class HostLobbyState extends State<HostLobby> {
                   : FCButton(
                       onPressed:
                           playerList.isEmpty ? null : () => _onStart(context),
-                      child: Text(AppLocalizations.of(context).start))
+                      child: Text(AppLocalizations.of(context)!.start))
             ])));
   }
 
