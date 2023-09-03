@@ -14,11 +14,11 @@
     "quitGame": "ARE YOU SURE YOU WANT TO QUIT THE GAME?",
     "code" : "code {code}",
     "name": "NAME",
-    "roomCode": "ROOM CODE",
+    "gameCode": "GAME CODE",
     "timeControl": "TIME CONTROL",
     "increment": "INCREMENT",
     "@code": {
-        "description": "Generates proper roomcode message",
+        "description": "Generates proper gameCode message",
         "placeholders": {
             "code": {
                 "type": "String",
