@@ -30,6 +30,7 @@ class HostSetupState extends State<HostSetup> {
   ];
 
   _TimeControl? _dropdownValue;
+  static const int _nameMaxLength = 12;
 
   bool loading = false;
   bool error = false;
@@ -51,7 +52,7 @@ class HostSetupState extends State<HostSetup> {
                   textAlign: TextAlign.center),
               const Padding(padding: EdgeInsets.only(top: 30)),
               FCTextField(
-                maxLength: 12,
+                maxLength: _nameMaxLength,
                 hintText: AppLocalizations.of(context)!.name,
                 onChanged: (value) => setState(() => _name = value),
               ),

@@ -24,6 +24,9 @@ class JoinSetupState extends State<JoinSetup> {
   bool error = false;
   bool invalidGameCode = false;
 
+  static const int _gamecodeMaxLength = 5;
+  static const int _nameMaxLength = 12;
+
   FocusNode nameFocusNode = FocusNode();
   FocusNode roomCodeFocusNode = FocusNode();
 
@@ -48,7 +51,7 @@ class JoinSetupState extends State<JoinSetup> {
                         focusNode: nameFocusNode,
                         hintText: AppLocalizations.of(context)!.name,
                         onChanged: (value) => setState(() => _name = value),
-                        maxLength: 12,
+                        maxLength: _nameMaxLength,
                       ),
                       const Padding(padding: EdgeInsets.only(top: 30)),
                       Visibility(
@@ -66,7 +69,7 @@ class JoinSetupState extends State<JoinSetup> {
                                 .infinity), //Makes sure the counter text is in view
                         hintText: AppLocalizations.of(context)!.roomCode,
                         onChanged: (value) => setState(() => _roomCode = value),
-                        maxLength: 6,
+                        maxLength: _gamecodeMaxLength,
                       ),
                     ]),
               ),
@@ -84,9 +87,10 @@ class JoinSetupState extends State<JoinSetup> {
               loading
                   ? const FCLoadingAnimation()
                   : FCButton(
-                      onPressed: _name.isEmpty || _roomCode.length < 6
-                          ? null
-                          : () => _onJoin(context),
+                      onPressed:
+                          _name.isEmpty || _roomCode.length < _gamecodeMaxLength
+                              ? null
+                              : () => _onJoin(context),
                       child: Text(AppLocalizations.of(context)!.join)),
             ])));
   }
