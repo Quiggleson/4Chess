@@ -19,13 +19,13 @@ class JoinSetup extends StatefulWidget {
 //Todo: CENTER BUTTONS AND MOVEs
 class JoinSetupState extends State<JoinSetup> {
   String _name = "";
-  String _roomCode = "";
+  String _gameCode = "";
   bool loading = false;
   bool error = false;
   bool invalidGameCode = false;
 
   FocusNode nameFocusNode = FocusNode();
-  FocusNode roomCodeFocusNode = FocusNode();
+  FocusNode gameCodeFocusNode = FocusNode();
 
   @override
   Widget build(BuildContext context) {
@@ -60,12 +60,12 @@ class JoinSetupState extends State<JoinSetup> {
                                   fontSize: 16, color: FCColors.error))),
                       const Padding(padding: EdgeInsets.only(top: 10)),
                       FCTextField(
-                        focusNode: roomCodeFocusNode,
+                        focusNode: gameCodeFocusNode,
                         scrollPadding: const EdgeInsets.only(
                             bottom: double
                                 .infinity), //Makes sure the counter text is in view
-                        hintText: AppLocalizations.of(context)!.roomCode,
-                        onChanged: (value) => setState(() => _roomCode = value),
+                        hintText: AppLocalizations.of(context)!.gameCode,
+                        onChanged: (value) => setState(() => _gameCode = value),
                         maxLength: 4,
                       ),
                     ]),
@@ -84,7 +84,7 @@ class JoinSetupState extends State<JoinSetup> {
               loading
                   ? const FCLoadingAnimation()
                   : FCButton(
-                      onPressed: _name.isEmpty || _roomCode.length < 4
+                      onPressed: _name.isEmpty || _gameCode.length < 4
                           ? null
                           : () => _onJoin(context),
                       child: Text(AppLocalizations.of(context)!.join)),
@@ -101,9 +101,9 @@ class JoinSetupState extends State<JoinSetup> {
     try {
       client = Client(
         name: _name,
-        roomCode: _roomCode,
+        gameCode: _gameCode,
       ); // No longer need this, constructor takes care of it gameState: gameState);
-      // client.joinGame(_roomCode); Moved this to client constructor since there would never be a client that doesn't join
+      // client.joinGame(_gameCode); Moved this to client constructor since there would never be a client that doesn't join
     } catch (e) {
       setState(() {
         if (e is FormatException) {
@@ -140,7 +140,7 @@ class JoinSetupState extends State<JoinSetup> {
         Navigator.of(context).push(
           MaterialPageRoute(
               builder: (context) =>
-                  JoinLobby(roomCode: _roomCode, client: client)),
+                  JoinLobby(gameCode: _gameCode, client: client)),
         );
       }
 
@@ -162,7 +162,7 @@ class JoinSetupState extends State<JoinSetup> {
     //   MaterialPageRoute(
     //     builder: (context) => JoinLobby(
     //       client: client,
-    //       roomCode: _roomCode,
+    //       gameCode: _gameCode,
     //     ),
     //   ),
     // );

@@ -90,8 +90,8 @@ class HostSetupState extends State<HostSetup> {
     // Navigator.of(context).push(
     //   MaterialPageRoute(
     //       builder: (context) => HostLobby(
-    //           roomCode: "ABCD",
-    //           client: Client(name: "Deven", roomCode: "ABCD"))),
+    //           gameCode: "ABCD",
+    //           client: Client(name: "Deven", gameCode: "ABCD"))),
     // );
     // return;
 
@@ -108,8 +108,8 @@ class HostSetupState extends State<HostSetup> {
     );
     //status: GameStatus.setup); Don't need to set initial gameStatus, always setup
     Host host = Host(gameState: gameState);
-    String code = await host.getRoomCode();
-    Client client = Client(name: _name, roomCode: await host.getRoomCode());
+    String code = await host.getgameCode();
+    Client client = Client(name: _name, gameCode: await host.getgameCode());
 
     double elapsedTime = 0;
 
@@ -128,7 +128,7 @@ class HostSetupState extends State<HostSetup> {
       if (client.isDirty() && mounted) {
         Navigator.of(context).push(
           MaterialPageRoute(
-              builder: (context) => HostLobby(roomCode: code, client: client)),
+              builder: (context) => HostLobby(gameCode: code, client: client)),
         );
         timer.cancel();
       }

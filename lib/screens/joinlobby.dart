@@ -9,10 +9,10 @@ import '../widgets/fc_numbereditem.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class JoinLobby extends StatefulWidget {
-  JoinLobby({super.key, required this.client, required this.roomCode});
+  JoinLobby({super.key, required this.client, required this.gameCode});
 
   final Client client;
-  final String roomCode;
+  final String gameCode;
   @override
   JoinLobbyState createState() => JoinLobbyState();
 }
@@ -51,7 +51,7 @@ class JoinLobbyState extends State<JoinLobby> {
     return Scaffold(
         appBar: FCAppBar(
           title: Text(
-              "${AppLocalizations.of(context)!.joinGame}\n${AppLocalizations.of(context)!.code(widget.roomCode)}"),
+              "${AppLocalizations.of(context)!.joinGame}\n${AppLocalizations.of(context)!.code(widget.gameCode)}"),
           toolbarHeight: 140,
         ),
         body: Padding(

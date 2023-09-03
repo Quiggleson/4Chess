@@ -12,9 +12,9 @@ class Client {
   late Socket socket;
   bool _isModified = false;
 
-  Client({required String name, required String roomCode}) {
+  Client({required String name, required String gameCode}) {
     // Connect to host - populate ip, gameState, and socket
-    Socket.connect(getHostIp(roomCode), 38383,
+    Socket.connect(getHostIp(gameCode), 38383,
             sourceAddress: InternetAddress.anyIPv4)
         .then((Socket socket) {
       debugPrint('Client has connected to server');
@@ -31,15 +31,17 @@ class Client {
       gameState = GameState(players: [player]);
 
       // Join game
-      join(roomCode);
+      join(gameCode);
     }, onError: (err) {
       debugPrint('Oi there was an error connecting, $err');
     });
   }
 
-  String getHostIp(String roomCode) {
-    int part3 = int.parse(roomCode.substring(0, 2), radix: 16);
-    int part4 = int.parse(roomCode.substring(2, 4), radix: 16);
+  String getHostIp(String gameCode) {
+    // int part1 = int.parse();
+    // int part2 = int.parse();
+    int part3 = int.parse(gameCode.substring(0, 2), radix: 16);
+    int part4 = int.parse(gameCode.substring(2, 4), radix: 16);
 
     return '192.168.$part3.$part4';
   }
@@ -75,12 +77,12 @@ class Client {
   }
 
   // Send player data
-  join(String roomCode) {
+  join(String gameCode) {
     // Message to send to host
     String message = '''
           {
             "call": "join",
-            "roomCode": "$roomCode",
+            "gameCode": "$gameCode",
             "gameState" : $gameState
           }
         ''';
