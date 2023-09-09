@@ -66,7 +66,7 @@ class JoinSetupState extends State<JoinSetup> {
                                 .infinity), //Makes sure the counter text is in view
                         hintText: AppLocalizations.of(context)!.gameCode,
                         onChanged: (value) => setState(() => _gameCode = value),
-                        maxLength: 4,
+                        maxLength: 6,
                       ),
                     ]),
               ),

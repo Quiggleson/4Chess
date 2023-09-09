@@ -89,6 +89,7 @@ class Host {
       debugPrint('Error listening to client: $error');
     }, onDone: () {
       debugPrint('Client disconnected');
+      sockets.remove(socket);
       socket.close();
     });
   }
@@ -100,7 +101,7 @@ class Host {
     debugPrint('getwifiip: $ip');
     List<String> parts = ip?.split('.') ?? ['0'];
     String code = '';
-    for (var part in parts.sublist(2)) {
+    for (var part in parts.sublist(1)) {
       int i = int.parse(part);
       code = code + i.toRadixString(16).padLeft(2, '0').toUpperCase();
     }
@@ -133,6 +134,7 @@ class Host {
           ip: socket.remoteAddress.address.toString());
       player.time = gameState.initTime.toDouble();
       gameState.addPlayer(player);
+      debugPrint('About to write to sockets: $sockets');
       sockets.forEach((s) {
         s.write('''{
         "status": "200",
