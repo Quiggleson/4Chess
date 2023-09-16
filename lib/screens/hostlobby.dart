@@ -29,7 +29,7 @@ class HostLobbyState extends State<HostLobby> {
 
   @override
   void initState() {
-    playerList = widget.client.getFakeGameState().players;
+    playerList = widget.client.getGameState().players;
     Timer.periodic(const Duration(milliseconds: 500), (Timer timer) {
       //This code will run 10 times a second when the host menu starts
       if (widget.client.isDirty()) {
