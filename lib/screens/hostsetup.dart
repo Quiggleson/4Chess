@@ -1,5 +1,7 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:fourchess/theme/fc_colors.dart';
+import 'package:fourchess/widgets/debugonly.dart';
 import 'package:fourchess/widgets/fc_appbar.dart';
 import 'package:fourchess/widgets/fc_dropdownbutton.dart';
 import 'package:fourchess/widgets/fc_loadinganimation.dart';
@@ -71,6 +73,7 @@ class HostSetupState extends State<HostSetup> {
                 },
               ),
               const Spacer(),
+              DebugOnly(text: "force start game", onPress: _forceOnConfirm),
               Visibility(
                   visible: error,
                   child: Text(AppLocalizations.of(context)!.unableToCreate,
@@ -87,15 +90,6 @@ class HostSetupState extends State<HostSetup> {
   }
 
   _onConfirm(BuildContext context) async {
-    //FORCING THE JOIN OF THE NEXT PAGE - THIS IS PURELY FOR TESTING PURPOSES
-    // Navigator.of(context).push(
-    //   MaterialPageRoute(
-    //       builder: (context) => HostLobby(
-    //           roomCode: "ABCD",
-    //           client: Client(name: "Deven", roomCode: "ABCD"))),
-    // );
-    // return;
-
     setState(() {
       loading = true;
       error = false;
@@ -147,6 +141,16 @@ class HostSetupState extends State<HostSetup> {
         timer.cancel();
       }
     });
+  }
+
+  void _forceOnConfirm(BuildContext context) {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+          builder: (context) => HostLobby(
+              roomCode: "ABCDEF",
+              client: Client(name: "Deven", roomCode: "ABCDEF"))),
+    );
+    return;
   }
 }
 

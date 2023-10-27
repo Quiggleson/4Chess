@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:fourchess/screens/game.dart';
 import 'package:fourchess/util/gamestate.dart';
+import 'package:fourchess/widgets/debugonly.dart';
 import 'package:fourchess/widgets/fc_appbar.dart';
 import 'package:fourchess/widgets/fc_button.dart';
 import 'package:fourchess/widgets/fc_loadinganimation.dart';
@@ -127,6 +128,7 @@ class HostLobbyState extends State<HostLobby> {
                   style: const TextStyle(fontSize: 24),
                   textAlign: TextAlign.center),
               const Padding(padding: EdgeInsets.only(top: 20)),
+              DebugOnly(text: "force on start", onPress: _forceOnStart),
               starting
                   ? const FCLoadingAnimation()
                   : FCButton(
@@ -153,13 +155,17 @@ class HostLobbyState extends State<HostLobby> {
   _onStart(BuildContext context) {
     widget.client.start();
     setState(() => starting = true);
+  }
 
+  _forceOnStart(BuildContext context) {
     //FORCING THE JOIN OF THE NEXT PAGE - THIS IS PURELY FOR TESTING PURPOSES
-    // Navigator.of(context).push(
-    //   MaterialPageRoute(
-    //     //if (status.isGood)
-    //     builder: (context) => Game(client: widget.client, id: 0, isHost: true),
-    //   ),
-    // );
+    widget.client.start();
+    setState(() => starting = true);
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        //if (status.isGood)
+        builder: (context) => Game(client: widget.client, id: 0, isHost: true),
+      ),
+    );
   }
 }

@@ -1,5 +1,7 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:fourchess/theme/fc_colors.dart';
+import 'package:fourchess/widgets/debugonly.dart';
 import 'package:fourchess/widgets/fc_alartdialog.dart';
 import 'package:fourchess/widgets/fc_button.dart';
 import 'package:fourchess/widgets/fc_timer.dart';
@@ -33,8 +35,13 @@ class _GameState extends State<Game> {
   void initState() {
     super.initState();
 
-    rotatedPlayers = _rotateArrayAroundIndex(
-        widget.client.getGameState().players, widget.id);
+    List<Player> players = widget.client.getGameState().players;
+
+    if (players.isEmpty && kDebugMode) {
+      players = widget.client.getFakeGameState().players;
+    }
+
+    rotatedPlayers = _rotateArrayAroundIndex(players, widget.id);
 
     timerKeys = [
       for (int i = 0; i < rotatedPlayers.length; i++) GlobalKey<FCTimerState>()
@@ -133,6 +140,7 @@ class _GameState extends State<Game> {
                   ? const Icon(Icons.close)
                   : Icon(MdiIcons.skullOutline)),
         ]),
+        DebugOnly(text: "show popup", onPress: _forceShowDialog),
         const Padding(padding: EdgeInsets.only(bottom: 10))
       ],
     ));
@@ -217,5 +225,9 @@ class _GameState extends State<Game> {
     }
 
     return result;
+  }
+
+  _forceShowDialog(BuildContext context) {
+    _showDialog();
   }
 }

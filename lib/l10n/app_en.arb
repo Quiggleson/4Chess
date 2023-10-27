@@ -12,7 +12,7 @@
     "no": "NO",
     "endGameForAll": "ARE YOU SURE YOU WANT TO END THE GAME FOR ALL PLAYERS?",
     "quitGame": "ARE YOU SURE YOU WANT TO QUIT THE GAME?",
-    "code" : "code {code}",
+    "code" : "CODE {code}",
     "name": "NAME",
     "roomCode": "ROOM CODE",
     "timeControl": "TIME CONTROL",
