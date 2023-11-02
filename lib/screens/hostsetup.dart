@@ -101,10 +101,21 @@ class HostSetupState extends State<HostSetup> {
       increment: _dropdownValue!.increment,
       players: <Player>[],
     );
-    //status: GameStatus.setup); Don't need to set initial gameStatus, always setup
-    Host host = Host(gameState: gameState);
-    String code = await host.getRoomCode();
-    Client client = Client(name: _name, roomCode: await host.getRoomCode());
+
+    late Host host;
+    late String code;
+    late Client client;
+
+    try {
+      host = Host(gameState: gameState);
+      code = await host.getRoomCode();
+      client = Client(name: _name, roomCode: await host.getRoomCode());
+    } catch (e) {
+      loading = false;
+      error = true;
+      debugPrint(e.toString());
+      return;
+    }
 
     double elapsedTime = 0;
 
