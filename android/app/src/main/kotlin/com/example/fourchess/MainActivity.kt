@@ -1,4 +1,4 @@
-package com.example.fourchess
+package com.fourchess.fourchess
 
 import io.flutter.embedding.android.FlutterActivity
 
