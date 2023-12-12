@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:fourchess/screens/joinlobby.dart';
+import 'package:fourchess/theme/fc_colors.dart';
 import 'package:fourchess/widgets/fc_appbar.dart';
 import 'package:fourchess/widgets/fc_textfield.dart';
 import '../backend/client.dart';
 import '../widgets/fc_button.dart';
 import 'dart:async';
-
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import '../widgets/fc_loadinganimation.dart';
+import '../widgets/only_on_focus_scroll_physics.dart';
 
 class JoinSetup extends StatefulWidget {
   const JoinSetup({super.key});
@@ -17,55 +19,75 @@ class JoinSetup extends StatefulWidget {
 //Todo: CENTER BUTTONS AND MOVEs
 class JoinSetupState extends State<JoinSetup> {
   String _name = "";
-  String _roomCode = "";
+  String _gameCode = "";
   bool loading = false;
+  bool error = false;
+  bool invalidGameCode = false;
 
   FocusNode nameFocusNode = FocusNode();
-  FocusNode roomCodeFocusNode = FocusNode();
+  FocusNode gameCodeFocusNode = FocusNode();
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
         resizeToAvoidBottomInset: false,
-        appBar: FCAppBar(title: const Text("JOIN GAME")),
+        appBar: FCAppBar(title: Text(AppLocalizations.of(context)!.joinGame)),
         body: Padding(
             padding: const EdgeInsets.all(30),
             child:
-                Column(mainAxisAlignment: MainAxisAlignment.start, children: [
-              const Text("PICK A NAME AND ENTER A CODE TO JOIN A ROOM",
-                  style: TextStyle(fontSize: 24), textAlign: TextAlign.center),
+                Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+              Text(AppLocalizations.of(context)!.joinInstructions,
+                  style: const TextStyle(fontSize: 24),
+                  textAlign: TextAlign.center),
               const Padding(padding: EdgeInsets.only(top: 30)),
               Expanded(
-                child: ListView(physics: BouncingScrollPhysics(), children: [
-                  FCTextField(
-                    focusNode: nameFocusNode,
-                    hintText: "NAME",
-                    onChanged: (value) => setState(() => _name = value),
-                    maxLength: 12,
-                  ),
-                  const Padding(padding: EdgeInsets.only(top: 30)),
-                  FCTextField(
-                    focusNode: roomCodeFocusNode,
-                    scrollPadding: const EdgeInsets.only(
-                        bottom: double
-                            .infinity), //Makes sure the counter text is in view
-                    hintText: "ROOM CODE",
-                    onChanged: (value) => setState(() => _roomCode = value),
-                    maxLength: 4,
-                  ),
-                ]),
+                child: ListView(
+                    physics: const OnlyOnFocusScrollPhysics(),
+                    children: [
+                      FCTextField(
+                        focusNode: nameFocusNode,
+                        hintText: AppLocalizations.of(context)!.name,
+                        onChanged: (value) => setState(() => _name = value),
+                        maxLength: 12,
+                      ),
+                      const Padding(padding: EdgeInsets.only(top: 30)),
+                      Visibility(
+                          visible: invalidGameCode,
+                          child: Text(
+                              AppLocalizations.of(context)!.invalidGamecode,
+                              textAlign: TextAlign.center,
+                              style: const TextStyle(
+                                  fontSize: 16, color: FCColors.error))),
+                      const Padding(padding: EdgeInsets.only(top: 10)),
+                      FCTextField(
+                        focusNode: gameCodeFocusNode,
+                        scrollPadding: const EdgeInsets.only(
+                            bottom: double
+                                .infinity), //Makes sure the counter text is in view
+                        hintText: AppLocalizations.of(context)!.gameCode,
+                        onChanged: (value) => setState(() => _gameCode = value),
+                        maxLength: 6,
+                      ),
+                    ]),
               ),
               SizedBox(
                   height: nameFocusNode.hasFocus
                       ? 0
-                      : MediaQuery.of(context).viewInsets.bottom),
+                      : MediaQuery.of(context).viewInsets.bottom * .9),
+              Visibility(
+                  visible: error,
+                  child: Text(AppLocalizations.of(context)!.unableToCreate,
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(
+                          fontSize: 16, color: FCColors.error))),
+              const Padding(padding: EdgeInsets.only(top: 10)),
               loading
                   ? const FCLoadingAnimation()
                   : FCButton(
-                      onPressed: _name.isEmpty || _roomCode.length < 4
+                      onPressed: _name.isEmpty || _gameCode.length < 4
                           ? null
                           : () => _onJoin(context),
-                      child: const Text("JOIN")),
+                      child: Text(AppLocalizations.of(context)!.join)),
             ])));
   }
 
@@ -74,13 +96,31 @@ class JoinSetupState extends State<JoinSetup> {
     // GameState gameState =
     //GameState(players: <Player>[], status: GameStatus.setup);
     debugPrint('Making a new client');
-    Client client = Client(
-      name: _name,
-      roomCode: _roomCode,
-    ); // No longer need this, constructor takes care of it gameState: gameState);
-    // client.joinGame(_roomCode); Moved this to client constructor since there would never be a client that doesn't join
+    Client client;
 
-    setState(() => loading = true);
+    try {
+      client = Client(
+        name: _name,
+        gameCode: _gameCode,
+      ); // No longer need this, constructor takes care of it gameState: gameState);
+      // client.joinGame(_gameCode); Moved this to client constructor since there would never be a client that doesn't join
+    } catch (e) {
+      setState(() {
+        if (e is FormatException) {
+          invalidGameCode = true;
+        } else {
+          error = true;
+        }
+      });
+
+      return;
+    }
+
+    setState(() {
+      loading = true;
+      error = false;
+      invalidGameCode = false;
+    });
 
     double elapsedTime = 0;
 
@@ -100,7 +140,7 @@ class JoinSetupState extends State<JoinSetup> {
         Navigator.of(context).push(
           MaterialPageRoute(
               builder: (context) =>
-                  JoinLobby(roomCode: _roomCode, client: client)),
+                  JoinLobby(gameCode: _gameCode, client: client)),
         );
       }
 
@@ -108,15 +148,21 @@ class JoinSetupState extends State<JoinSetup> {
         //We have taken more than 10 seconds to connect, probably a network
         //issue
         timer.cancel();
-        setState(() => loading = false);
+        setState(() {
+          error = true;
+          loading = false;
+        });
+
+        debugPrint("ERROR HAS BEEN REACHED: ${error.toString()}");
       }
     });
 
+    //FORCING THE NEXT PAGE - PURELY FOR TESTING PURPOSES
     // Navigator.of(context).push(
     //   MaterialPageRoute(
     //     builder: (context) => JoinLobby(
     //       client: client,
-    //       roomCode: _roomCode,
+    //       gameCode: _gameCode,
     //     ),
     //   ),
     // );

@@ -25,4 +25,5 @@ class FCColors {
   static const Color primaryBlueDisabled = Color.fromRGBO(130, 195, 255, .5);
   static const Color thinBorder = Color.fromRGBO(88, 155, 255, 1);
   static const Color accentBlue = Color.fromRGBO(68, 170, 255, 1);
+  static const Color error = Color.fromRGBO(91, 0, 0, 1);
 }

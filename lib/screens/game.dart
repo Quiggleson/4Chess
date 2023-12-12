@@ -9,6 +9,7 @@ import '../backend/client.dart';
 import '../util/gamestate.dart';
 import '../util/player.dart';
 import '../widgets/fc_otherplayertimer.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class Game extends StatefulWidget {
   const Game(
@@ -73,7 +74,7 @@ class _GameState extends State<Game> {
                           gameStatus == GameStatus.inProgress,
                       initialTime: self.time,
                       style: FCButton.styleFrom(
-                          textStyle: TextStyle(fontSize: 56),
+                          textStyle: const TextStyle(fontSize: 56),
                           backgroundColor:
                               FCColors.fromPlayerStatus[self.status],
                           disabledBackgroundColor:
@@ -150,6 +151,12 @@ class _GameState extends State<Game> {
 
         if (timerKey.currentState != null) {
           timerKey.currentState!.setTime(player.time);
+
+          if (player.status != PlayerStatus.turn) {
+            timerKey.currentState!.stop();
+          } else {
+            timerKey.currentState!.start();
+          }
         }
       }
     });
@@ -177,11 +184,23 @@ class _GameState extends State<Game> {
   //Todo: understandand and fix warning that pops up whenever this is called
   void _showDialog() {
     String message = widget.isHost
-        ? 'ARE YOU SURE YOU WANT TO END THE GAME FOR ALL PLAYERS?'
-        : 'ARE YOU SURE YOU WANT TO QUIT THE GAME?';
+        ? AppLocalizations.of(context)!.endGameForAll
+        : AppLocalizations.of(context)!.quitGame;
     showDialog(
         context: context,
-        builder: (BuildContext context) => FCAlertDialog(message: message));
+        builder: (BuildContext context) =>
+            FCAlertDialog(message: message, actions: <Widget>[
+              FCButton(
+                onPressed: () =>
+                    Navigator.popUntil(context, ModalRoute.withName('/')),
+                child: Text(AppLocalizations.of(context)!.yes),
+              ),
+              const Padding(padding: EdgeInsets.only(top: 20)),
+              FCButton(
+                onPressed: () => Navigator.pop(context, 'No'),
+                child: Text(AppLocalizations.of(context)!.no),
+              ),
+            ]));
   }
 
   List<T> _rotateArrayAroundIndex<T>(List<T> array, int index) {

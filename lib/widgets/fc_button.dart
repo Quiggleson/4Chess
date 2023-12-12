@@ -68,7 +68,7 @@ class FCButton extends FilledButton {
         visualDensity: style?.visualDensity,
         tapTargetSize: style?.tapTargetSize,
         animationDuration: style?.animationDuration,
-        enableFeedback: style?.enableFeedback,
+        enableFeedback: style?.enableFeedback ?? false,
         alignment: style?.alignment,
         splashFactory: style?.splashFactory);
   }

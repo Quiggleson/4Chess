@@ -39,7 +39,8 @@ class FCAppBar extends AppBar {
       Clip? clipBehavior})
       : super(
             key: key,
-            leading: leading,
+            leading: leading ??
+                BackButton(style: IconButton.styleFrom(enableFeedback: false)),
             automaticallyImplyLeading: automaticallyImplyLeading,
             title: title,
             actions: actions,

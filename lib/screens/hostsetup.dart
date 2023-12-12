@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:fourchess/theme/fc_colors.dart';
 import 'package:fourchess/widgets/fc_appbar.dart';
 import 'package:fourchess/widgets/fc_dropdownbutton.dart';
 import 'package:fourchess/widgets/fc_loadinganimation.dart';
 import 'package:fourchess/widgets/fc_textfield.dart';
-import 'package:loading_animation_widget/loading_animation_widget.dart';
 import '../backend/client.dart';
 import '../util/gamestate.dart';
 import '../backend/host.dart';
@@ -11,6 +11,7 @@ import '../widgets/fc_button.dart';
 import '../util/player.dart';
 import 'hostlobby.dart';
 import 'dart:async';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class HostSetup extends StatefulWidget {
   const HostSetup({super.key});
@@ -31,6 +32,7 @@ class HostSetupState extends State<HostSetup> {
   _TimeControl? _dropdownValue;
 
   bool loading = false;
+  bool error = false;
 
   //FINISH THIS
   @override
@@ -39,19 +41,18 @@ class HostSetupState extends State<HostSetup> {
 
     return Scaffold(
         resizeToAvoidBottomInset: false,
-        appBar: FCAppBar(title: const Text("HOST GAME")),
+        appBar: FCAppBar(title: Text(AppLocalizations.of(context)!.hostGame)),
         body: Padding(
             padding: const EdgeInsets.all(30),
             child:
                 Column(mainAxisAlignment: MainAxisAlignment.center, children: [
-              const Text(
-                  "PICK A NAME AND TIME CONTROL, THEN CONFIRM TO GENERATE A GAME CODE",
-                  style: TextStyle(fontSize: 24),
+              Text(AppLocalizations.of(context)!.hostInstructions,
+                  style: const TextStyle(fontSize: 24),
                   textAlign: TextAlign.center),
               const Padding(padding: EdgeInsets.only(top: 30)),
               FCTextField(
                 maxLength: 12,
-                hintText: "NAME",
+                hintText: AppLocalizations.of(context)!.name,
                 onChanged: (value) => setState(() => _name = value),
               ),
               const Padding(padding: EdgeInsets.only(top: 30)),
@@ -69,16 +70,36 @@ class HostSetupState extends State<HostSetup> {
                 },
               ),
               const Spacer(),
+              Visibility(
+                  visible: error,
+                  child: Text(AppLocalizations.of(context)!.unableToCreate,
+                      style: const TextStyle(
+                          fontSize: 16, color: FCColors.error))),
+              const Padding(padding: EdgeInsets.only(top: 10)),
               loading
                   ? const FCLoadingAnimation()
                   : FCButton(
                       onPressed:
                           _name.isEmpty ? null : () => _onConfirm(context),
-                      child: const Text("CONFIRM")),
+                      child: Text(AppLocalizations.of(context)!.confirm)),
             ])));
   }
 
   _onConfirm(BuildContext context) async {
+    //FORCING THE JOIN OF THE NEXT PAGE - THIS IS PURELY FOR TESTING PURPOSES
+    // Navigator.of(context).push(
+    //   MaterialPageRoute(
+    //       builder: (context) => HostLobby(
+    //           gameCode: "ABCD",
+    //           client: Client(name: "Deven", gameCode: "ABCD"))),
+    // );
+    // return;
+
+    setState(() {
+      loading = true;
+      error = false;
+    });
+
     //When user presses
     GameState gameState = GameState(
       initTime: _dropdownValue!.timeControl,
@@ -87,10 +108,8 @@ class HostSetupState extends State<HostSetup> {
     );
     //status: GameStatus.setup); Don't need to set initial gameStatus, always setup
     Host host = Host(gameState: gameState);
-    String code = await host.getRoomCode();
-    Client client = Client(name: _name, roomCode: await host.getRoomCode());
-
-    setState(() => loading = true);
+    String code = await host.getgameCode();
+    Client client = Client(name: _name, gameCode: await host.getgameCode());
 
     double elapsedTime = 0;
 
@@ -109,7 +128,7 @@ class HostSetupState extends State<HostSetup> {
       if (client.isDirty() && mounted) {
         Navigator.of(context).push(
           MaterialPageRoute(
-              builder: (context) => HostLobby(roomCode: code, client: client)),
+              builder: (context) => HostLobby(gameCode: code, client: client)),
         );
         timer.cancel();
       }
@@ -120,16 +139,13 @@ class HostSetupState extends State<HostSetup> {
         //We have taken more than 10 seconds to connect, probably a network
         //issue
         debugPrint("Failed to host game");
-        setState(() => loading = false);
+        setState(() {
+          loading = false;
+          error = true;
+        });
         timer.cancel();
       }
     });
-
-    //FORCING THE JOIN OF THE NEXT PAGE - THIS IS PURELY FOR TESTING PURPOSES
-    // Navigator.of(context).push(
-    //   MaterialPageRoute(
-    //       builder: (context) => HostLobby(roomCode: code, client: client)),
-    // );
   }
 }
 

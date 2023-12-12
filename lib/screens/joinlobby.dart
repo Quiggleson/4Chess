@@ -6,12 +6,13 @@ import 'dart:async';
 import '../backend/client.dart';
 import '../util/player.dart';
 import '../widgets/fc_numbereditem.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class JoinLobby extends StatefulWidget {
-  JoinLobby({super.key, required this.client, required this.roomCode});
+  JoinLobby({super.key, required this.client, required this.gameCode});
 
   final Client client;
-  final String roomCode;
+  final String gameCode;
   @override
   JoinLobbyState createState() => JoinLobbyState();
 }
@@ -35,7 +36,8 @@ class JoinLobbyState extends State<JoinLobby> {
           debugPrint('Im the front end and I know the game state is starting');
           Navigator.of(context).push(
             MaterialPageRoute(
-                builder: (context) => Game(client: widget.client, id: 0)),
+                builder: (context) => Game(
+                    client: widget.client, id: widget.client.getPlayerIndex())),
           );
         } else {
           //if game is not starting, then the host has reordered the players
@@ -48,7 +50,8 @@ class JoinLobbyState extends State<JoinLobby> {
 
     return Scaffold(
         appBar: FCAppBar(
-          title: Text("JOIN GAME\nCODE: ${widget.roomCode}"),
+          title: Text(
+              "${AppLocalizations.of(context)!.joinGame}\n${AppLocalizations.of(context)!.code(widget.gameCode)}"),
           toolbarHeight: 140,
         ),
         body: Padding(
@@ -59,20 +62,27 @@ class JoinLobbyState extends State<JoinLobby> {
                   //I HAVE NO IDEA WHY THE CENTER IS NEEDED, IT DOESN'T WORK OTHERWISE
                   child: Text(
                       (4 - playerList.length == 0)
-                          ? ("WAITING FOR HOST TO START GAME")
-                          : ("WAITING FOR ${4 - playerList.length} PLAYERS"),
+                          ? AppLocalizations.of(context)!.waitingForHost
+                          : AppLocalizations.of(context)!
+                              .nPlayers(4 - playerList.length),
                       style: const TextStyle(fontSize: 24),
                       textAlign: TextAlign.center)),
-              const Padding(padding: EdgeInsets.only(top: 30)),
-              Expanded(
-                  child: ListView(children: [
-                for (int i = 0; i < playerList.length; i++)
-                  Padding(
-                    padding: const EdgeInsets.only(top: 10, bottom: 10),
-                    child: FCNumberedItem(
-                        content: playerList[i].name, number: i + 1),
-                  )
-              ]))
+              const Padding(padding: EdgeInsets.only(top: 20)),
+              Expanded(child: LayoutBuilder(builder: (context, constraints) {
+                //debugPrint('HEIGHT ${constraints.maxHeight.toString()}');
+                return ListView(children: [
+                  for (int i = 0; i < playerList.length; i++)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 10, bottom: 10),
+                      child: FCNumberedItem(
+                          height: (constraints.maxHeight -
+                                  (playerList.length) * 20) /
+                              4,
+                          content: playerList[i].name,
+                          number: i + 1),
+                    )
+                ]);
+              }))
             ])));
   }
 }

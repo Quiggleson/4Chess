@@ -28,7 +28,7 @@ class FCDropDownButton<T> extends StatefulWidget {
       this.autofocus = false,
       this.dropdownColor = FCColors.primaryBlue,
       this.menuMaxHeight,
-      this.enableFeedback,
+      this.enableFeedback = false,
       this.alignment = AlignmentDirectional.centerStart,
       this.border,
       this.borderRadius,
@@ -56,7 +56,7 @@ class FCDropDownButton<T> extends StatefulWidget {
   final bool autofocus;
   final Color? dropdownColor;
   final double? menuMaxHeight;
-  final bool? enableFeedback;
+  final bool enableFeedback;
   final AlignmentGeometry alignment;
   final BorderRadius? borderRadius;
   final EdgeInsetsGeometry? padding;
@@ -84,13 +84,14 @@ class FCDropdownButtonState<T> extends State<FCDropDownButton<T>> {
             child: DropdownButton(
           icon: widget.icon ??
               Container(
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.only(topRight: Radius.circular(12), bottomRight: Radius.circular(12)),
-                  color: widget.color,
-                ),
+                  decoration: BoxDecoration(
+                    borderRadius: const BorderRadius.only(
+                        topRight: Radius.circular(12),
+                        bottomRight: Radius.circular(12)),
+                    color: widget.color,
+                  ),
                   constraints: BoxConstraints(
                       minHeight: widget.itemHeight ?? 90, minWidth: 72),
-
                   child:
                       const Icon(Icons.arrow_drop_down, color: Colors.black)),
           iconSize: widget.iconSize,
@@ -106,6 +107,7 @@ class FCDropdownButtonState<T> extends State<FCDropDownButton<T>> {
           value: widget.value,
           items: widget.items,
           onChanged: widget.onChanged,
+          enableFeedback: widget.enableFeedback,
         )));
   }
 }

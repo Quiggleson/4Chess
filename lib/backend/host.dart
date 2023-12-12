@@ -8,14 +8,15 @@ import 'package:dart_ipify/dart_ipify.dart';
 
 class Host {
   final int port = 38383;
-  //late Future<String> roomCode;
-  late String roomCode;
+  //late Future<String> gameCode;
+  late String gameCode;
+  late ServerSocket server;
   GameState gameState;
   List<Socket> sockets = [];
 
   Host({required this.gameState}) {
-    //roomCode = getRoomCode();
-    roomCode = 'FHQW';
+    //gameCode = getgameCode();
+    gameCode = 'FHQW';
     listen(port);
   }
 
@@ -23,8 +24,7 @@ class Host {
     // Start the server
     ServerSocket.bind(InternetAddress.anyIPv4, port)
         .then((ServerSocket server) {
-      debugPrint('the address frfr: ${server.address.address.toString()}');
-
+      this.server = server;
       // Print ip if in debug mode
       final info = NetworkInfo();
       info.getWifiIP().then((ip) {
@@ -35,7 +35,7 @@ class Host {
           int i = int.parse(part);
           code = code + i.toRadixString(16).padLeft(2, '0');
         }
-        //roomCode = code;
+        //gameCode = code;
       });
       Ipify.ipv4().then((ip) {
         debugPrint('ipify: $ip');
@@ -89,22 +89,23 @@ class Host {
       debugPrint('Error listening to client: $error');
     }, onDone: () {
       debugPrint('Client disconnected');
+      sockets.remove(socket);
       socket.close();
     });
   }
 
-  Future<String> getRoomCode() async {
+  Future<String> getgameCode() async {
     final info = NetworkInfo();
     String? ip = await info.getWifiIP();
 
     debugPrint('getwifiip: $ip');
     List<String> parts = ip?.split('.') ?? ['0'];
     String code = '';
-    for (var part in parts.sublist(2)) {
+    for (var part in parts.sublist(1)) {
       int i = int.parse(part);
       code = code + i.toRadixString(16).padLeft(2, '0').toUpperCase();
     }
-    roomCode = code;
+    gameCode = code;
     return code;
   }
 
@@ -127,12 +128,13 @@ class Host {
   }
 
   bool onJoinGame(Socket socket, Map<String, dynamic> obj) {
-    if (obj["roomCode"] == roomCode) {
+    if (obj["gameCode"] == gameCode) {
       Player player = Player(
           name: obj["gameState"]["players"][0]["name"],
           ip: socket.remoteAddress.address.toString());
       player.time = gameState.initTime.toDouble();
       gameState.addPlayer(player);
+      debugPrint('About to write to sockets: $sockets');
       sockets.forEach((s) {
         s.write('''{
         "status": "200",
@@ -185,5 +187,9 @@ class Host {
         "gameState": $gameState
       }'''));
     return true;
+  }
+
+  stop() {
+    server.close();
   }
 }

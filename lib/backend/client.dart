@@ -12,36 +12,72 @@ class Client {
   late Socket socket;
   bool _isModified = false;
 
-  Client({required String name, required String roomCode}) {
+  Client({required String name, required String gameCode}) {
     // Connect to host - populate ip, gameState, and socket
-    Socket.connect(getHostIp(roomCode), 38383,
-            sourceAddress: InternetAddress.anyIPv4)
-        .then((Socket socket) {
-      debugPrint('Client has connected to server');
-      // Populate socket
-      this.socket = socket;
+    getHostIp(gameCode).then((ip) {
+      debugPrint('About to reconnect');
+      Socket.connect(ip, 38383, sourceAddress: InternetAddress.anyIPv4).then(
+          (Socket socket) {
+        debugPrint('Client has connected to server');
+        this.socket = socket;
 
-      // Populate ip
-      ip = socket.address.address.toString();
+        this.ip = socket.address.address.toString();
 
-      // Make a player for gameState
-      Player player = Player(name: name, ip: ip);
+        Player player = Player(name: name, ip: ip);
 
-      // Populate gameState
-      gameState = GameState(players: [player]);
+        gameState = GameState(players: [player]);
 
-      // Join game
-      join(roomCode);
-    }, onError: (err) {
-      debugPrint('Oi there was an error connecting, $err');
+        // Join game
+        join(gameCode);
+      }, onError: (err) {
+        debugPrint('Oi there was an error connecting, $err');
+      });
     });
   }
 
-  String getHostIp(String roomCode) {
-    int part3 = int.parse(roomCode.substring(0, 2), radix: 16);
-    int part4 = int.parse(roomCode.substring(2, 4), radix: 16);
+  Future<String> getHostIp(String gameCode) async {
+    int part2 = int.parse(gameCode.substring(0, 2), radix: 16);
+    int part3 = int.parse(gameCode.substring(2, 4), radix: 16);
+    int part4 = int.parse(gameCode.substring(4, 6), radix: 16);
 
-    return '192.168.$part3.$part4';
+    List<String> possibleIps = [
+      '192.$part2.$part3.$part4',
+      '10.$part2.$part3.$part4',
+      '172.$part2.$part3.$part4'
+    ];
+
+    for (final ipAddress in possibleIps) {
+      debugPrint('Trying ip $ipAddress');
+      try {
+        final socket = await Socket.connect(ipAddress, 38383,
+            sourceAddress: InternetAddress.anyIPv4,
+            timeout: const Duration(seconds: 1));
+        debugPrint('We found a good address');
+        socket.close();
+        return ipAddress;
+      } catch (e) {
+        debugPrint('Failed to connect to $ipAddress: $e');
+      }
+    }
+    return ''; // Return null if no connections were successful.
+
+    // Future<String>? ans;
+    // // Want to cycle through each possibleIp
+    // // wait for Socket.connect, if error continue, otherwise return
+    // possibleIps.forEach((ip) async {
+    //   ans = await Socket.connect(ip, 38383, sourceAddress: InternetAddress.anyIPv4)
+    //       .then((Socket socket) {
+    //     debugPrint('Tried and succeeded ip $ip');
+    //     socket.close();
+    //     //return ip;
+    //   }, onError: (err) {
+    //     debugPrint('Tried and failed IP $ip \n$err');
+    //   });
+    // });
+    // String real_ans = await ans ?? '';
+    // return real_ans;
+    // // debugPrint('Failed to get ip');
+    // // return '0.0.0.0';
   }
 
   bool isDirty() {
@@ -55,6 +91,7 @@ class Client {
 
   int getPlayerIndex() {
     for (final (index, player) in gameState.players.indexed) {
+      debugPrint('getplayerindex gamestate: $gameState');
       debugPrint('myip: $ip and playerip: ${player.ip}');
       if (player.ip == ip) {
         return index;
@@ -75,23 +112,21 @@ class Client {
   }
 
   // Send player data
-  join(String roomCode) {
-    // Message to send to host
+  join(String gameCode) {
     String message = '''
           {
             "call": "join",
-            "roomCode": "$roomCode",
+            "gameCode": "$gameCode",
             "gameState" : $gameState
           }
         ''';
 
     debugPrint('Sending $message');
-    // Send the message
     socket.write(message);
 
     // Listen for response - everytime host sends out, this is where it listens
     socket.listen((List<int> data) {
-      // Convert the message to a JSON object
+      debugPrint('Im listening');
       const JsonDecoder decoder = JsonDecoder();
       final String message = utf8.decode(data).trim();
       debugPrint('Received: $message');
@@ -127,6 +162,7 @@ class Client {
 
   start() {
     debugPrint("Client Start");
+    debugPrint('Just started the ip is $ip');
     gameState.status = GameStatus.starting;
     gameState.players[0].status = PlayerStatus.first;
     _isModified = true;
@@ -183,6 +219,7 @@ class Client {
 
   reorder(List<Player> players) {
     debugPrint("Client Reorder");
+    debugPrint('ip is $ip');
     socket.write('''
       {
         "call": "reorder",
@@ -238,5 +275,9 @@ class Client {
       p.time = 180;
     }
     return gs;
+  }
+
+  stop() {
+    socket.close();
   }
 }
