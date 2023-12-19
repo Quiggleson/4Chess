@@ -112,8 +112,8 @@ class JoinSetupState extends State<JoinSetup> {
       client = Client(
         name: _name,
         roomCode: _roomCode,
-      ); // No longer need this, constructor takes care of it gameState: gameState);
-      // client.joinGame(_roomCode); Moved this to client constructor since there would never be a client that doesn't join
+      );
+      debugPrint('Join front end making client $_name');
     } catch (e) {
       setState(() {
         if (e is FormatException) {

@@ -119,6 +119,7 @@ class HostSetupState extends State<HostSetup> {
       host = Host(gameState: gameState);
       code = await host.getRoomCode();
       client = Client(name: _name, roomCode: await host.getRoomCode());
+      debugPrint('Host front end making client $_name');
     } catch (e) {
       loading = false;
       error = true;

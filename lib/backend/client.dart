@@ -6,14 +6,13 @@ import '../util/gamestate.dart';
 
 class Client {
   final int port = 46100;
-  late final String ip;
+  late String ip;
   // Flutter gets mad when this is late so throw a dummy gamestate in there
   GameState gameState = GameState();
   late Socket socket;
   bool _isModified = false;
 
   Client({required String name, required String roomCode}) {
-    // Connect to host - populate ip, gameState, and socket
     getHostIp(roomCode).then((ip) {
       debugPrint('About to reconnect');
       Socket.connect(ip, 38383, sourceAddress: InternetAddress.anyIPv4).then(
@@ -21,9 +20,16 @@ class Client {
         debugPrint('Client has connected to server');
         this.socket = socket;
 
+        // NOT socket.address.address
+        // NOT socket.remoteAdress.address
+        // NOT socket.address.host
+        // NOT socket.remoteAddress.host, dang
         this.ip = socket.address.address.toString();
+        debugPrint(
+            'This is the client, looking for ip: ${socket.remoteAddress.host}');
 
         Player player = Player(name: name, ip: ip);
+        debugPrint('Making player $name with ip $ip');
 
         gameState = GameState(players: [player]);
 
@@ -59,7 +65,7 @@ class Client {
         debugPrint('Failed to connect to $ipAddress: $e');
       }
     }
-    return ''; // Return null if no connections were successful.
+    return '';
 
     // Future<String>? ans;
     // // Want to cycle through each possibleIp
@@ -92,8 +98,9 @@ class Client {
   int getPlayerIndex() {
     for (final (index, player) in gameState.players.indexed) {
       debugPrint('getplayerindex gamestate: $gameState');
-      debugPrint('myip: $ip and playerip: ${player.ip}');
-      if (player.ip == ip) {
+      debugPrint('myip: ${this.ip} and playerip: ${player.ip}');
+      debugPrint('gamestate: ${gameState}');
+      if (player.ip == this.ip) {
         return index;
       }
     }
@@ -121,26 +128,32 @@ class Client {
           }
         ''';
 
-    debugPrint('Sending $message');
+    debugPrint('Client sending $message');
     socket.write(message);
 
-    // Listen for response - everytime host sends out, this is where it listens
+    // Everytime host sends out data, this is where it listens
     socket.listen((List<int> data) {
-      debugPrint('Im listening');
       const JsonDecoder decoder = JsonDecoder();
       final String message = utf8.decode(data).trim();
-      debugPrint('Received: $message');
-      final Map<String, dynamic> obj = decoder.convert(message);
-      if (obj["status"] == '200') {
-        update(obj["gameState"]);
-      } else {
-        debugPrint(obj.toString());
+      debugPrint('Client Received: $message');
+      List<String> messages = message.split("begin:").sublist(1);
+      debugPrint(messages.toString());
+      for (var m in messages) {
+        debugPrint('Dealing with message: $m');
+        final Map<String, dynamic> obj = decoder.convert(m);
+        if (obj["status"] == '200' && obj["call"] == "updateip") {
+          ip = obj["newip"];
+          debugPrint('New client ip: $ip');
+        } else if (obj["status"] == '200') {
+          update(obj["gameState"]);
+        } else {
+          debugPrint(obj.toString());
+        }
       }
     });
   }
 
   update(Map<String, dynamic> gameState) {
-    // Check if the proposed gameState is different and update the isModified flag
     if (gameState != this.gameState.getJson()) {
       this.gameState.initTime = gameState["initTime"];
       this.gameState.increment = gameState["increment"];

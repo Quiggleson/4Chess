@@ -4,7 +4,6 @@ import 'dart:io';
 import '../util/gamestate.dart';
 import 'package:flutter/foundation.dart';
 import 'package:network_info_plus/network_info_plus.dart';
-import 'package:dart_ipify/dart_ipify.dart';
 
 class Host {
   final int port = 38383;
@@ -35,13 +34,7 @@ class Host {
           int i = int.parse(part);
           code = code + i.toRadixString(16).padLeft(2, '0');
         }
-        //roomCode = code;
       });
-      Ipify.ipv4().then((ip) {
-        debugPrint('ipify: $ip');
-      });
-
-      debugPrint('Listening');
 
       // Listen
       server.listen((Socket socket) {
@@ -58,7 +51,6 @@ class Host {
       const JsonDecoder decoder = JsonDecoder();
       final String message = utf8.decode(data).trim();
       final Map<String, dynamic> obj = decoder.convert(message);
-      debugPrint('I am the host, I received object: $obj');
 
       // Call the appropriate method
       switch (obj["call"]) {
@@ -129,14 +121,20 @@ class Host {
 
   bool onJoinGame(Socket socket, Map<String, dynamic> obj) {
     if (obj["roomCode"] == roomCode) {
+      String newip = socket.remoteAddress.address.toString();
       Player player = Player(
           name: obj["gameState"]["players"][0]["name"],
           ip: socket.remoteAddress.address.toString());
       player.time = gameState.initTime.toDouble();
       gameState.addPlayer(player);
-      debugPrint('About to write to sockets: $sockets');
+      socket.write('''begin:{
+        "status": "200",
+        "call": "updateip",
+        "newip" : "$newip"
+        }
+      ''');
       sockets.forEach((s) {
-        s.write('''{
+        s.write('''begin:{
         "status": "200",
         "call": "join",
         "gameState" : $gameState
@@ -145,14 +143,14 @@ class Host {
       });
       return true;
     } else {
-      socket.write('{"status": "403"}');
+      socket.write('begin:{"status": "403"}');
       return false;
     }
   }
 
   bool onStart(Map<String, dynamic> obj) {
     debugPrint("Host onStart");
-    sockets.forEach((socket) => socket.write('''{
+    sockets.forEach((socket) => socket.write('''begin:{
         "status": "200",
         "call": "start",
         "gameState": $gameState
@@ -162,7 +160,7 @@ class Host {
 
   bool onPause(Map<String, dynamic> obj) {
     debugPrint("Host onPause");
-    sockets.forEach((socket) => socket.write('''{
+    sockets.forEach((socket) => socket.write('''begin:{
         "status": "200",
         "call": "pause",
         "gameState": $gameState
@@ -172,7 +170,7 @@ class Host {
 
   bool onNext(Map<String, dynamic> obj) {
     debugPrint("Host onNext");
-    sockets.forEach((socket) => socket.write('''{
+    sockets.forEach((socket) => socket.write('''begin:{
         "status": "200",
         "call": "next",
         "gameState": $gameState
@@ -181,7 +179,7 @@ class Host {
   }
 
   bool onReorder(Map<String, dynamic> obj) {
-    sockets.forEach((socket) => socket.write('''{
+    sockets.forEach((socket) => socket.write('''begin:{
         "status": "200",
         "call": "reorder",
         "gameState": $gameState

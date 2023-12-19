@@ -43,7 +43,6 @@ class HostLobbyState extends State<HostLobby> {
 
             if (mounted &&
                 widget.client.gameState.status == GameStatus.starting) {
-              debugPrint('I am the front end and I heard client is dirty');
               Navigator.of(context).push(
                 MaterialPageRoute(
                   //if (status.isGood)
