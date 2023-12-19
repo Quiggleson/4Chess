@@ -43,7 +43,6 @@ dependencies:
   loading_animation_widget:
   flutter_localizations:
     sdk: flutter
-  update: ^0.3.1
 
 dev_dependencies:
   flutter_test:

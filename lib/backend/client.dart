@@ -12,9 +12,9 @@ class Client {
   late Socket socket;
   bool _isModified = false;
 
-  Client({required String name, required String gameCode}) {
+  Client({required String name, required String roomCode}) {
     // Connect to host - populate ip, gameState, and socket
-    getHostIp(gameCode).then((ip) {
+    getHostIp(roomCode).then((ip) {
       debugPrint('About to reconnect');
       Socket.connect(ip, 38383, sourceAddress: InternetAddress.anyIPv4).then(
           (Socket socket) {
@@ -28,17 +28,17 @@ class Client {
         gameState = GameState(players: [player]);
 
         // Join game
-        join(gameCode);
+        join(roomCode);
       }, onError: (err) {
         debugPrint('Oi there was an error connecting, $err');
       });
     });
   }
 
-  Future<String> getHostIp(String gameCode) async {
-    int part2 = int.parse(gameCode.substring(0, 2), radix: 16);
-    int part3 = int.parse(gameCode.substring(2, 4), radix: 16);
-    int part4 = int.parse(gameCode.substring(4, 6), radix: 16);
+  Future<String> getHostIp(String roomCode) async {
+    int part2 = int.parse(roomCode.substring(0, 2), radix: 16);
+    int part3 = int.parse(roomCode.substring(2, 4), radix: 16);
+    int part4 = int.parse(roomCode.substring(4, 6), radix: 16);
 
     List<String> possibleIps = [
       '192.$part2.$part3.$part4',
@@ -112,11 +112,11 @@ class Client {
   }
 
   // Send player data
-  join(String gameCode) {
+  join(String roomCode) {
     String message = '''
           {
             "call": "join",
-            "gameCode": "$gameCode",
+            "roomCode": "$roomCode",
             "gameState" : $gameState
           }
         ''';

@@ -8,15 +8,15 @@ import 'package:dart_ipify/dart_ipify.dart';
 
 class Host {
   final int port = 38383;
-  //late Future<String> gameCode;
-  late String gameCode;
+  //late Future<String> roomCode;
+  late String roomCode;
   late ServerSocket server;
   GameState gameState;
   List<Socket> sockets = [];
 
   Host({required this.gameState}) {
-    //gameCode = getgameCode();
-    gameCode = 'FHQW';
+    //roomCode = getRoomCode();
+    roomCode = 'FHQW';
     listen(port);
   }
 
@@ -35,7 +35,7 @@ class Host {
           int i = int.parse(part);
           code = code + i.toRadixString(16).padLeft(2, '0');
         }
-        //gameCode = code;
+        //roomCode = code;
       });
       Ipify.ipv4().then((ip) {
         debugPrint('ipify: $ip');
@@ -94,7 +94,7 @@ class Host {
     });
   }
 
-  Future<String> getgameCode() async {
+  Future<String> getRoomCode() async {
     final info = NetworkInfo();
     String? ip = await info.getWifiIP();
 
@@ -105,7 +105,7 @@ class Host {
       int i = int.parse(part);
       code = code + i.toRadixString(16).padLeft(2, '0').toUpperCase();
     }
-    gameCode = code;
+    roomCode = code;
     return code;
   }
 
@@ -128,7 +128,7 @@ class Host {
   }
 
   bool onJoinGame(Socket socket, Map<String, dynamic> obj) {
-    if (obj["gameCode"] == gameCode) {
+    if (obj["roomCode"] == roomCode) {
       Player player = Player(
           name: obj["gameState"]["players"][0]["name"],
           ip: socket.remoteAddress.address.toString());

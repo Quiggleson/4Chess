@@ -11,10 +11,10 @@ import '../backend/client.dart';
 import '../util/player.dart';
 
 class HostLobby extends StatefulWidget {
-  HostLobby({super.key, required this.gameCode, required this.client});
+  HostLobby({super.key, required this.roomCode, required this.client});
 
   final Client client;
-  final String gameCode;
+  final String roomCode;
 
   @override
   HostLobbyState createState() => HostLobbyState();
@@ -80,7 +80,7 @@ class HostLobbyState extends State<HostLobby> {
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: FCAppBar(
-          title: Text(AppLocalizations.of(context)!.code(widget.gameCode)),
+          title: Text(AppLocalizations.of(context)!.code(widget.roomCode)),
           toolbarHeight: 140,
         ),
         body: Padding(

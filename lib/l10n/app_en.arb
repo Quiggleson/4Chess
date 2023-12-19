@@ -14,11 +14,11 @@
     "quitGame": "ARE YOU SURE YOU WANT TO QUIT THE GAME?",
     "code" : "code {code}",
     "name": "NAME",
-    "gameCode": "GAME CODE",
+    "roomCode": "ROOM CODE",
     "timeControl": "TIME CONTROL",
     "increment": "INCREMENT",
     "@code": {
-        "description": "Generates proper gameCode message",
+        "description": "Generates proper roomcode message",
         "placeholders": {
             "code": {
                 "type": "String",
@@ -40,5 +40,5 @@
         }
     },
     "unableToCreate": "AN ERROR OCCURED DURING GAME CREATION",
-    "invalidGamecode": "INVALID GAME CODE"
+    "invalidRoomCode": "INVALID GAME CODE"
 }
