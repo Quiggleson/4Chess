@@ -1,5 +1,7 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:fourchess/theme/fc_colors.dart';
+import 'package:fourchess/widgets/debugonly.dart';
 import 'package:fourchess/widgets/fc_appbar.dart';
 import 'package:fourchess/widgets/fc_dropdownbutton.dart';
 import 'package:fourchess/widgets/fc_loadinganimation.dart';
@@ -30,6 +32,7 @@ class HostSetupState extends State<HostSetup> {
   ];
 
   _TimeControl? _dropdownValue;
+  static const int _nameMaxLength = 12;
 
   bool loading = false;
   bool error = false;
@@ -51,7 +54,7 @@ class HostSetupState extends State<HostSetup> {
                   textAlign: TextAlign.center),
               const Padding(padding: EdgeInsets.only(top: 30)),
               FCTextField(
-                maxLength: 12,
+                maxLength: _nameMaxLength,
                 hintText: AppLocalizations.of(context)!.name,
                 onChanged: (value) => setState(() => _name = value),
               ),
@@ -70,6 +73,7 @@ class HostSetupState extends State<HostSetup> {
                 },
               ),
               const Spacer(),
+              DebugOnly(text: "force start game", onPress: _forceOnConfirm),
               Visibility(
                   visible: error,
                   child: Text(AppLocalizations.of(context)!.unableToCreate,
@@ -106,10 +110,21 @@ class HostSetupState extends State<HostSetup> {
       increment: _dropdownValue!.increment,
       players: <Player>[],
     );
-    //status: GameStatus.setup); Don't need to set initial gameStatus, always setup
-    Host host = Host(gameState: gameState);
-    String code = await host.getRoomCode();
-    Client client = Client(name: _name, roomCode: await host.getRoomCode());
+
+    late Host host;
+    late String code;
+    late Client client;
+
+    try {
+      host = Host(gameState: gameState);
+      code = await host.getRoomCode();
+      client = Client(name: _name, roomCode: await host.getRoomCode());
+    } catch (e) {
+      loading = false;
+      error = true;
+      debugPrint(e.toString());
+      return;
+    }
 
     double elapsedTime = 0;
 
@@ -146,6 +161,16 @@ class HostSetupState extends State<HostSetup> {
         timer.cancel();
       }
     });
+  }
+
+  void _forceOnConfirm(BuildContext context) {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+          builder: (context) => HostLobby(
+              roomCode: "ABCDEF",
+              client: Client(name: "Deven", roomCode: "ABCDEF"))),
+    );
+    return;
   }
 }
 

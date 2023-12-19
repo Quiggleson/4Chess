@@ -1,6 +1,8 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:fourchess/screens/joinlobby.dart';
 import 'package:fourchess/theme/fc_colors.dart';
+import 'package:fourchess/widgets/debugonly.dart';
 import 'package:fourchess/widgets/fc_appbar.dart';
 import 'package:fourchess/widgets/fc_textfield.dart';
 import '../backend/client.dart';
@@ -23,6 +25,9 @@ class JoinSetupState extends State<JoinSetup> {
   bool loading = false;
   bool error = false;
   bool invalidRoomCode = false;
+
+  static const int _roomcodeMaxLength = 6;
+  static const int _nameMaxLength = 12;
 
   FocusNode nameFocusNode = FocusNode();
   FocusNode roomCodeFocusNode = FocusNode();
@@ -48,7 +53,7 @@ class JoinSetupState extends State<JoinSetup> {
                         focusNode: nameFocusNode,
                         hintText: AppLocalizations.of(context)!.name,
                         onChanged: (value) => setState(() => _name = value),
-                        maxLength: 12,
+                        maxLength: _nameMaxLength,
                       ),
                       const Padding(padding: EdgeInsets.only(top: 30)),
                       Visibility(
@@ -66,7 +71,7 @@ class JoinSetupState extends State<JoinSetup> {
                                 .infinity), //Makes sure the counter text is in view
                         hintText: AppLocalizations.of(context)!.roomCode,
                         onChanged: (value) => setState(() => _roomCode = value),
-                        maxLength: 6,
+                        maxLength: _roomcodeMaxLength,
                       ),
                     ]),
               ),
@@ -74,6 +79,10 @@ class JoinSetupState extends State<JoinSetup> {
                   height: nameFocusNode.hasFocus
                       ? 0
                       : MediaQuery.of(context).viewInsets.bottom * .9),
+              DebugOnly(
+                  text: "force start game",
+                  onPress:
+                      _forceOnJoin), //NOTE: This messes with the keyboard open view.
               Visibility(
                   visible: error,
                   child: Text(AppLocalizations.of(context)!.unableToCreate,
@@ -84,9 +93,10 @@ class JoinSetupState extends State<JoinSetup> {
               loading
                   ? const FCLoadingAnimation()
                   : FCButton(
-                      onPressed: _name.isEmpty || _roomCode.length < 4
-                          ? null
-                          : () => _onJoin(context),
+                      onPressed:
+                          _name.isEmpty || _roomCode.length < _roomcodeMaxLength
+                              ? null
+                              : () => _onJoin(context),
                       child: Text(AppLocalizations.of(context)!.join)),
             ])));
   }
@@ -156,15 +166,38 @@ class JoinSetupState extends State<JoinSetup> {
         debugPrint("ERROR HAS BEEN REACHED: ${error.toString()}");
       }
     });
+  }
 
+  _forceOnJoin(BuildContext context) {
     //FORCING THE NEXT PAGE - PURELY FOR TESTING PURPOSES
-    // Navigator.of(context).push(
-    //   MaterialPageRoute(
-    //     builder: (context) => JoinLobby(
-    //       client: client,
-    //       roomCode: _roomCode,
-    //     ),
-    //   ),
-    // );
+    Client client;
+
+    try {
+      client = Client(
+        name: _name,
+        roomCode: _roomCode,
+      );
+      // No longer need this, constructor takes care of it gameState: gameState);
+      // client.joinGame(_roomCode); Moved this to client constructor since there would never be a client that doesn't join
+    } catch (e) {
+      setState(() {
+        if (e is FormatException) {
+          invalidRoomCode = true;
+        } else {
+          error = true;
+        }
+      });
+
+      return;
+    }
+
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => JoinLobby(
+          client: client,
+          roomCode: _roomCode,
+        ),
+      ),
+    );
   }
 }
