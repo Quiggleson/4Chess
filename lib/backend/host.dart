@@ -62,6 +62,10 @@ class Host {
           updateGameState(obj["gameState"]);
           onPause(obj);
           break;
+        case "startTimer":
+          updateGameState(obj["gameState"]);
+          onStartTimer(obj);
+          break;
         case "next":
           updateGameState(obj["gameState"]);
           onNext(obj);
@@ -133,14 +137,14 @@ class Host {
         "newip" : "$newip"
         }
       ''');
-      sockets.forEach((s) {
+      for (Socket s in sockets) {
         s.write('''begin:{
         "status": "200",
         "call": "join",
         "gameState" : $gameState
         }
       ''');
-      });
+      }
       return true;
     } else {
       socket.write('begin:{"status": "403"}');
@@ -153,6 +157,16 @@ class Host {
     sockets.forEach((socket) => socket.write('''begin:{
         "status": "200",
         "call": "start",
+        "gameState": $gameState
+      }'''));
+    return true;
+  }
+
+  bool onStartTimer(Map<String, dynamic> obj) {
+    debugPrint("Host onStartTimer");
+    sockets.forEach((socket) => socket.write('''begin:{
+        "status": "200",
+        "call": "startTimer",
         "gameState": $gameState
       }'''));
     return true;

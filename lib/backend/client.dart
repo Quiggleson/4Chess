@@ -187,6 +187,19 @@ class Client {
     ''');
   }
 
+  startTimer() {
+    debugPrint("Client start timer");
+    gameState.players[0].status = PlayerStatus.turn;
+    gameState.status = GameStatus.inProgress;
+    _isModified = true;
+    socket.write('''
+    {
+      "call": "startTimer",
+      "gameState": $gameState
+    }
+    ''');
+  }
+
   pause() {
     debugPrint("Client Pause");
     gameState.status = GameStatus.paused;
