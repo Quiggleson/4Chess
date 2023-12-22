@@ -77,8 +77,6 @@ class _GameState extends State<Game> {
                     decoration: const BoxDecoration(
                         color: Color.fromRGBO(130, 195, 255, .5)),
                     child: FCTimer(
-                      running: self.status == PlayerStatus.turn &&
-                          gameStatus == GameStatus.inProgress,
                       initialTime: self.time,
                       style: FCButton.styleFrom(
                           textStyle: const TextStyle(fontSize: 56),
@@ -147,11 +145,10 @@ class _GameState extends State<Game> {
   }
 
   //update ui for everything that can change
+  //TODO: IMPLEMENT RESET, PAUSE, RESIGNS
   void _updateUi() {
-    gameState = widget.client.getGameState();
+    gameStatus = widget.client.getGameState().status;
     setState(() {
-      gameStatus = gameState.status;
-
       for (int i = 0; i < timerKeys.length; i++) {
         //set appropriate timer state
         GlobalKey<FCTimerState> timerKey = timerKeys[i];
@@ -219,8 +216,9 @@ class _GameState extends State<Game> {
     List<T> result = [];
 
     for (int i = 0; i < array.length; i++) {
-      int currIndex =
-          i + index < array.length ? i + index : i + index - array.length;
+      int currIndex = i + index < array.length
+          ? i + index
+          : i + index - array.length; //can be simplified using modulo
       result.add(array[currIndex]);
     }
 
