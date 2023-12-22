@@ -147,7 +147,6 @@ class _GameState extends State<Game> {
   //update ui for everything that can change
   //TODO: IMPLEMENT RESET, PAUSE, RESIGNS
   void _updateUi() {
-    gameStatus = widget.client.getGameState().status;
     setState(() {
       for (int i = 0; i < timerKeys.length; i++) {
         //set appropriate timer state
