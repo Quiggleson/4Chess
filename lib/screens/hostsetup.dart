@@ -15,6 +15,7 @@ import 'hostlobby.dart';
 import 'dart:async';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter/services.dart';
+import 'dart:math';
 
 class HostSetup extends StatefulWidget {
   const HostSetup({super.key});
@@ -31,8 +32,6 @@ class HostSetupState extends State<HostSetup> {
 
   bool loading = false;
   bool error = false;
-
-  String _increment = "";
 
   @override
   Widget build(BuildContext context) {
@@ -56,13 +55,13 @@ class HostSetupState extends State<HostSetup> {
                 controller: _timeControlController,
                 textDirection: TextDirection.rtl,
                 hintText: "0:00:00",
-                inputFormatters: [TimeControlTextFormatter()],
+                inputFormatters: const [TimeTextFormatter(numDigits: 5)],
                 onEditingComplete: () {
                   if (_timeControlController.text == "0:00:00") {
                     _timeControlController.text = "";
                   } else {
                     String newTime =
-                        _fixupTimeControl(_timeControlController.text);
+                        _fixupTimeFormat(_timeControlController.text);
                     _timeControlController.text = newTime;
                   }
                 },
@@ -71,12 +70,13 @@ class HostSetupState extends State<HostSetup> {
                 controller: _incrementController,
                 textDirection: TextDirection.rtl,
                 hintText: "0:00",
-                inputFormatters: [IncrementTextFormatter()],
+                inputFormatters: const [TimeTextFormatter(numDigits: 3)],
                 onEditingComplete: () {
-                  if (_incrementController.text == "0:00:00") {
+                  if (_incrementController.text == "0:00") {
                     _incrementController.text = "";
                   } else {
-                    String newTime = _fixupIncrement(_incrementController.text);
+                    String newTime =
+                        _fixupTimeFormat(_incrementController.text);
                     _incrementController.text = newTime;
                   }
                 },
@@ -107,8 +107,8 @@ class HostSetupState extends State<HostSetup> {
 
     //When user presses
     GameState gameState = GameState(
-      initTime: _timeControlToSeconds(_timeControlController.text),
-      increment: _incrementToSeconds(_incrementController.text),
+      initTime: _timeToSeconds(_timeControlController.text),
+      increment: _timeToSeconds(_incrementController.text),
       players: <Player>[],
     );
 
@@ -166,6 +166,7 @@ class HostSetupState extends State<HostSetup> {
   }
 
   void _forceOnConfirm(BuildContext context) {
+    debugPrint(_timeToSeconds(_timeControlController.text).toString());
     Navigator.of(context).push(
       MaterialPageRoute(
           builder: (context) => HostLobby(
@@ -175,98 +176,72 @@ class HostSetupState extends State<HostSetup> {
     return;
   }
 
-  String _fixupTimeControl(String time) {
-    int hours = int.parse(time.substring(0, 1));
-    int minutes = int.parse(time.substring(2, 4));
-    int seconds = int.parse(time.substring(5, 7));
+  //STRING FORMAT METHODS
+  String _fixupTimeFormat(String time) {
+    List<String> splitTimes = time.split(':');
 
-    if (seconds > 60) {
-      seconds -= 60;
-      minutes += 1;
-    }
-    if (minutes > 60) {
-      minutes -= 60;
-      hours += 1;
-    }
+    int carry = 0;
+    for (int i = splitTimes.length - 1; i > -1; i--) {
+      int num = int.parse(splitTimes[i]) + carry;
 
-    String minuteString = minutes < 10 ? "0$minutes" : minutes.toString();
-    String secondString = seconds < 10 ? "0$seconds" : seconds.toString();
+      String padding = "";
+      if (i != 0 && num > 60) {
+        num -= 60;
+        carry = 1;
+        if (num < 10) {
+          padding = "0";
+        }
+      }
 
-    return "$hours:$minuteString:$secondString";
-  }
-
-  String _fixupIncrement(String time) {
-    int minutes = int.parse(time.substring(0, 1));
-    int seconds = int.parse(time.substring(2, 4));
-
-    if (seconds > 60) {
-      seconds -= 60;
-      minutes += 1;
+      splitTimes[i] = "$padding${num.toString()}";
     }
 
-    String minuteString = minutes.toString();
-    String secondString = seconds < 10 ? "0$seconds" : seconds.toString();
-
-    return "$minuteString:$secondString";
+    return splitTimes.join(':');
   }
 
-  int _timeControlToSeconds(String time) {
-    int hours = int.parse(time.substring(0, 1));
-    int minutes = int.parse(time.substring(2, 4));
-    int seconds = int.parse(time.substring(5, 7));
+  int _timeToSeconds(String time) {
+    int sum = 0;
+    List<String> splitTimes = time.split(':');
+    int length = splitTimes.length;
 
-    return hours * 3600 + minutes * 60 + seconds;
-  }
+    for (int i = length - 1; i > -1; i--) {
+      sum += int.parse(splitTimes[i]) * pow(60, length - 1 - i) as int;
+    }
 
-  int _incrementToSeconds(String time) {
-    int minutes = int.parse(time.substring(0, 1));
-    int seconds = int.parse(time.substring(2, 4));
-
-    return minutes * 60 + seconds;
+    return sum;
   }
 }
 
-class TimeControlTextFormatter extends TextInputFormatter {
+class TimeTextFormatter extends TextInputFormatter {
+  const TimeTextFormatter({required this.numDigits});
+
+  final int numDigits;
+
   @override
   TextEditingValue formatEditUpdate(
       TextEditingValue oldValue, TextEditingValue newValue) {
     String noColons = newValue.text.replaceAll(':', '');
     int length = noColons.length;
 
-    if (length > 5) {
-      noColons = noColons.substring(length - 5);
+    if (length > numDigits) {
+      noColons = noColons.substring(length - numDigits);
     } else {
-      noColons = '0' * (5 - length) + noColons;
+      noColons = '0' * (numDigits - length) + noColons;
     }
 
-    String output =
-        "${noColons.substring(0, 1)}:${noColons.substring(1, 3)}:${noColons.substring(3, 5)}";
+    String output = "";
+    for (int i = numDigits; i > 0; i -= 2) {
+      if (i < numDigits) {
+        output = ":$output";
+      }
+      int beg = i > 1 ? i - 2 : 0;
+      output = "${noColons.substring(beg, i)}$output";
+    }
 
     return TextEditingValue(
       text: output,
-      selection: TextSelection.fromPosition(TextPosition(offset: 7)),
-    );
-  }
-}
-
-class IncrementTextFormatter extends TextInputFormatter {
-  @override
-  TextEditingValue formatEditUpdate(
-      TextEditingValue oldValue, TextEditingValue newValue) {
-    String noColons = newValue.text.replaceAll(':', '');
-    int length = noColons.length;
-
-    if (length > 3) {
-      noColons = noColons.substring(length - 3);
-    } else {
-      noColons = '0' * (3 - length) + noColons;
-    }
-
-    String output = "${noColons.substring(0, 1)}:${noColons.substring(1, 3)}";
-
-    return TextEditingValue(
-      text: output,
-      selection: TextSelection.fromPosition(TextPosition(offset: 4)),
+      selection:
+          TextSelection.fromPosition(TextPosition(offset: output.length)),
     );
   }
 }
