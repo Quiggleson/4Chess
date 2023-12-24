@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:fourchess/theme/fc_colors.dart';
 import 'package:fourchess/widgets/debugonly.dart';
 import 'package:fourchess/widgets/fc_appbar.dart';
-import 'package:fourchess/widgets/fc_dropdownbutton.dart';
+import 'dart:core';
 import 'package:fourchess/widgets/fc_loadinganimation.dart';
 import 'package:fourchess/widgets/fc_textfield.dart';
 import '../backend/client.dart';
@@ -14,6 +14,7 @@ import '../util/player.dart';
 import 'hostlobby.dart';
 import 'dart:async';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:flutter/services.dart';
 
 class HostSetup extends StatefulWidget {
   const HostSetup({super.key});
@@ -22,26 +23,19 @@ class HostSetup extends StatefulWidget {
 }
 
 class HostSetupState extends State<HostSetup> {
+  final _timeControlController = TextEditingController();
+  final _incrementController = TextEditingController();
+
   String _name = "";
-
-  final List<_TimeControl> _timeControls = [
-    _TimeControl(180, 3, "3:00 + 2"),
-    _TimeControl(60, 0, "1:00"),
-    _TimeControl(180, 0, "3:00"),
-    _TimeControl(600, 0, "10:00")
-  ];
-
-  _TimeControl? _dropdownValue;
   static const int _nameMaxLength = 12;
 
   bool loading = false;
   bool error = false;
 
-  //FINISH THIS
+  String _increment = "";
+
   @override
   Widget build(BuildContext context) {
-    _dropdownValue ??= _timeControls[0];
-
     return Scaffold(
         resizeToAvoidBottomInset: false,
         appBar: FCAppBar(title: Text(AppLocalizations.of(context)!.hostGame)),
@@ -58,20 +52,36 @@ class HostSetupState extends State<HostSetup> {
                 hintText: AppLocalizations.of(context)!.name,
                 onChanged: (value) => setState(() => _name = value),
               ),
-              const Padding(padding: EdgeInsets.only(top: 30)),
-              FCDropDownButton(
-                value: _dropdownValue,
-                items: [
-                  for (int i = 0; i < _timeControls.length; i++)
-                    DropdownMenuItem(
-                        value: _timeControls[i],
-                        child: Center(child: Text(_timeControls[i].display))),
-                ],
-                onChanged: (value) => {
-                  if (value is _TimeControl)
-                    {setState(() => _dropdownValue = value)}
+              FCTextField(
+                controller: _timeControlController,
+                textDirection: TextDirection.rtl,
+                hintText: "0:00:00",
+                inputFormatters: [TimeControlTextFormatter()],
+                onEditingComplete: () {
+                  if (_timeControlController.text == "0:00:00") {
+                    _timeControlController.text = "";
+                  } else {
+                    String newTime =
+                        _fixupTimeControl(_timeControlController.text);
+                    _timeControlController.text = newTime;
+                  }
                 },
               ),
+              FCTextField(
+                controller: _incrementController,
+                textDirection: TextDirection.rtl,
+                hintText: "0:00",
+                inputFormatters: [IncrementTextFormatter()],
+                onEditingComplete: () {
+                  if (_incrementController.text == "0:00:00") {
+                    _incrementController.text = "";
+                  } else {
+                    String newTime = _fixupIncrement(_incrementController.text);
+                    _incrementController.text = newTime;
+                  }
+                },
+              ),
+              const Padding(padding: EdgeInsets.only(top: 30)),
               const Spacer(),
               DebugOnly(text: "force start game", onPress: _forceOnConfirm),
               Visibility(
@@ -90,15 +100,6 @@ class HostSetupState extends State<HostSetup> {
   }
 
   _onConfirm(BuildContext context) async {
-    //FORCING THE JOIN OF THE NEXT PAGE - THIS IS PURELY FOR TESTING PURPOSES
-    // Navigator.of(context).push(
-    //   MaterialPageRoute(
-    //       builder: (context) => HostLobby(
-    //           roomCode: "ABCD",
-    //           client: Client(name: "Deven", roomCode: "ABCD"))),
-    // );
-    // return;
-
     setState(() {
       loading = true;
       error = false;
@@ -106,8 +107,8 @@ class HostSetupState extends State<HostSetup> {
 
     //When user presses
     GameState gameState = GameState(
-      initTime: _dropdownValue!.timeControl,
-      increment: _dropdownValue!.increment,
+      initTime: _timeControlToSeconds(_timeControlController.text),
+      increment: _incrementToSeconds(_incrementController.text),
       players: <Player>[],
     );
 
@@ -173,12 +174,99 @@ class HostSetupState extends State<HostSetup> {
     );
     return;
   }
+
+  String _fixupTimeControl(String time) {
+    int hours = int.parse(time.substring(0, 1));
+    int minutes = int.parse(time.substring(2, 4));
+    int seconds = int.parse(time.substring(5, 7));
+
+    if (seconds > 60) {
+      seconds -= 60;
+      minutes += 1;
+    }
+    if (minutes > 60) {
+      minutes -= 60;
+      hours += 1;
+    }
+
+    String minuteString = minutes < 10 ? "0$minutes" : minutes.toString();
+    String secondString = seconds < 10 ? "0$seconds" : seconds.toString();
+
+    return "$hours:$minuteString:$secondString";
+  }
+
+  String _fixupIncrement(String time) {
+    int minutes = int.parse(time.substring(0, 1));
+    int seconds = int.parse(time.substring(2, 4));
+
+    if (seconds > 60) {
+      seconds -= 60;
+      minutes += 1;
+    }
+
+    String minuteString = minutes.toString();
+    String secondString = seconds < 10 ? "0$seconds" : seconds.toString();
+
+    return "$minuteString:$secondString";
+  }
+
+  int _timeControlToSeconds(String time) {
+    int hours = int.parse(time.substring(0, 1));
+    int minutes = int.parse(time.substring(2, 4));
+    int seconds = int.parse(time.substring(5, 7));
+
+    return hours * 3600 + minutes * 60 + seconds;
+  }
+
+  int _incrementToSeconds(String time) {
+    int minutes = int.parse(time.substring(0, 1));
+    int seconds = int.parse(time.substring(2, 4));
+
+    return minutes * 60 + seconds;
+  }
 }
 
-class _TimeControl {
-  _TimeControl(this.timeControl, this.increment, this.display);
+class TimeControlTextFormatter extends TextInputFormatter {
+  @override
+  TextEditingValue formatEditUpdate(
+      TextEditingValue oldValue, TextEditingValue newValue) {
+    String noColons = newValue.text.replaceAll(':', '');
+    int length = noColons.length;
 
-  final int timeControl;
-  final int increment;
-  final String display;
+    if (length > 5) {
+      noColons = noColons.substring(length - 5);
+    } else {
+      noColons = '0' * (5 - length) + noColons;
+    }
+
+    String output =
+        "${noColons.substring(0, 1)}:${noColons.substring(1, 3)}:${noColons.substring(3, 5)}";
+
+    return TextEditingValue(
+      text: output,
+      selection: TextSelection.fromPosition(TextPosition(offset: 7)),
+    );
+  }
+}
+
+class IncrementTextFormatter extends TextInputFormatter {
+  @override
+  TextEditingValue formatEditUpdate(
+      TextEditingValue oldValue, TextEditingValue newValue) {
+    String noColons = newValue.text.replaceAll(':', '');
+    int length = noColons.length;
+
+    if (length > 3) {
+      noColons = noColons.substring(length - 3);
+    } else {
+      noColons = '0' * (3 - length) + noColons;
+    }
+
+    String output = "${noColons.substring(0, 1)}:${noColons.substring(1, 3)}";
+
+    return TextEditingValue(
+      text: output,
+      selection: TextSelection.fromPosition(TextPosition(offset: 4)),
+    );
+  }
 }
