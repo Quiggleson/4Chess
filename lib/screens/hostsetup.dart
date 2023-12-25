@@ -26,12 +26,13 @@ class HostSetup extends StatefulWidget {
 class HostSetupState extends State<HostSetup> {
   final _timeControlController = TextEditingController();
   final _incrementController = TextEditingController();
+  final _nameController = TextEditingController();
 
-  String _name = "";
   static const int _nameMaxLength = 12;
 
   bool loading = false;
   bool error = false;
+  bool canConfirm = false;
 
   @override
   Widget build(BuildContext context) {
@@ -47,40 +48,45 @@ class HostSetupState extends State<HostSetup> {
                   textAlign: TextAlign.center),
               const Padding(padding: EdgeInsets.only(top: 30)),
               FCTextField(
-                maxLength: _nameMaxLength,
-                hintText: AppLocalizations.of(context)!.name,
-                onChanged: (value) => setState(() => _name = value),
-              ),
+                  maxLength: _nameMaxLength,
+                  hintText: AppLocalizations.of(context)!.name,
+                  controller: _nameController,
+                  onChanged: (_) => {
+                        setState(() => canConfirm = _canConfirm(
+                            _nameController.text, _timeControlController.text))
+                      }),
               FCTextField(
-                controller: _timeControlController,
-                textDirection: TextDirection.rtl,
-                hintText: "0:00:00",
-                inputFormatters: const [TimeTextFormatter(numDigits: 5)],
-                onEditingComplete: () {
-                  if (_timeControlController.text == "0:00:00") {
-                    _timeControlController.text = "";
-                  } else {
-                    String newTime =
-                        _fixupTimeFormat(_timeControlController.text);
-                    _timeControlController.text = newTime;
-                  }
-                },
-              ),
+                  controller: _timeControlController,
+                  textDirection: TextDirection.rtl,
+                  hintText: "0:00:00",
+                  inputFormatters: const [TimeTextFormatter(numDigits: 5)],
+                  onEditingComplete: () {
+                    if (_timeControlController.text == "0:00:00") {
+                      _timeControlController.text = "";
+                    } else {
+                      String newTime =
+                          _fixupTimeFormat(_timeControlController.text);
+                      _timeControlController.text = newTime;
+                    }
+                  },
+                  onChanged: (_) => {
+                        setState(() => canConfirm = _canConfirm(
+                            _nameController.text, _timeControlController.text))
+                      }),
               FCTextField(
-                controller: _incrementController,
-                textDirection: TextDirection.rtl,
-                hintText: "0:00",
-                inputFormatters: const [TimeTextFormatter(numDigits: 3)],
-                onEditingComplete: () {
-                  if (_incrementController.text == "0:00") {
-                    _incrementController.text = "";
-                  } else {
-                    String newTime =
-                        _fixupTimeFormat(_incrementController.text);
-                    _incrementController.text = newTime;
-                  }
-                },
-              ),
+                  controller: _incrementController,
+                  textDirection: TextDirection.rtl,
+                  hintText: "0:00",
+                  inputFormatters: const [TimeTextFormatter(numDigits: 3)],
+                  onEditingComplete: () {
+                    if (_incrementController.text == "0:00") {
+                      _incrementController.text = "";
+                    } else {
+                      String newTime =
+                          _fixupTimeFormat(_incrementController.text);
+                      _incrementController.text = newTime;
+                    }
+                  }),
               const Padding(padding: EdgeInsets.only(top: 30)),
               const Spacer(),
               DebugOnly(text: "force start game", onPress: _forceOnConfirm),
@@ -93,10 +99,14 @@ class HostSetupState extends State<HostSetup> {
               loading
                   ? const FCLoadingAnimation()
                   : FCButton(
-                      onPressed:
-                          _name.isEmpty ? null : () => _onConfirm(context),
+                      onPressed: canConfirm ? () => _onConfirm(context) : null,
                       child: Text(AppLocalizations.of(context)!.confirm)),
             ])));
+  }
+
+  bool _canConfirm(String name, String timeControl) {
+    bool c = name != "" && (timeControl != "" && timeControl != "0:00:00");
+    return c;
   }
 
   _onConfirm(BuildContext context) async {
@@ -104,7 +114,6 @@ class HostSetupState extends State<HostSetup> {
       loading = true;
       error = false;
     });
-
     //When user presses
     GameState gameState = GameState(
       initTime: _timeToSeconds(_timeControlController.text),
@@ -119,8 +128,8 @@ class HostSetupState extends State<HostSetup> {
     try {
       host = Host(gameState: gameState);
       code = await host.getRoomCode();
-      client = Client(name: _name, roomCode: await host.getRoomCode());
-      debugPrint('Host front end making client $_name');
+      client = Client(name: _nameController.text, roomCode: code);
+      debugPrint('Host front end making client ${_nameController.text}');
     } catch (e) {
       loading = false;
       error = true;
