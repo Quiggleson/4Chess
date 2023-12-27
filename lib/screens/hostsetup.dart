@@ -60,6 +60,7 @@ class HostSetupState extends State<HostSetup> {
                   textDirection: TextDirection.rtl,
                   hintText: "0:00:00",
                   inputFormatters: const [TimeTextFormatter(numDigits: 5)],
+                  keyboardType: TextInputType.number,
                   onEditingComplete: () {
                     if (_timeControlController.text == "0:00:00") {
                       _timeControlController.text = "";
@@ -78,6 +79,7 @@ class HostSetupState extends State<HostSetup> {
                   textDirection: TextDirection.rtl,
                   hintText: "0:00",
                   inputFormatters: const [TimeTextFormatter(numDigits: 3)],
+                  keyboardType: TextInputType.number,
                   onEditingComplete: () {
                     if (_incrementController.text == "0:00") {
                       _incrementController.text = "";
