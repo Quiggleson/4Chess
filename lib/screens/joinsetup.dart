@@ -79,10 +79,10 @@ class JoinSetupState extends State<JoinSetup> {
                   height: nameFocusNode.hasFocus
                       ? 0
                       : MediaQuery.of(context).viewInsets.bottom * .9),
-              DebugOnly(
-                  text: "force start game",
-                  onPress:
-                      _forceOnJoin), //NOTE: This messes with the keyboard open view.
+              // DebugOnly(
+              //     text: "force start game",
+              //     onPress:
+              //         _forceOnJoin), //NOTE: This messes with the keyboard open view.
               Visibility(
                   visible: error,
                   child: Text(AppLocalizations.of(context)!.unableToCreate,

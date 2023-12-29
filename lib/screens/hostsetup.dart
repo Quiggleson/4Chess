@@ -58,7 +58,7 @@ class HostSetupState extends State<HostSetup> {
                                     _nameController.text,
                                     _timeControlController.text))
                               }),
-                      Text("TIME CONTROL",
+                      Text(AppLocalizations.of(context)!.timeControl,
                           style: const TextStyle(fontSize: 24),
                           textAlign: TextAlign.center),
                       Focus(
@@ -87,7 +87,7 @@ class HostSetupState extends State<HostSetup> {
                                         _timeControlController.text))
                                   })),
                       const Padding(padding: EdgeInsets.only(top: 15)),
-                      Text("INCREMENT",
+                      Text(AppLocalizations.of(context)!.increment,
                           style: const TextStyle(fontSize: 24),
                           textAlign: TextAlign.center),
                       Focus(
@@ -111,8 +111,8 @@ class HostSetupState extends State<HostSetup> {
                               ],
                               keyboardType: TextInputType.number)),
                       const Padding(padding: EdgeInsets.only(top: 30)),
-                      DebugOnly(
-                          text: "force start game", onPress: _forceOnConfirm),
+                      // DebugOnly(
+                      //     text: "force start game", onPress: _forceOnConfirm),
                       Visibility(
                           visible: error,
                           child: Text(
