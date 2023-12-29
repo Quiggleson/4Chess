@@ -55,6 +55,9 @@ class HostSetupState extends State<HostSetup> {
                         setState(() => canConfirm = _canConfirm(
                             _nameController.text, _timeControlController.text))
                       }),
+              Text("TIME CONTROL",
+                  style: const TextStyle(fontSize: 24),
+                  textAlign: TextAlign.center),
               Focus(
                   onFocusChange: (focused) {
                     if (!focused) {
@@ -80,6 +83,10 @@ class HostSetupState extends State<HostSetup> {
                                 _nameController.text,
                                 _timeControlController.text))
                           })),
+              const Padding(padding: EdgeInsets.only(top: 15)),
+              Text("INCREMENT",
+                  style: const TextStyle(fontSize: 24),
+                  textAlign: TextAlign.center),
               Focus(
                   onFocusChange: (focused) {
                     if (!focused) {
