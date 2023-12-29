@@ -55,40 +55,51 @@ class HostSetupState extends State<HostSetup> {
                         setState(() => canConfirm = _canConfirm(
                             _nameController.text, _timeControlController.text))
                       }),
-              FCTextField(
-                  controller: _timeControlController,
-                  textDirection: TextDirection.rtl,
-                  hintText: "0:00:00",
-                  inputFormatters: const [TimeTextFormatter(numDigits: 5)],
-                  keyboardType: TextInputType.number,
-                  onEditingComplete: () {
-                    if (_timeControlController.text == "0:00:00") {
-                      _timeControlController.text = "";
-                    } else {
-                      String newTime =
-                          _fixupTimeFormat(_timeControlController.text);
-                      _timeControlController.text = newTime;
+              Focus(
+                  onFocusChange: (focused) {
+                    if (!focused) {
+                      if (_timeControlController.text == "0:00:00") {
+                        _timeControlController.text = "";
+                      } else {
+                        _timeControlController.text =
+                            _fixupTimeFormat(_timeControlController.text);
+                      }
                     }
                   },
-                  onChanged: (_) => {
-                        setState(() => canConfirm = _canConfirm(
-                            _nameController.text, _timeControlController.text))
-                      }),
-              FCTextField(
-                  controller: _incrementController,
-                  textDirection: TextDirection.rtl,
-                  hintText: "0:00",
-                  inputFormatters: const [TimeTextFormatter(numDigits: 3)],
-                  keyboardType: TextInputType.number,
-                  onEditingComplete: () {
-                    if (_incrementController.text == "0:00") {
-                      _incrementController.text = "";
-                    } else {
-                      String newTime =
-                          _fixupTimeFormat(_incrementController.text);
-                      _incrementController.text = newTime;
+                  child: FCTextField(
+                      controller: _timeControlController,
+                      textDirection: TextDirection.rtl,
+                      hintText: "0:00:00",
+                      inputFormatters: [
+                        FilteringTextInputFormatter.digitsOnly,
+                        const TimeTextFormatter(numDigits: 5)
+                      ],
+                      keyboardType: TextInputType.number,
+                      onChanged: (_) => {
+                            setState(() => canConfirm = _canConfirm(
+                                _nameController.text,
+                                _timeControlController.text))
+                          })),
+              Focus(
+                  onFocusChange: (focused) {
+                    if (!focused) {
+                      if (_incrementController.text == "0:00") {
+                        _incrementController.text = "";
+                      } else {
+                        _incrementController.text =
+                            _fixupTimeFormat(_incrementController.text);
+                      }
                     }
-                  }),
+                  },
+                  child: FCTextField(
+                      controller: _incrementController,
+                      textDirection: TextDirection.rtl,
+                      hintText: "0:00",
+                      inputFormatters: [
+                        FilteringTextInputFormatter.digitsOnly,
+                        const TimeTextFormatter(numDigits: 3)
+                      ],
+                      keyboardType: TextInputType.number)),
               const Padding(padding: EdgeInsets.only(top: 30)),
               const Spacer(),
               DebugOnly(text: "force start game", onPress: _forceOnConfirm),
@@ -196,9 +207,13 @@ class HostSetupState extends State<HostSetup> {
       int num = int.parse(splitTimes[i]) + carry;
 
       String padding = "";
-      if (i != 0 && num > 60) {
-        num -= 60;
-        carry = 1;
+      if (i != 0) {
+        if (num >= 60) {
+          num -= 60;
+          carry = 1;
+        } else {
+          carry = 0;
+        }
         if (num < 10) {
           padding = "0";
         }
@@ -245,7 +260,7 @@ class TimeTextFormatter extends TextInputFormatter {
       if (i < numDigits) {
         output = ":$output";
       }
-      int beg = i > 1 ? i - 2 : 0;
+      int beg = i > 2 ? i - 2 : 0;
       output = "${noColons.substring(beg, i)}$output";
     }
 
