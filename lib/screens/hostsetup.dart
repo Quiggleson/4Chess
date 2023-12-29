@@ -39,89 +39,95 @@ class HostSetupState extends State<HostSetup> {
     return Scaffold(
         resizeToAvoidBottomInset: false,
         appBar: FCAppBar(title: Text(AppLocalizations.of(context)!.hostGame)),
-        body: Padding(
-            padding: const EdgeInsets.all(30),
-            child:
-                Column(mainAxisAlignment: MainAxisAlignment.center, children: [
-              Text(AppLocalizations.of(context)!.hostInstructions,
-                  style: const TextStyle(fontSize: 24),
-                  textAlign: TextAlign.center),
-              const Padding(padding: EdgeInsets.only(top: 30)),
-              FCTextField(
-                  maxLength: _nameMaxLength,
-                  hintText: AppLocalizations.of(context)!.name,
-                  controller: _nameController,
-                  onChanged: (_) => {
-                        setState(() => canConfirm = _canConfirm(
-                            _nameController.text, _timeControlController.text))
-                      }),
-              Text("TIME CONTROL",
-                  style: const TextStyle(fontSize: 24),
-                  textAlign: TextAlign.center),
-              Focus(
-                  onFocusChange: (focused) {
-                    if (!focused) {
-                      if (_timeControlController.text == "0:00:00") {
-                        _timeControlController.text = "";
-                      } else {
-                        _timeControlController.text =
-                            _fixupTimeFormat(_timeControlController.text);
-                      }
-                    }
-                  },
-                  child: FCTextField(
-                      controller: _timeControlController,
-                      textDirection: TextDirection.rtl,
-                      hintText: "0:00:00",
-                      inputFormatters: [
-                        FilteringTextInputFormatter.digitsOnly,
-                        const TimeTextFormatter(numDigits: 5)
-                      ],
-                      keyboardType: TextInputType.number,
-                      onChanged: (_) => {
-                            setState(() => canConfirm = _canConfirm(
-                                _nameController.text,
-                                _timeControlController.text))
-                          })),
-              const Padding(padding: EdgeInsets.only(top: 15)),
-              Text("INCREMENT",
-                  style: const TextStyle(fontSize: 24),
-                  textAlign: TextAlign.center),
-              Focus(
-                  onFocusChange: (focused) {
-                    if (!focused) {
-                      if (_incrementController.text == "0:00") {
-                        _incrementController.text = "";
-                      } else {
-                        _incrementController.text =
-                            _fixupTimeFormat(_incrementController.text);
-                      }
-                    }
-                  },
-                  child: FCTextField(
-                      controller: _incrementController,
-                      textDirection: TextDirection.rtl,
-                      hintText: "0:00",
-                      inputFormatters: [
-                        FilteringTextInputFormatter.digitsOnly,
-                        const TimeTextFormatter(numDigits: 3)
-                      ],
-                      keyboardType: TextInputType.number)),
-              const Padding(padding: EdgeInsets.only(top: 30)),
-              const Spacer(),
-              DebugOnly(text: "force start game", onPress: _forceOnConfirm),
-              Visibility(
-                  visible: error,
-                  child: Text(AppLocalizations.of(context)!.unableToCreate,
-                      style: const TextStyle(
-                          fontSize: 16, color: FCColors.error))),
-              const Padding(padding: EdgeInsets.only(top: 10)),
-              loading
-                  ? const FCLoadingAnimation()
-                  : FCButton(
-                      onPressed: canConfirm ? () => _onConfirm(context) : null,
-                      child: Text(AppLocalizations.of(context)!.confirm)),
-            ])));
+        body: RawScrollbar(
+            child: SingleChildScrollView(
+                padding: const EdgeInsets.all(30),
+                child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(AppLocalizations.of(context)!.hostInstructions,
+                          style: const TextStyle(fontSize: 24),
+                          textAlign: TextAlign.center),
+                      const Padding(padding: EdgeInsets.only(top: 30)),
+                      FCTextField(
+                          maxLength: _nameMaxLength,
+                          hintText: AppLocalizations.of(context)!.name,
+                          controller: _nameController,
+                          onChanged: (_) => {
+                                setState(() => canConfirm = _canConfirm(
+                                    _nameController.text,
+                                    _timeControlController.text))
+                              }),
+                      Text("TIME CONTROL",
+                          style: const TextStyle(fontSize: 24),
+                          textAlign: TextAlign.center),
+                      Focus(
+                          onFocusChange: (focused) {
+                            if (!focused) {
+                              if (_timeControlController.text == "0:00:00") {
+                                _timeControlController.text = "";
+                              } else {
+                                _timeControlController.text = _fixupTimeFormat(
+                                    _timeControlController.text);
+                              }
+                            }
+                          },
+                          child: FCTextField(
+                              controller: _timeControlController,
+                              textDirection: TextDirection.rtl,
+                              hintText: "0:00:00",
+                              inputFormatters: [
+                                FilteringTextInputFormatter.digitsOnly,
+                                const TimeTextFormatter(numDigits: 5)
+                              ],
+                              keyboardType: TextInputType.number,
+                              onChanged: (_) => {
+                                    setState(() => canConfirm = _canConfirm(
+                                        _nameController.text,
+                                        _timeControlController.text))
+                                  })),
+                      const Padding(padding: EdgeInsets.only(top: 15)),
+                      Text("INCREMENT",
+                          style: const TextStyle(fontSize: 24),
+                          textAlign: TextAlign.center),
+                      Focus(
+                          onFocusChange: (focused) {
+                            if (!focused) {
+                              if (_incrementController.text == "0:00") {
+                                _incrementController.text = "";
+                              } else {
+                                _incrementController.text =
+                                    _fixupTimeFormat(_incrementController.text);
+                              }
+                            }
+                          },
+                          child: FCTextField(
+                              controller: _incrementController,
+                              textDirection: TextDirection.rtl,
+                              hintText: "0:00",
+                              inputFormatters: [
+                                FilteringTextInputFormatter.digitsOnly,
+                                const TimeTextFormatter(numDigits: 3)
+                              ],
+                              keyboardType: TextInputType.number)),
+                      const Padding(padding: EdgeInsets.only(top: 30)),
+                      DebugOnly(
+                          text: "force start game", onPress: _forceOnConfirm),
+                      Visibility(
+                          visible: error,
+                          child: Text(
+                              AppLocalizations.of(context)!.unableToCreate,
+                              style: const TextStyle(
+                                  fontSize: 16, color: FCColors.error))),
+                      const Padding(padding: EdgeInsets.only(top: 10)),
+                      loading
+                          ? const FCLoadingAnimation()
+                          : FCButton(
+                              onPressed:
+                                  canConfirm ? () => _onConfirm(context) : null,
+                              child:
+                                  Text(AppLocalizations.of(context)!.confirm)),
+                    ]))));
   }
 
   bool _canConfirm(String name, String timeControl) {
