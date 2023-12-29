@@ -111,8 +111,8 @@ class HostSetupState extends State<HostSetup> {
                               ],
                               keyboardType: TextInputType.number)),
                       const Padding(padding: EdgeInsets.only(top: 30)),
-                      // DebugOnly(
-                      //     text: "force start game", onPress: _forceOnConfirm),
+                      DebugOnly(
+                          text: "force start game", onPress: _forceOnConfirm),
                       Visibility(
                           visible: error,
                           child: Text(
