@@ -127,14 +127,17 @@ class HostSetupState extends State<HostSetup> {
       return;
     }
 
-    client.addListener(() {
+    void goToHostLobby() {
       if (mounted) {
         Navigator.of(context).push(
           MaterialPageRoute(
               builder: (context) => HostLobby(roomCode: code, client: client)),
         );
       }
-    });
+      client.removeListener(goToHostLobby);
+    }
+
+    client.addListener(goToHostLobby);
 
     Timer(const Duration(milliseconds: 10000), () {
       if (!mounted) {

@@ -126,7 +126,7 @@ class JoinSetupState extends State<JoinSetup> {
       return;
     }
 
-    client.addListener(() {
+    void goToJoinLobby() {
       if (mounted) {
         Navigator.of(context).push(
           MaterialPageRoute(
@@ -134,7 +134,10 @@ class JoinSetupState extends State<JoinSetup> {
                   JoinLobby(roomCode: _roomCode, client: client)),
         );
       }
-    });
+      client.removeListener(goToJoinLobby);
+    }
+
+    client.addListener(goToJoinLobby);
 
     setState(() {
       loading = true;
