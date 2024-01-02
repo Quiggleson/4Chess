@@ -126,45 +126,35 @@ class JoinSetupState extends State<JoinSetup> {
       return;
     }
 
-    setState(() {
-      loading = true;
-      error = false;
-      invalidRoomCode = false;
-    });
-
-    double elapsedTime = 0;
-
-    Timer.periodic(const Duration(milliseconds: 500), (timer) {
-      //checks twice a second to see if have successfully joined the game
-      elapsedTime += .5;
-
-      //Mounted checks if the widget is still in the build tree i.e make sure we're still on this screen before we do
-      //any funny stuff
-
-      if (!mounted) {
-        timer.cancel();
-        debugPrint("User has left the join setup screen");
-      }
-
-      if (client.isDirty() && mounted) {
+    client.addListener(() {
+      if (mounted) {
         Navigator.of(context).push(
           MaterialPageRoute(
               builder: (context) =>
                   JoinLobby(roomCode: _roomCode, client: client)),
         );
       }
+    });
 
-      if (elapsedTime > 10 && mounted) {
-        //We have taken more than 10 seconds to connect, probably a network
-        //issue
-        timer.cancel();
-        setState(() {
-          error = true;
-          loading = false;
-        });
+    setState(() {
+      loading = true;
+      error = false;
+      invalidRoomCode = false;
+    });
 
-        debugPrint("ERROR HAS BEEN REACHED: ${error.toString()}");
+    Timer(const Duration(milliseconds: 10000), () {
+      if (!mounted) {
+        debugPrint("User has left the join setup screen");
+        return;
       }
+
+      //We have taken more than 10 seconds to connect, probably a network
+      //issue
+      setState(() {
+        error = true;
+        loading = false;
+      });
+      debugPrint("ERROR HAS BEEN REACHED: ${error.toString()}");
     });
   }
 

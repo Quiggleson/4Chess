@@ -4,7 +4,7 @@ import 'package:flutter/foundation.dart';
 import '../util/player.dart';
 import '../util/gamestate.dart';
 
-class Client {
+class Client with ChangeNotifier {
   final int port = 46100;
   late String ip;
   // Flutter gets mad when this is late so throw a dummy gamestate in there
@@ -169,6 +169,7 @@ class Client {
             time: d["time"]));
       }
       this.gameState.players = players;
+      notifyListeners();
       _isModified = true;
     }
   }
@@ -178,6 +179,7 @@ class Client {
     debugPrint('Just started the ip is $ip');
     gameState.status = GameStatus.starting;
     gameState.players[0].status = PlayerStatus.first;
+    notifyListeners();
     _isModified = true;
     socket.write('''
     {
@@ -191,6 +193,7 @@ class Client {
     debugPrint("Client start timer");
     gameState.players[0].status = PlayerStatus.turn;
     gameState.status = GameStatus.inProgress;
+    notifyListeners();
     _isModified = true;
     socket.write('''
     {
