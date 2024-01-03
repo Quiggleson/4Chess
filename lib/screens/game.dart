@@ -27,19 +27,17 @@ class Game extends StatefulWidget {
 
 class _GameState extends State<Game> {
   late List<GlobalKey<FCTimerState>> timerKeys;
-  late GlobalKey<FCTimerState> selfTimer;
   late int numPlayers;
-  late Player self;
+  late List<Player> players;
 
   @override
   void initState() {
-    super.initState();
-    numPlayers = widget.client.getGameState().players.length;
-    self = widget.client.getGameState().players[_getPlayerOffset(0)];
+    players = widget.client.getGameState().players;
+    numPlayers = players.length;
     timerKeys = [
       for (int i = 0; i < numPlayers; i++) GlobalKey<FCTimerState>()
     ];
-    selfTimer = timerKeys[0];
+    super.initState();
   }
 
   @override
@@ -49,7 +47,6 @@ class _GameState extends State<Game> {
         builder: (_, __) {
           GameState state = widget.client.getGameState();
           GameStatus gameStatus = state.status;
-          List<Player> players = state.players;
 
           for (int i = 0; i < numPlayers; i++) {
             Player player = players[i];
@@ -63,7 +60,21 @@ class _GameState extends State<Game> {
           return Scaffold(
               body: Column(
             children: [
-              _buildPlayerRow(gameStatus),
+              Builder(builder: (context) {
+                List<Widget> bar = [];
+                for (int i = 1; i < numPlayers; i++) {
+                  bar.add(OtherPlayerTimer(
+                    timerState: timerKeys[i],
+                    playerInfo: players[i],
+                    gameStatus: gameStatus,
+                  ));
+
+                  if (i != numPlayers - 1) {
+                    bar.add(const Padding(padding: EdgeInsets.only(right: 20)));
+                  }
+                }
+                return Row(children: bar);
+              }),
               Expanded(
                   child: Padding(
                       padding: const EdgeInsets.only(top: 20, bottom: 10),
@@ -72,19 +83,19 @@ class _GameState extends State<Game> {
                           decoration: const BoxDecoration(
                               color: Color.fromRGBO(130, 195, 255, .5)),
                           child: FCTimer(
-                            initialTime: self.time,
+                            initialTime: players[0].time,
                             style: FCButton.styleFrom(
                                 textStyle: const TextStyle(fontSize: 56),
-                                backgroundColor:
-                                    FCColors.fromPlayerStatus[self.status],
-                                disabledBackgroundColor:
-                                    FCColors.fromPlayerStatus[self.status]),
-                            key: selfTimer,
-                            enabled: self.status == PlayerStatus.first ||
-                                self.status == PlayerStatus.turn,
+                                backgroundColor: FCColors
+                                    .fromPlayerStatus[players[0].status],
+                                disabledBackgroundColor: FCColors
+                                    .fromPlayerStatus[players[0].status]),
+                            key: timerKeys[0],
+                            enabled: players[0].status == PlayerStatus.first ||
+                                players[0].status == PlayerStatus.turn,
                             onStop: (stopTime) {
                               widget.client
-                                  .next(selfTimer.currentState!.getTime());
+                                  .next(timerKeys[0].currentState!.getTime());
                             },
                             onTimeout: () => {widget.client.lost()},
                           )))),
@@ -124,13 +135,13 @@ class _GameState extends State<Game> {
                         ? null
                         : () {
                             widget.client.lost();
-                            if (self.status == PlayerStatus.lost) {
+                            if (players[0].status == PlayerStatus.lost) {
                               setState(() {
                                 _showDialog();
                               });
                             }
                           },
-                    icon: self.status == PlayerStatus.lost
+                    icon: players[0].status == PlayerStatus.lost
                         ? const Icon(Icons.close)
                         : Icon(MdiIcons.skullOutline)),
               ]),
@@ -139,26 +150,6 @@ class _GameState extends State<Game> {
             ],
           ));
         });
-  }
-
-  //Build player row
-  Row _buildPlayerRow(GameStatus gameStatus) {
-    List<Widget> bar = [];
-
-    for (int i = 1; i < numPlayers; i++) {
-      Player player = widget.client.getGameState().players[_getPlayerOffset(i)];
-      bar.add(OtherPlayerTimer(
-        timerState: timerKeys[_getPlayerOffset(i)],
-        playerInfo: player,
-        gameStatus: gameStatus,
-      ));
-
-      if (i != numPlayers - 1) {
-        bar.add(const Padding(padding: EdgeInsets.only(right: 20)));
-      }
-    }
-
-    return Row(children: bar);
   }
 
   //Todo: understandand and fix warning that pops up whenever this is called
@@ -181,10 +172,6 @@ class _GameState extends State<Game> {
                 child: Text(AppLocalizations.of(context)!.no),
               ),
             ]));
-  }
-
-  int _getPlayerOffset(offset) {
-    return (offset % numPlayers) as int;
   }
 
   _forceShowDialog(BuildContext context) {
