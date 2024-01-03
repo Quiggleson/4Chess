@@ -50,10 +50,12 @@ class _GameState extends State<Game> {
 
           for (int i = 0; i < numPlayers; i++) {
             Player player = players[i];
-            if (player.status == PlayerStatus.turn) {
-              timerKeys[i].currentState!.start();
-            } else {
-              timerKeys[i].currentState!.stop();
+            if (timerKeys[i].currentState != null) {
+              if (player.status == PlayerStatus.turn) {
+                timerKeys[i].currentState!.start();
+              } else {
+                timerKeys[i].currentState!.stop();
+              }
             }
           }
 
