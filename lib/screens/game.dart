@@ -67,7 +67,7 @@ class _GameState extends State<Game> {
                 for (int i = 1; i < numPlayers; i++) {
                   bar.add(OtherPlayerTimer(
                     timerState: timerKeys[i],
-                    playerInfo: players[i],
+                    playerInfo: players[_playerOffset(i)],
                     gameStatus: gameStatus,
                   ));
 
@@ -85,19 +85,23 @@ class _GameState extends State<Game> {
                           decoration: const BoxDecoration(
                               color: Color.fromRGBO(130, 195, 255, .5)),
                           child: FCTimer(
-                            initialTime: players[0].time,
+                            initialTime: players[_playerOffset(0)].time,
                             style: FCButton.styleFrom(
                                 textStyle: const TextStyle(fontSize: 56),
-                                backgroundColor: FCColors
-                                    .fromPlayerStatus[players[0].status],
-                                disabledBackgroundColor: FCColors
-                                    .fromPlayerStatus[players[0].status]),
-                            key: timerKeys[0],
-                            enabled: players[0].status == PlayerStatus.first ||
-                                players[0].status == PlayerStatus.turn,
+                                backgroundColor: FCColors.fromPlayerStatus[
+                                    players[_playerOffset(0)].status],
+                                disabledBackgroundColor:
+                                    FCColors.fromPlayerStatus[
+                                        players[_playerOffset(0)].status]),
+                            key: timerKeys[_playerOffset(0)],
+                            enabled: players[_playerOffset(0)].status ==
+                                    PlayerStatus.first ||
+                                players[_playerOffset(0)].status ==
+                                    PlayerStatus.turn,
                             onStop: (stopTime) {
-                              widget.client
-                                  .next(timerKeys[0].currentState!.getTime());
+                              widget.client.next(timerKeys[_playerOffset(0)]
+                                  .currentState!
+                                  .getTime());
                             },
                             onTimeout: () => {widget.client.lost()},
                           )))),
@@ -137,13 +141,14 @@ class _GameState extends State<Game> {
                         ? null
                         : () {
                             widget.client.lost();
-                            if (players[0].status == PlayerStatus.lost) {
+                            if (players[_playerOffset(0)].status ==
+                                PlayerStatus.lost) {
                               setState(() {
                                 _showDialog();
                               });
                             }
                           },
-                    icon: players[0].status == PlayerStatus.lost
+                    icon: players[_playerOffset(0)].status == PlayerStatus.lost
                         ? const Icon(Icons.close)
                         : Icon(MdiIcons.skullOutline)),
               ]),
@@ -174,6 +179,10 @@ class _GameState extends State<Game> {
                 child: Text(AppLocalizations.of(context)!.no),
               ),
             ]));
+  }
+
+  int _playerOffset(int offset) {
+    return (widget.id + offset) % numPlayers;
   }
 
   _forceShowDialog(BuildContext context) {
