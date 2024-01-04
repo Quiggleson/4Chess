@@ -144,9 +144,7 @@ class _GameState extends State<Game> {
                         : () {
                             widget.client.lost();
                             if (players[0].status == PlayerStatus.lost) {
-                              setState(() {
-                                _showDialog(); //I dont think setstate needs to be here
-                              });
+                              _showDialog(); //I dont think setstate needs to be here
                             }
                           },
                     icon: players[0].status == PlayerStatus.lost

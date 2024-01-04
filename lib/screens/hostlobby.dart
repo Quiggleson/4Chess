@@ -59,7 +59,7 @@ class HostLobbyState extends State<HostLobby> {
                 Column(mainAxisAlignment: MainAxisAlignment.start, children: [
               ListenableBuilder(
                   listenable: widget.client,
-                  builder: (context, child) {
+                  builder: (_, __) {
                     List<Player> playerList =
                         widget.client.getGameState().players;
                     return Text(
@@ -75,14 +75,14 @@ class HostLobbyState extends State<HostLobby> {
                 //debugPrint('HEIGHT ${constraints.maxHeight.toString()}');
                 return ListenableBuilder(
                     listenable: widget.client,
-                    builder: (context, child) {
+                    builder: (_, __) {
                       if (widget.client.gameState.status == GameStatus.setup) {
                         List<Player> playerList =
                             widget.client.getGameState().players;
                         return ReorderableListView(
                           buildDefaultDragHandles: false,
                           physics: const BouncingScrollPhysics(),
-                          proxyDecorator: (child, index, animation) => child,
+                          proxyDecorator: (child, _, __) => child,
                           children: [
                             for (int i = 0; i < playerList.length; i++)
                               Padding(
@@ -105,8 +105,7 @@ class HostLobbyState extends State<HostLobby> {
                               _onReorder(oldIndex, newIndex),
                         );
                       } else {
-                        return const Text(
-                            "If you're reading this, something broke");
+                        return const SizedBox.shrink(); //Empty widget
                       }
                     });
               })),

@@ -21,7 +21,8 @@ class JoinLobbyState extends State<JoinLobby> {
   @override
   void initState() {
     void toGoGame() {
-      if (widget.client.getGameState().status == GameStatus.starting) {
+      if (mounted &&
+          widget.client.getGameState().status == GameStatus.starting) {
         debugPrint('Im the front end and I know the game state is starting');
         Navigator.of(context).push(
           MaterialPageRoute(
@@ -33,7 +34,6 @@ class JoinLobbyState extends State<JoinLobby> {
     }
 
     widget.client.addListener(toGoGame);
-
     super.initState();
   }
 

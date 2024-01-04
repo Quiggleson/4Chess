@@ -10,7 +10,6 @@ class Client with ChangeNotifier {
   // Flutter gets mad when this is late so throw a dummy gamestate in there
   GameState gameState = GameState();
   late Socket socket;
-  bool _isModified = false;
 
   Client({required String name, required String roomCode}) {
     getHostIp(roomCode).then((ip) {
@@ -84,15 +83,6 @@ class Client with ChangeNotifier {
     // return real_ans;
     // // debugPrint('Failed to get ip');
     // // return '0.0.0.0';
-  }
-
-  bool isDirty() {
-    // debugPrint('Checking isdirty. _ismodified: $_isModified');
-    if (_isModified) {
-      _isModified = false;
-      return true;
-    }
-    return false;
   }
 
   int getPlayerIndex() {
@@ -169,8 +159,7 @@ class Client with ChangeNotifier {
             time: d["time"]));
       }
       this.gameState.players = players;
-      notifyListeners();
-      _isModified = true;
+      notifyListeners(); //use notifyListeners rather than _isModified = true
     }
   }
 
@@ -180,7 +169,6 @@ class Client with ChangeNotifier {
     gameState.status = GameStatus.starting;
     gameState.players[0].status = PlayerStatus.first;
     notifyListeners();
-    _isModified = true;
     socket.write('''
     {
       "call": "start",
@@ -194,7 +182,6 @@ class Client with ChangeNotifier {
     gameState.players[0].status = PlayerStatus.turn;
     gameState.status = GameStatus.inProgress;
     notifyListeners();
-    _isModified = true;
     socket.write('''
     {
       "call": "startTimer",
