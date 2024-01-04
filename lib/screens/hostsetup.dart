@@ -163,40 +163,31 @@ class HostSetupState extends State<HostSetup> {
       return;
     }
 
-    double elapsedTime = 0;
-
-    Timer.periodic(const Duration(milliseconds: 500), (timer) {
-      //checks twice a second to see if have successfully joined the game
-      elapsedTime += .5;
-
-      //Mounted checks if the widget is still in the build tree i.e make sure we're still on this screen before we do
-      //any funny stuff
-
-      if (!mounted) {
-        timer.cancel();
-        debugPrint("User has left the host setup screen");
-      }
-
-      if (client.isDirty() && mounted) {
+    void goToHostLobby() {
+      if (mounted) {
         Navigator.of(context).push(
           MaterialPageRoute(
               builder: (context) => HostLobby(roomCode: code, client: client)),
         );
-        timer.cancel();
+      }
+      client.removeListener(goToHostLobby);
+    }
+
+    client.addListener(goToHostLobby);
+
+    Timer(const Duration(milliseconds: 10000), () {
+      if (!mounted) {
+        debugPrint("User has left the host setup screen");
+        return;
       }
 
-      debugPrint("Time elapsed since attempting to host game: $elapsedTime");
-
-      if (elapsedTime > 10 && mounted) {
-        //We have taken more than 10 seconds to connect, probably a network
-        //issue
-        debugPrint("Failed to host game");
-        setState(() {
-          loading = false;
-          error = true;
-        });
-        timer.cancel();
-      }
+      //We have taken more than 10 seconds to connect, probably a network
+      //issue
+      debugPrint("Failed to host game");
+      setState(() {
+        loading = false;
+        error = true;
+      });
     });
   }
 

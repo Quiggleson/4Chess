@@ -50,8 +50,6 @@ class OtherPlayerTimerState extends State<OtherPlayerTimer> {
                   maxLines: 1,
                 ),
                 FCTimer(
-                    //No events needed here, all events should be updated from the device that this timer represents.
-                    running: widget.status == PlayerStatus.turn,
                     enabled: false,
                     key: widget.timer,
                     initialTime: widget.time,

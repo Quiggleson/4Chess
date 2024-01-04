@@ -4,13 +4,12 @@ import 'package:flutter/foundation.dart';
 import '../util/player.dart';
 import '../util/gamestate.dart';
 
-class Client {
+class Client with ChangeNotifier {
   final int port = 46100;
   late String ip;
   // Flutter gets mad when this is late so throw a dummy gamestate in there
   GameState gameState = GameState();
   late Socket socket;
-  bool _isModified = false;
 
   Client({required String name, required String roomCode}) {
     getHostIp(roomCode).then((ip) {
@@ -84,15 +83,6 @@ class Client {
     // return real_ans;
     // // debugPrint('Failed to get ip');
     // // return '0.0.0.0';
-  }
-
-  bool isDirty() {
-    // debugPrint('Checking isdirty. _ismodified: $_isModified');
-    if (_isModified) {
-      _isModified = false;
-      return true;
-    }
-    return false;
   }
 
   int getPlayerIndex() {
@@ -169,7 +159,7 @@ class Client {
             time: d["time"]));
       }
       this.gameState.players = players;
-      _isModified = true;
+      notifyListeners(); //use notifyListeners rather than _isModified = true
     }
   }
 
@@ -178,7 +168,7 @@ class Client {
     debugPrint('Just started the ip is $ip');
     gameState.status = GameStatus.starting;
     gameState.players[0].status = PlayerStatus.first;
-    _isModified = true;
+    notifyListeners();
     socket.write('''
     {
       "call": "start",
@@ -191,7 +181,7 @@ class Client {
     debugPrint("Client start timer");
     gameState.players[0].status = PlayerStatus.turn;
     gameState.status = GameStatus.inProgress;
-    _isModified = true;
+    notifyListeners();
     socket.write('''
     {
       "call": "startTimer",

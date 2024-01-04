@@ -18,36 +18,27 @@ class JoinLobby extends StatefulWidget {
 }
 
 class JoinLobbyState extends State<JoinLobby> {
-  late List<Player> playerList;
-
   @override
   void initState() {
-    playerList = widget.client.getGameState().players;
+    void toGoGame() {
+      if (mounted &&
+          widget.client.getGameState().status == GameStatus.starting) {
+        debugPrint('Im the front end and I know the game state is starting');
+        Navigator.of(context).push(
+          MaterialPageRoute(
+              builder: (context) => Game(
+                  client: widget.client, id: widget.client.getPlayerIndex())),
+        );
+        widget.client.removeListener(toGoGame);
+      }
+    }
+
+    widget.client.addListener(toGoGame);
     super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
-    Timer.periodic(const Duration(milliseconds: 100), (Timer t) {
-      //This code will run 10 times a second when the host menu starts
-      if (widget.client.isDirty()) {
-        //We move to game screen when we game is starting
-        if (widget.client.getGameState().status == GameStatus.starting) {
-          debugPrint('Im the front end and I know the game state is starting');
-          Navigator.of(context).push(
-            MaterialPageRoute(
-                builder: (context) => Game(
-                    client: widget.client, id: widget.client.getPlayerIndex())),
-          );
-        } else {
-          //if game is not starting, then the host has reordered the players
-          setState(() {
-            playerList = widget.client.getGameState().players;
-          });
-        }
-      }
-    });
-
     return Scaffold(
         appBar: FCAppBar(
           title: Text(
@@ -60,29 +51,49 @@ class JoinLobbyState extends State<JoinLobby> {
                 Column(mainAxisAlignment: MainAxisAlignment.start, children: [
               Center(
                   //I HAVE NO IDEA WHY THE CENTER IS NEEDED, IT DOESN'T WORK OTHERWISE
-                  child: Text(
-                      (4 - playerList.length == 0)
-                          ? AppLocalizations.of(context)!.waitingForHost
-                          : AppLocalizations.of(context)!
-                              .nPlayers(4 - playerList.length),
-                      style: const TextStyle(fontSize: 24),
-                      textAlign: TextAlign.center)),
+                  child: ListenableBuilder(
+                      listenable: widget.client,
+                      builder: (context, child) {
+                        List<Player> playerList =
+                            widget.client.getGameState().players;
+                        return Text(
+                            (4 - playerList.length == 0)
+                                ? AppLocalizations.of(context)!.waitingForHost
+                                : AppLocalizations.of(context)!
+                                    .nPlayers(4 - playerList.length),
+                            style: const TextStyle(fontSize: 24),
+                            textAlign: TextAlign.center);
+                      })),
               const Padding(padding: EdgeInsets.only(top: 20)),
-              Expanded(child: LayoutBuilder(builder: (context, constraints) {
-                //debugPrint('HEIGHT ${constraints.maxHeight.toString()}');
-                return ListView(children: [
-                  for (int i = 0; i < playerList.length; i++)
-                    Padding(
-                      padding: const EdgeInsets.only(top: 10, bottom: 10),
-                      child: FCNumberedItem(
-                          height: (constraints.maxHeight -
-                                  (playerList.length) * 20) /
-                              4,
-                          content: playerList[i].name,
-                          number: i + 1),
-                    )
-                ]);
-              }))
+              ListenableBuilder(
+                  listenable: widget.client,
+                  builder: (context, child) {
+                    //if game is not starting, then the host has reordered the players
+                    if (widget.client.getGameState().status !=
+                        GameStatus.starting) {
+                      return Expanded(
+                          child: LayoutBuilder(builder: (context, constraints) {
+                        //debugPrint('HEIGHT ${constraints.maxHeight.toString()}');
+                        List<Player> playerList =
+                            widget.client.getGameState().players;
+                        return ListView(children: [
+                          for (int i = 0; i < playerList.length; i++)
+                            Padding(
+                              padding:
+                                  const EdgeInsets.only(top: 10, bottom: 10),
+                              child: FCNumberedItem(
+                                  height: (constraints.maxHeight -
+                                          (playerList.length) * 20) /
+                                      4,
+                                  content: playerList[i].name,
+                                  number: i + 1),
+                            )
+                        ]);
+                      }));
+                    }
+
+                    return const Text("");
+                  })
             ])));
   }
 }
