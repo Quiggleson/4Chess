@@ -54,11 +54,13 @@ class _GameState extends State<Game> {
 
           for (int i = 0; i < numPlayers; i++) {
             Player player = players[i];
-            if (timerKeys[i].currentState != null) {
+            GlobalKey<FCTimerState> timer = timerKeys[i];
+            if (timer.currentState != null) {
+              timer.currentState!.setTime(player.time);
               if (player.status == PlayerStatus.turn) {
-                timerKeys[i].currentState!.start();
+                timer.currentState!.start();
               } else {
-                timerKeys[i].currentState!.stop();
+                timer.currentState!.stop();
               }
             }
           }
