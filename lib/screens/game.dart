@@ -52,6 +52,8 @@ class _GameState extends State<Game> {
           GameState state = widget.client.getGameState();
           GameStatus gameStatus = state.status;
 
+          debugPrint("gamestatus from ui: $state");
+
           //create updated array where current player is index 0
           for (int i = 0; i < numPlayers; i++) {
             Player player = players[i];
