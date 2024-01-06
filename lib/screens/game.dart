@@ -27,13 +27,19 @@ class Game extends StatefulWidget {
 
 class _GameState extends State<Game> {
   late List<GlobalKey<FCTimerState>> timerKeys;
+  late List<Player> players;
   late int numPlayers;
 
   @override
   void initState() {
-    numPlayers = widget.client.getGameState().players.length;
+    GameState state = widget.client.getGameState();
+    numPlayers = state.players.length;
     timerKeys = [
       for (int i = 0; i < numPlayers; i++) GlobalKey<FCTimerState>()
+    ];
+    players = [
+      for (int i = 0; i < numPlayers; i++)
+        state.players[(widget.id + i) % numPlayers]
     ];
     super.initState();
   }
@@ -47,17 +53,13 @@ class _GameState extends State<Game> {
           GameStatus gameStatus = state.status;
 
           //create updated array where current player is index 0
-          List<Player> players = [
-            for (int i = 0; i < numPlayers; i++)
-              state.players[(widget.id + i) % numPlayers]
-          ];
-
           for (int i = 0; i < numPlayers; i++) {
             Player player = players[i];
             GlobalKey<FCTimerState> timer = timerKeys[i];
             if (timer.currentState != null) {
               timer.currentState!.setTime(player.time);
-              if (player.status == PlayerStatus.turn) {
+              if (gameStatus == GameStatus.inProgress &&
+                  player.status == PlayerStatus.turn) {
                 timer.currentState!.start();
               } else {
                 timer.currentState!.stop();
