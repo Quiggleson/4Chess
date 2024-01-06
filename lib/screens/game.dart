@@ -29,10 +29,11 @@ class _GameState extends State<Game> {
   late List<GlobalKey<FCTimerState>> timerKeys;
   late List<Player> players;
   late int numPlayers;
+  late GameState state;
 
   @override
   void initState() {
-    GameState state = widget.client.getGameState();
+    state = widget.client.getGameState();
     numPlayers = state.players.length;
     timerKeys = [
       for (int i = 0; i < numPlayers; i++) GlobalKey<FCTimerState>()
@@ -49,9 +50,7 @@ class _GameState extends State<Game> {
     return ListenableBuilder(
         listenable: widget.client,
         builder: (_, __) {
-          GameState state = widget.client.getGameState();
           GameStatus gameStatus = state.status;
-
           debugPrint("gamestatus from ui: $state");
 
           //create updated array where current player is index 0
@@ -106,8 +105,12 @@ class _GameState extends State<Game> {
                             enabled: players[0].status == PlayerStatus.first ||
                                 players[0].status == PlayerStatus.turn,
                             onStop: (stopTime) {
-                              widget.client
-                                  .next(timerKeys[0].currentState!.getTime());
+                              if (gameStatus == GameStatus.starting) {
+                                widget.client.startTimer();
+                              } else {
+                                widget.client
+                                    .next(timerKeys[0].currentState!.getTime());
+                              }
                             },
                             onTimeout: () => {widget.client.lost()},
                           )))),
