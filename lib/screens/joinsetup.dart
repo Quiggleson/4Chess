@@ -30,15 +30,12 @@ class JoinSetupState extends State<JoinSetup> {
   static const int _roomcodeMaxLength = 6;
   static const int _nameMaxLength = 12;
 
-  FocusNode nameFocusNode = FocusNode();
-  FocusNode roomCodeFocusNode = FocusNode();
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        resizeToAvoidBottomInset: false,
+        resizeToAvoidBottomInset: true,
         appBar: FCAppBar(title: Text(AppLocalizations.of(context)!.joinGame)),
-        body: Padding(
+        body: SingleChildScrollView(
             padding: const EdgeInsets.all(30),
             child:
                 Column(mainAxisAlignment: MainAxisAlignment.center, children: [
@@ -46,44 +43,23 @@ class JoinSetupState extends State<JoinSetup> {
                   style: const TextStyle(fontSize: 24),
                   textAlign: TextAlign.center),
               const Padding(padding: EdgeInsets.only(top: 30)),
-              Expanded(
-                child: ListView(
-                    physics: const OnlyOnFocusScrollPhysics(),
-                    children: [
-                      FCTextField(
-                        focusNode: nameFocusNode,
-                        hintText: AppLocalizations.of(context)!.name,
-                        onChanged: (value) => setState(() => _name = value),
-                        maxLength: _nameMaxLength,
-                      ),
-                      const Padding(padding: EdgeInsets.only(top: 30)),
-                      Visibility(
-                          visible: invalidRoomCode,
-                          child: Text(
-                              AppLocalizations.of(context)!.invalidRoomCode,
-                              textAlign: TextAlign.center,
-                              style: const TextStyle(
-                                  fontSize: 16, color: FCColors.error))),
-                      const Padding(padding: EdgeInsets.only(top: 10)),
-                      FCTextField(
-                        focusNode: roomCodeFocusNode,
-                        scrollPadding: const EdgeInsets.only(
-                            bottom: double
-                                .infinity), //Makes sure the counter text is in view
-                        hintText: AppLocalizations.of(context)!.roomCode,
-                        onChanged: (value) => setState(() => _roomCode = value),
-                        maxLength: _roomcodeMaxLength,
-                      ),
-                    ]),
+              FCTextField(
+                hintText: AppLocalizations.of(context)!.name,
+                onChanged: (value) => setState(() => _name = value),
+                maxLength: _nameMaxLength,
               ),
-              SizedBox(
-                  height: nameFocusNode.hasFocus
-                      ? 0
-                      : MediaQuery.of(context).viewInsets.bottom * .9),
-              DebugOnly(
-                  text: "force start game",
-                  onPress:
-                      _forceOnJoin), //NOTE: This messes with the keyboard open view.
+              Visibility(
+                  child: Text(AppLocalizations.of(context)!.invalidRoomCode,
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(
+                          fontSize: 16, color: FCColors.error))),
+              const Padding(padding: EdgeInsets.only(top: 10)),
+              FCTextField(
+                hintText: AppLocalizations.of(context)!.roomCode,
+                onChanged: (value) => setState(() => _roomCode = value),
+                maxLength: _roomcodeMaxLength,
+              ),
+              DebugOnly(text: "force start game", onPress: _forceOnJoin),
               Visibility(
                   visible: error,
                   child: Text(AppLocalizations.of(context)!.unableToCreate,
