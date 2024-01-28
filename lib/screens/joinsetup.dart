@@ -1,17 +1,14 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:fourchess/screens/joinlobby.dart';
 import 'package:fourchess/theme/fc_colors.dart';
 import 'package:fourchess/widgets/debugonly.dart';
 import 'package:fourchess/widgets/fc_appbar.dart';
-import 'package:fourchess/widgets/fc_backbutton.dart';
 import 'package:fourchess/widgets/fc_textfield.dart';
 import '../backend/client.dart';
 import '../widgets/fc_button.dart';
 import 'dart:async';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import '../widgets/fc_loadinganimation.dart';
-import '../widgets/only_on_focus_scroll_physics.dart';
 
 class JoinSetup extends StatefulWidget {
   const JoinSetup({super.key});
