@@ -4,6 +4,7 @@ import 'package:fourchess/screens/joinlobby.dart';
 import 'package:fourchess/theme/fc_colors.dart';
 import 'package:fourchess/widgets/debugonly.dart';
 import 'package:fourchess/widgets/fc_appbar.dart';
+import 'package:fourchess/widgets/fc_backbutton.dart';
 import 'package:fourchess/widgets/fc_textfield.dart';
 import '../backend/client.dart';
 import '../widgets/fc_button.dart';
@@ -126,6 +127,7 @@ class JoinSetupState extends State<JoinSetup> {
       return;
     }
 
+    //This phase will never cause duplicate listeners, as onJoin creates a new instance of Client
     void goToJoinLobby() {
       if (mounted) {
         Navigator.of(context).push(

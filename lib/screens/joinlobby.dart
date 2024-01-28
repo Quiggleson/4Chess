@@ -21,6 +21,7 @@ class JoinLobbyState extends State<JoinLobby> {
   @override
   void initState() {
     void toGoGame() {
+      //At this point, client is guaranteed to have no listeners, as initializing this screen requires constructing a new client instance in joinSetup.
       if (mounted &&
           widget.client.getGameState().status == GameStatus.starting) {
         debugPrint('Im the front end and I know the game state is starting');
