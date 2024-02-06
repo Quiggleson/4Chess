@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:fourchess/util/gamestate.dart';
 import 'package:fourchess/screens/game.dart';
 import 'package:fourchess/widgets/fc_appbar.dart';
+import 'package:fourchess/widgets/fc_backbutton.dart';
 import 'dart:async';
 import '../backend/client.dart';
 import '../util/player.dart';
@@ -45,6 +46,7 @@ class JoinLobbyState extends State<JoinLobby> {
           title: Text(
               "${AppLocalizations.of(context)!.joinGame}\n${AppLocalizations.of(context)!.code(widget.roomCode)}"),
           toolbarHeight: 140,
+          leading: FCBackButton(onPressed: () => widget.client.quit()),
         ),
         body: Padding(
             padding: const EdgeInsets.all(30),

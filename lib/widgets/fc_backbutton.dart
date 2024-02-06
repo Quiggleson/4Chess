@@ -9,7 +9,9 @@ class FCBackButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BackButton(onPressed: () {
-      if (onPressed != null) onPressed!();
+      if (onPressed != null) {
+        onPressed!();
+      }
       Navigator.maybePop(context);
     });
   }

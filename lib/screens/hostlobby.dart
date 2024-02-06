@@ -3,6 +3,7 @@ import 'package:fourchess/screens/game.dart';
 import 'package:fourchess/util/gamestate.dart';
 import 'package:fourchess/widgets/debugonly.dart';
 import 'package:fourchess/widgets/fc_appbar.dart';
+import 'package:fourchess/widgets/fc_backbutton.dart';
 import 'package:fourchess/widgets/fc_button.dart';
 import 'package:fourchess/widgets/fc_loadinganimation.dart';
 import 'package:fourchess/widgets/fc_numbereditem.dart';
@@ -50,9 +51,9 @@ class HostLobbyState extends State<HostLobby> {
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: FCAppBar(
-          title: Text(AppLocalizations.of(context)!.code(widget.roomCode)),
-          toolbarHeight: 140,
-        ),
+            title: Text(AppLocalizations.of(context)!.code(widget.roomCode)),
+            toolbarHeight: 140,
+            leading: FCBackButton(onPressed: () => widget.client.quit())),
         body: Padding(
             padding: const EdgeInsets.all(30),
             child:

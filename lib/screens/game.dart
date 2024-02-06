@@ -168,8 +168,10 @@ class _GameState extends State<Game> {
         builder: (BuildContext context) =>
             FCAlertDialog(message: message, actions: <Widget>[
               FCButton(
-                onPressed: () =>
-                    Navigator.popUntil(context, ModalRoute.withName('/')),
+                onPressed: () {
+                  widget.client.quit();
+                  Navigator.popUntil(context, ModalRoute.withName('/'));
+                },
                 child: Text(AppLocalizations.of(context)!.yes),
               ),
               const Padding(padding: EdgeInsets.only(top: 20)),
