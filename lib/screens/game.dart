@@ -169,7 +169,12 @@ class _GameState extends State<Game> {
             FCAlertDialog(message: message, actions: <Widget>[
               FCButton(
                 onPressed: () {
-                  widget.client.quit();
+                  if (widget.isHost) {
+                    widget.client.endGame();
+                  } else {
+                    widget.client.leave();
+                  }
+
                   Navigator.popUntil(context, ModalRoute.withName('/'));
                 },
                 child: Text(AppLocalizations.of(context)!.yes),

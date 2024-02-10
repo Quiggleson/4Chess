@@ -46,7 +46,7 @@ class JoinLobbyState extends State<JoinLobby> {
           title: Text(
               "${AppLocalizations.of(context)!.joinGame}\n${AppLocalizations.of(context)!.code(widget.roomCode)}"),
           toolbarHeight: 140,
-          leading: FCBackButton(onPressed: () => widget.client.quit()),
+          leading: FCBackButton(onPressed: () => widget.client.leave()),
         ),
         body: Padding(
             padding: const EdgeInsets.all(30),

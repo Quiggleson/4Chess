@@ -270,8 +270,12 @@ class Client with ChangeNotifier {
     debugPrint("Client Reset");
   }
 
-  quit() {
-    debugPrint("Client Quit");
+  leave() {
+    //End for this player
+  }
+
+  endGame() {
+    //End for all players
   }
 
   GameState getGameState() {
