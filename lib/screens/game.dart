@@ -144,14 +144,13 @@ class _GameState extends State<Game> {
                 IconButton(
                     //RESIGNS
                     iconSize: 80,
-                    onPressed: gameStatus == GameStatus.finished
-                        ? null
-                        : () {
-                            widget.client.lost();
-                            if (players[0].status == PlayerStatus.lost) {
-                              _showDialog(); //I dont think setstate needs to be here
-                            }
-                          },
+                    onPressed: () {
+                      if (players[0].status == PlayerStatus.lost) {
+                        _showDialog();
+                      } else {
+                        widget.client.lost();
+                      }
+                    },
                     icon: players[0].status == PlayerStatus.lost
                         ? const Icon(Icons.close)
                         : Icon(MdiIcons.skullOutline)),
