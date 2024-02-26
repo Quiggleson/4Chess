@@ -221,7 +221,7 @@ class Client with ChangeNotifier {
     } else {
       // Update current player
       Player player = gameState.players[playerIndex];
-      player.time = time;
+      player.time = time + gameState.increment;
       player.status = PlayerStatus.notTurn;
 
       // Update next player
