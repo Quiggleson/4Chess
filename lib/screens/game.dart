@@ -57,7 +57,8 @@ class _GameState extends State<Game> {
             GlobalKey<FCTimerState> timer = timerKeys[i];
             if (timer.currentState != null) {
               timer.currentState!.setTime(player.time);
-              if (gameStatus == GameStatus.paused) {
+              if (gameStatus == GameStatus.paused ||
+                  gameStatus == GameStatus.starting) {
                 timer.currentState!.stop(callbacks: false);
               } else if (player.status == PlayerStatus.turn) {
                 timer.currentState!.start();
@@ -146,9 +147,7 @@ class _GameState extends State<Game> {
                     iconSize: 80,
                     onPressed: gameStatus == GameStatus.starting
                         ? null
-                        : () {
-                            widget.client.reset();
-                          },
+                        : () => widget.client.reset(),
                     icon: const Icon(Icons.restore_sharp),
                   ),
                 ),

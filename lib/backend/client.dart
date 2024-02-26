@@ -275,7 +275,18 @@ class Client with ChangeNotifier {
   }
 
   reset() {
-    debugPrint("Client Reset");
+    gameState.status = GameStatus.starting;
+    for (int i = 0; i < gameState.players.length; i++) {
+      gameState.players[i].status = PlayerStatus.notTurn;
+      gameState.players[i].time = gameState.initTime.toDouble();
+    }
+    gameState.players[0].status = PlayerStatus.first; //slightly janky but works
+    socket.write('''
+    {
+      "call": "reset",
+      "gameState": $gameState
+    }
+    ''');
   }
 
   leave() {

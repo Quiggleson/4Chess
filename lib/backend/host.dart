@@ -76,6 +76,9 @@ class Host {
         case "reorder":
           updateGameState(obj["gameState"]);
           onReorder(obj);
+        case "reset":
+          updateGameState(obj["gameState"]);
+          onReset(obj);
         default:
           throw Error();
       }
@@ -187,6 +190,16 @@ class Host {
     sockets.forEach((socket) => socket.write('''begin:{
         "status": "200",
         "call": "next",
+        "gameState": $gameState
+      }'''));
+    return true;
+  }
+
+  bool onReset(Map<String, dynamic> obj) {
+    debugPrint("Host onReset");
+    sockets.forEach((socket) => socket.write('''begin:{
+        "status": "200",
+        "call": "reset",
         "gameState": $gameState
       }'''));
     return true;
