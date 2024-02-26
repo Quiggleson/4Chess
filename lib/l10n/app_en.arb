@@ -40,5 +40,9 @@
         }
     },
     "unableToCreate": "AN ERROR OCCURED DURING GAME CREATION",
-    "invalidRoomCode": "INVALID ROOM CODE"
+    "invalidRoomCode": "INVALID ROOM CODE",
+    "endedByHost": "GAME ENDED BY HOST",
+    "gameSuccessfullyEnded": "GAME SUCCESSFULLY ENDED",
+    "ok": "OK",
+    "gameOver": "GAME OVER"
 }

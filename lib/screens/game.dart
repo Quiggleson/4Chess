@@ -31,6 +31,11 @@ class _GameState extends State<Game> {
 
   @override
   void initState() {
+    widget.client.addListener(() {
+      if (widget.client.getGameState().status == GameStatus.terminated) {
+        _showTerminatedDialog();
+      }
+    });
     numPlayers = widget.client.getGameState().players.length;
     timerKeys = [
       for (int i = 0; i < numPlayers; i++) GlobalKey<FCTimerState>()
@@ -47,6 +52,7 @@ class _GameState extends State<Game> {
           GameStatus gameStatus = state.status;
 
           //create updated array where current player is index 0
+          //MOVE THIS TO INITSTATE
           List<Player> players = [
             for (int i = 0; i < numPlayers; i++)
               state.players[(widget.id + i) % numPlayers]
@@ -58,7 +64,8 @@ class _GameState extends State<Game> {
             if (timer.currentState != null) {
               timer.currentState!.setTime(player.time);
               if (gameStatus == GameStatus.paused ||
-                  gameStatus == GameStatus.starting) {
+                  gameStatus == GameStatus.starting ||
+                  gameStatus == GameStatus.terminated) {
                 timer.currentState!.stop(callbacks: false);
               } else if (player.status == PlayerStatus.turn) {
                 timer.currentState!.start();
@@ -156,7 +163,7 @@ class _GameState extends State<Game> {
                     iconSize: 80,
                     onPressed: () {
                       if (players[0].status == PlayerStatus.lost) {
-                        _showDialog();
+                        _showQuitConfirmDialog();
                       } else {
                         widget.client.lost();
                       }
@@ -173,35 +180,57 @@ class _GameState extends State<Game> {
   }
 
   //Todo: understandand and fix warning that pops up whenever this is called
-  void _showDialog() {
+  void _showQuitConfirmDialog() {
     String message = widget.isHost
         ? AppLocalizations.of(context)!.endGameForAll
         : AppLocalizations.of(context)!.quitGame;
     showDialog(
         context: context,
-        builder: (BuildContext context) =>
-            FCAlertDialog(message: message, actions: <Widget>[
-              FCButton(
-                onPressed: () {
-                  if (widget.isHost) {
-                    widget.client.endGame();
-                  } else {
-                    widget.client.leave();
-                  }
+        builder: (BuildContext context) => FCAlertDialog(
+                message: message,
+                title: AppLocalizations.of(context)!.confirm,
+                actions: <Widget>[
+                  FCButton(
+                    onPressed: () {
+                      if (widget.isHost) {
+                        widget.client.endGame();
+                      } else {
+                        widget.client.leave();
+                      }
 
-                  Navigator.popUntil(context, ModalRoute.withName('/'));
-                },
-                child: Text(AppLocalizations.of(context)!.yes),
-              ),
-              const Padding(padding: EdgeInsets.only(top: 20)),
-              FCButton(
-                onPressed: () => Navigator.pop(context, 'No'),
-                child: Text(AppLocalizations.of(context)!.no),
-              ),
-            ]));
+                      Navigator.popUntil(context, ModalRoute.withName('/'));
+                    },
+                    child: Text(AppLocalizations.of(context)!.yes),
+                  ),
+                  const Padding(padding: EdgeInsets.only(top: 20)),
+                  FCButton(
+                    onPressed: () => Navigator.pop(context, 'No'),
+                    child: Text(AppLocalizations.of(context)!.no),
+                  ),
+                ]));
+  }
+
+  void _showTerminatedDialog() {
+    String message = widget.isHost
+        ? AppLocalizations.of(context)!.gameSuccessfullyEnded
+        : AppLocalizations.of(context)!.endedByHost;
+    showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (BuildContext context) => FCAlertDialog(
+                message: message,
+                title: AppLocalizations.of(context)!.gameOver,
+                actions: <Widget>[
+                  FCButton(
+                    onPressed: () {
+                      Navigator.popUntil(context, ModalRoute.withName('/'));
+                    },
+                    child: Text(AppLocalizations.of(context)!.ok),
+                  )
+                ]));
   }
 
   _forceShowDialog(BuildContext context) {
-    _showDialog();
+    _showTerminatedDialog();
   }
 }

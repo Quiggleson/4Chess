@@ -1,6 +1,6 @@
 import 'player.dart';
 
-enum GameStatus { setup, starting, inProgress, paused, finished }
+enum GameStatus { setup, starting, inProgress, paused, finished, terminated }
 
 class GameState {
   int initTime;

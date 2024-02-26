@@ -4,9 +4,11 @@ import '../theme/fc_colors.dart';
 import 'fc_button.dart';
 
 class FCAlertDialog extends StatelessWidget {
-  const FCAlertDialog({super.key, required this.message, this.actions});
+  const FCAlertDialog(
+      {super.key, required this.message, required this.title, this.actions});
 
   final String message;
+  final String title;
   final List<Widget>? actions;
 
   @override
@@ -25,12 +27,12 @@ class FCAlertDialog extends StatelessWidget {
                 decoration: BoxDecoration(
                     color: FCColors.primaryBlue,
                     borderRadius: BorderRadius.circular(15)),
-                child: const Text(
-                  'CONFIRM',
-                  style: TextStyle(fontSize: 56),
+                child: Text(
+                  title,
+                  style: const TextStyle(fontSize: 56),
                   textAlign: TextAlign.center,
                 ))),
-        content: Text(message),
+        content: Text(message, textAlign: TextAlign.center),
         actions: actions);
   }
 }
