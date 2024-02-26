@@ -206,7 +206,6 @@ class Client with ChangeNotifier {
 
     int playerIndex = getPlayerIndex();
     int nextIndex = getNextIndex(playerIndex);
-
     if (nextIndex == -1) {
       debugPrint('Something horribly wrong has happened');
       return;
@@ -247,14 +246,18 @@ class Client with ChangeNotifier {
   lost() {
     debugPrint("Client Lost");
     int playerIndex = getPlayerIndex();
-    int nextIndex = getNextIndex(playerIndex);
-    if (nextIndex == playerIndex) {
+    Player player = gameState.players[playerIndex];
+    player.status = PlayerStatus.lost;
+    List<Player> playersLeft = gameState.players
+        .where((player) => player.status == PlayerStatus.notTurn)
+        .toList(); //If there is a player that has not lost, then they will have status notTurn
+    if (playersLeft.length == 1) {
+      //All but one player has lost, therefore game is over
+      playersLeft[0].status = PlayerStatus.won;
       gameState.status = GameStatus.finished;
     } else {
-      Player player = gameState.players[playerIndex];
-      player.status = PlayerStatus.lost;
-      gameState.players[nextIndex].status = PlayerStatus.turn;
-
+      // The game continues, so get the next player and make it their turn
+      int nextIndex = getNextIndex(playerIndex);
       gameState.players[nextIndex].status = PlayerStatus.turn;
     }
 
