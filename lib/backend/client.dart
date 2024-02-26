@@ -249,8 +249,8 @@ class Client with ChangeNotifier {
     Player player = gameState.players[playerIndex];
     player.status = PlayerStatus.lost;
     List<Player> playersLeft = gameState.players
-        .where((player) => player.status == PlayerStatus.notTurn)
-        .toList(); //If there is a player that has not lost, then they will have status notTurn
+        .where((player) => player.status != PlayerStatus.lost)
+        .toList(); //Get all players that are not lost
     if (playersLeft.length == 1) {
       //All but one player has lost, therefore game is over
       playersLeft[0].status = PlayerStatus.won;
@@ -274,7 +274,7 @@ class Client with ChangeNotifier {
   }
 
   leave() {
-    //End for this player
+    lost();
   }
 
   endGame() {
