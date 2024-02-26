@@ -101,6 +101,11 @@ class _GameState extends State<Game> {
                             key: timerKeys[0],
                             enabled: players[0].status == PlayerStatus.first ||
                                 players[0].status == PlayerStatus.turn,
+                            onStart: (startTime) {
+                              if (gameStatus == GameStatus.starting) {
+                                widget.client.startTimer();
+                              }
+                            },
                             onStop: (stopTime) {
                               widget.client
                                   .next(timerKeys[0].currentState!.getTime());
