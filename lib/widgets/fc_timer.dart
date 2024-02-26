@@ -38,11 +38,15 @@ class FCTimerState extends State<FCTimer> {
     super.initState();
   }
 
-  void toggle() {
+  void _toggle(bool callbacks) {
     _timerRunning = !_timerRunning;
 
-    if (_timerRunning && widget.onStart != null) widget.onStart!(_time);
-    if (!_timerRunning && widget.onStop != null) widget.onStop!(_time);
+    if (_timerRunning && widget.onStart != null && callbacks) {
+      widget.onStart!(_time);
+    }
+    if (!_timerRunning && widget.onStop != null && callbacks) {
+      widget.onStop!(_time);
+    }
 
     Timer.periodic(const Duration(milliseconds: 100), (timer) {
       if (!_timerRunning) {
@@ -62,13 +66,13 @@ class FCTimerState extends State<FCTimer> {
     });
   }
 
-  void stop() {
+  void stop({bool callbacks = true}) {
     //print("TIMER STOP CALLED");
-    if (_timerRunning) toggle();
+    if (_timerRunning) _toggle(callbacks);
   }
 
-  void start() {
-    if (!_timerRunning) toggle();
+  void start({bool callbacks = true}) {
+    if (!_timerRunning) _toggle(callbacks);
   }
 
   void reset() {
@@ -119,7 +123,7 @@ class FCTimerState extends State<FCTimer> {
   Widget build(BuildContext context) {
     return FCButton(
       style: widget.style,
-      onPressed: widget.enabled ? toggle : null,
+      onPressed: widget.enabled ? () => _toggle(true) : null,
       child: Text(convertSecondsToTime(_time)),
     );
   }

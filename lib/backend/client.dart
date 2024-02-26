@@ -190,12 +190,17 @@ class Client with ChangeNotifier {
     ''');
   }
 
-  pause() {
+  togglePause(double timeOfCurrentPlayer) {
     debugPrint("Client Pause");
-    gameState.status = GameStatus.paused;
+    gameState.status = gameState.status == GameStatus.paused
+        ? GameStatus.inProgress
+        : GameStatus.paused;
+    gameState.players
+        .firstWhere((player) => player.status == PlayerStatus.turn)
+        .time = timeOfCurrentPlayer;
     socket.write('''
     {
-      "call": "start",
+      "call": "togglePause",
       "gameState": $gameState
     }
     ''');

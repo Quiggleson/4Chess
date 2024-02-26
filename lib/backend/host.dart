@@ -58,9 +58,9 @@ class Host {
           updateGameState(obj["gameState"]);
           onStart(obj);
           break;
-        case "pause":
+        case "togglePause":
           updateGameState(obj["gameState"]);
-          onPause(obj);
+          onTogglePause(obj);
           break;
         case "startTimer":
           updateGameState(obj["gameState"]);
@@ -172,11 +172,11 @@ class Host {
     return true;
   }
 
-  bool onPause(Map<String, dynamic> obj) {
+  bool onTogglePause(Map<String, dynamic> obj) {
     debugPrint("Host onPause");
     sockets.forEach((socket) => socket.write('''begin:{
         "status": "200",
-        "call": "pause",
+        "call": "togglePause",
         "gameState": $gameState
       }'''));
     return true;

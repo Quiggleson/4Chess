@@ -57,7 +57,9 @@ class _GameState extends State<Game> {
             GlobalKey<FCTimerState> timer = timerKeys[i];
             if (timer.currentState != null) {
               timer.currentState!.setTime(player.time);
-              if (player.status == PlayerStatus.turn) {
+              if (gameStatus == GameStatus.paused) {
+                timer.currentState!.stop(callbacks: false);
+              } else if (player.status == PlayerStatus.turn) {
                 timer.currentState!.start();
               } else {
                 timer.currentState!.stop();
@@ -107,8 +109,10 @@ class _GameState extends State<Game> {
                               }
                             },
                             onStop: (stopTime) {
-                              widget.client
-                                  .next(timerKeys[0].currentState!.getTime());
+                              if (gameStatus != GameStatus.paused) {
+                                widget.client
+                                    .next(timerKeys[0].currentState!.getTime());
+                              }
                             },
                             onTimeout: () => {widget.client.lost()},
                           )))),
@@ -120,7 +124,14 @@ class _GameState extends State<Game> {
                           gameStatus == GameStatus.finished
                       ? null
                       : () {
-                          widget.client.pause();
+                          if (timerKeys[0].currentState != null) {
+                            int currPlayerIndex = players.indexWhere(
+                                (player) => player.status == PlayerStatus.turn);
+                            double time = timerKeys[currPlayerIndex]
+                                .currentState!
+                                .getTime();
+                            widget.client.togglePause(time);
+                          }
                         },
                   icon: Icon(gameStatus == GameStatus.inProgress ||
                           gameStatus == GameStatus.finished
