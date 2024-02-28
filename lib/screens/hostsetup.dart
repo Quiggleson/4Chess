@@ -196,6 +196,10 @@ class HostSetupState extends State<HostSetup> {
 
   //STRING FORMAT METHODS
   String _fixupTimeFormat(String time) {
+    if (time.isEmpty) {
+      return "";
+    }
+
     List<String> splitTimes = time.split(':');
 
     int carry = 0;
@@ -222,6 +226,10 @@ class HostSetupState extends State<HostSetup> {
   }
 
   int _timeToSeconds(String time) {
+    if (time.isEmpty) {
+      return 0;
+    }
+
     int sum = 0;
     List<String> splitTimes = time.split(':');
     int length = splitTimes.length;
