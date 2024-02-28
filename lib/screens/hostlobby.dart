@@ -11,6 +11,7 @@ import 'dart:async';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import '../backend/client.dart';
 import '../util/player.dart';
+import 'package:fourchess/widgets/fc_alertdialog.dart';
 
 class HostLobby extends StatefulWidget {
   HostLobby({super.key, required this.roomCode, required this.client});
@@ -43,7 +44,17 @@ class HostLobbyState extends State<HostLobby> {
       }
     }
 
+    void gameTerminated() {
+      if (mounted &&
+          widget.client.getGameState().status == GameStatus.terminated) {
+        debugPrint('Im the front end and I know the game state is terminated');
+        FCAlertDialog.showTerminatedDialog(context, isHost: false);
+        widget.client.removeListener(gameTerminated);
+      }
+    }
+
     widget.client.addListener(goToGame);
+    widget.client.addListener(gameTerminated);
     super.initState();
   }
 

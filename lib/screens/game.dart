@@ -2,7 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:fourchess/theme/fc_colors.dart';
 import 'package:fourchess/widgets/debugonly.dart';
-import 'package:fourchess/widgets/fc_alartdialog.dart';
+import 'package:fourchess/widgets/fc_alertdialog.dart';
 import 'package:fourchess/widgets/fc_button.dart';
 import 'package:fourchess/widgets/fc_timer.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
@@ -33,7 +33,7 @@ class _GameState extends State<Game> {
   void initState() {
     widget.client.addListener(() {
       if (widget.client.getGameState().status == GameStatus.terminated) {
-        _showTerminatedDialog();
+        FCAlertDialog.showTerminatedDialog(context, isHost: widget.isHost);
       }
     });
     numPlayers = widget.client.getGameState().players.length;
@@ -212,27 +212,7 @@ class _GameState extends State<Game> {
                 ]));
   }
 
-  void _showTerminatedDialog() {
-    String message = widget.isHost
-        ? AppLocalizations.of(context)!.gameSuccessfullyEnded
-        : AppLocalizations.of(context)!.endedByHost;
-    showDialog(
-        context: context,
-        barrierDismissible: false,
-        builder: (BuildContext context) => FCAlertDialog(
-                message: message,
-                title: AppLocalizations.of(context)!.gameOver,
-                actions: <Widget>[
-                  FCButton(
-                    onPressed: () {
-                      Navigator.popUntil(context, ModalRoute.withName('/'));
-                    },
-                    child: Text(AppLocalizations.of(context)!.ok),
-                  )
-                ]));
-  }
-
   _forceShowDialog(BuildContext context) {
-    _showTerminatedDialog();
+    FCAlertDialog.showTerminatedDialog(context, isHost: widget.isHost);
   }
 }

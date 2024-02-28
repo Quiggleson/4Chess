@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../theme/fc_colors.dart';
 import 'fc_button.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class FCAlertDialog extends StatelessWidget {
   const FCAlertDialog(
@@ -34,5 +35,26 @@ class FCAlertDialog extends StatelessWidget {
                 ))),
         content: Text(message, textAlign: TextAlign.center),
         actions: actions);
+  }
+
+  static void showTerminatedDialog(BuildContext context,
+      {bool isHost = false}) {
+    String message = isHost
+        ? AppLocalizations.of(context)!.gameSuccessfullyEnded
+        : AppLocalizations.of(context)!.endedByHost;
+    showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (BuildContext context) => FCAlertDialog(
+                message: message,
+                title: AppLocalizations.of(context)!.gameOver,
+                actions: <Widget>[
+                  FCButton(
+                    onPressed: () {
+                      Navigator.popUntil(context, ModalRoute.withName('/'));
+                    },
+                    child: Text(AppLocalizations.of(context)!.ok),
+                  )
+                ]));
   }
 }
