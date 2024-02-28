@@ -46,6 +46,7 @@ class JoinSetupState extends State<JoinSetup> {
                 maxLength: _nameMaxLength,
               ),
               Visibility(
+                  visible: invalidRoomCode,
                   child: Text(AppLocalizations.of(context)!.invalidRoomCode,
                       textAlign: TextAlign.center,
                       style: const TextStyle(
@@ -59,7 +60,7 @@ class JoinSetupState extends State<JoinSetup> {
               DebugOnly(text: "force start game", onPress: _forceOnJoin),
               Visibility(
                   visible: error,
-                  child: Text(AppLocalizations.of(context)!.unableToCreate,
+                  child: Text(AppLocalizations.of(context)!.unableToJoin,
                       textAlign: TextAlign.center,
                       style: const TextStyle(
                           fontSize: 16, color: FCColors.error))),
@@ -102,7 +103,12 @@ class JoinSetupState extends State<JoinSetup> {
 
     //This phase will never cause duplicate listeners, as onJoin creates a new instance of Client
     void goToJoinLobby() {
-      if (mounted) {
+      if (ModalRoute.of(context)!.isCurrent) {
+        setState(() {
+          loading = false;
+          error = false;
+          invalidRoomCode = false;
+        });
         Navigator.of(context).push(
           MaterialPageRoute(
               builder: (context) =>
@@ -121,7 +127,7 @@ class JoinSetupState extends State<JoinSetup> {
     });
 
     Timer(const Duration(milliseconds: 10000), () {
-      if (!mounted) {
+      if (!ModalRoute.of(context)!.isCurrent) {
         debugPrint("User has left the join setup screen");
         return;
       }

@@ -30,7 +30,8 @@ class HostLobbyState extends State<HostLobby> {
   @override
   void initState() {
     void goToGame() {
-      if (mounted && widget.client.gameState.status == GameStatus.starting) {
+      if (ModalRoute.of(context)!.isCurrent &&
+          widget.client.gameState.status == GameStatus.starting) {
         Navigator.of(context).push(
           MaterialPageRoute(
             //if (status.isGood)
@@ -45,10 +46,10 @@ class HostLobbyState extends State<HostLobby> {
     }
 
     void gameTerminated() {
-      if (mounted &&
+      if (ModalRoute.of(context)!.isCurrent &&
           widget.client.getGameState().status == GameStatus.terminated) {
         debugPrint('Im the front end and I know the game state is terminated');
-        FCAlertDialog.showTerminatedDialog(context, isHost: false);
+        //FCAlertDialog.showTerminatedDialog(context, isHost: true); Do we really want to do this?
         widget.client.removeListener(gameTerminated);
       }
     }
@@ -151,7 +152,7 @@ class HostLobbyState extends State<HostLobby> {
     widget.client.start();
     setState(() => starting = true);
     Timer(const Duration(milliseconds: 10000), () {
-      if (!mounted) {
+      if (!ModalRoute.of(context)!.isCurrent) {
         debugPrint(
             "Game has started successfully or user has left the screen"); //In either case, we do nothing
         return;

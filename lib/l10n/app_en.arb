@@ -40,6 +40,7 @@
         }
     },
     "unableToCreate": "AN ERROR OCCURED DURING GAME CREATION",
+    "unableToJoin": "AN ERROR OCCURED DURING JOIN",
     "invalidRoomCode": "INVALID ROOM CODE",
     "endedByHost": "GAME ENDED BY HOST",
     "gameSuccessfullyEnded": "GAME SUCCESSFULLY ENDED",

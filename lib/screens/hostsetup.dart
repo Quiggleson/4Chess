@@ -156,7 +156,11 @@ class HostSetupState extends State<HostSetup> {
     }
 
     void goToHostLobby() {
-      if (mounted) {
+      if (ModalRoute.of(context)!.isCurrent) {
+        setState(() {
+          loading = false;
+          error = false;
+        });
         Navigator.of(context).push(
           MaterialPageRoute(
               builder: (context) => HostLobby(roomCode: code, client: client)),
@@ -168,7 +172,7 @@ class HostSetupState extends State<HostSetup> {
     client.addListener(goToHostLobby);
 
     Timer(const Duration(milliseconds: 10000), () {
-      if (!mounted) {
+      if (!ModalRoute.of(context)!.isCurrent) {
         debugPrint("User has left the host setup screen");
         return;
       }

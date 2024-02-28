@@ -25,7 +25,7 @@ class JoinLobbyState extends State<JoinLobby> {
   void initState() {
     void toGoGame() {
       //At this point, client is guaranteed to have no listeners, as initializing this screen requires constructing a new client instance in joinSetup.
-      if (mounted &&
+      if (ModalRoute.of(context)!.isCurrent &&
           widget.client.getGameState().status == GameStatus.starting) {
         debugPrint('Im the front end and I know the game state is starting');
         Navigator.of(context).push(
@@ -38,7 +38,7 @@ class JoinLobbyState extends State<JoinLobby> {
     }
 
     void gameTerminated() {
-      if (mounted &&
+      if (ModalRoute.of(context)!.isCurrent &&
           widget.client.getGameState().status == GameStatus.terminated) {
         debugPrint('Im the front end and I know the game state is terminated');
         FCAlertDialog.showTerminatedDialog(context, isHost: false);
