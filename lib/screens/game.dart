@@ -162,13 +162,15 @@ class _GameState extends State<Game> {
                     //RESIGNS
                     iconSize: 80,
                     onPressed: () {
-                      if (players[0].status == PlayerStatus.lost) {
+                      if (players[0].status == PlayerStatus.lost ||
+                          gameStatus == GameStatus.finished) {
                         _showQuitConfirmDialog();
                       } else {
                         widget.client.lost();
                       }
                     },
-                    icon: players[0].status == PlayerStatus.lost
+                    icon: players[0].status == PlayerStatus.lost ||
+                            gameStatus == GameStatus.finished
                         ? const Icon(Icons.close)
                         : Icon(MdiIcons.skullOutline)),
               ]),
