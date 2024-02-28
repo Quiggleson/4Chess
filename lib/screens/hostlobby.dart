@@ -53,7 +53,7 @@ class HostLobbyState extends State<HostLobby> {
         appBar: FCAppBar(
             title: Text(AppLocalizations.of(context)!.code(widget.roomCode)),
             toolbarHeight: 140,
-            leading: FCBackButton(onPressed: () => widget.client.leave())),
+            leading: FCBackButton(onPressed: () => widget.client.endGame())),
         body: Padding(
             padding: const EdgeInsets.all(30),
             child:

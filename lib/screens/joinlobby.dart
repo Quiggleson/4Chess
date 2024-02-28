@@ -8,6 +8,8 @@ import '../backend/client.dart';
 import '../util/player.dart';
 import '../widgets/fc_numbereditem.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:fourchess/widgets/fc_alertdialog.dart';
+import 'package:fourchess/widgets/fc_button.dart';
 
 class JoinLobby extends StatefulWidget {
   JoinLobby({super.key, required this.client, required this.roomCode});
@@ -35,7 +37,17 @@ class JoinLobbyState extends State<JoinLobby> {
       }
     }
 
+    void gameTerminated() {
+      if (mounted &&
+          widget.client.getGameState().status == GameStatus.terminated) {
+        debugPrint('Im the front end and I know the game state is terminated');
+        _showTerminatedDialog();
+        widget.client.removeListener(gameTerminated);
+      }
+    }
+
     widget.client.addListener(toGoGame);
+    widget.client.addListener(gameTerminated);
     super.initState();
   }
 
@@ -98,5 +110,22 @@ class JoinLobbyState extends State<JoinLobby> {
                     return const Text("");
                   })
             ])));
+  }
+
+  void _showTerminatedDialog() {
+    showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (BuildContext context) => FCAlertDialog(
+                message: AppLocalizations.of(context)!.endedByHost,
+                title: AppLocalizations.of(context)!.gameOver,
+                actions: <Widget>[
+                  FCButton(
+                    onPressed: () {
+                      Navigator.popUntil(context, ModalRoute.withName('/'));
+                    },
+                    child: Text(AppLocalizations.of(context)!.ok),
+                  )
+                ]));
   }
 }

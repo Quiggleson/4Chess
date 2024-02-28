@@ -82,6 +82,9 @@ class Host {
         case "endGame":
           updateGameState(obj["gameState"]);
           onEndGame(obj);
+        case "leave":
+          updateGameState(obj["gameState"]);
+          onLeave(obj);
         default:
           throw Error();
       }
@@ -220,6 +223,15 @@ class Host {
   }
 
   bool onReorder(Map<String, dynamic> obj) {
+    sockets.forEach((socket) => socket.write('''begin:{
+        "status": "200",
+        "call": "reorder",
+        "gameState": $gameState
+      }'''));
+    return true;
+  }
+
+  bool onLeave(Map<String, dynamic> obj) {
     sockets.forEach((socket) => socket.write('''begin:{
         "status": "200",
         "call": "reorder",

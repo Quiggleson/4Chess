@@ -290,10 +290,14 @@ class Client with ChangeNotifier {
   }
 
   leave() {
-    //Currently unnecessary - Right now, in order for a player to properly leave,
-    //this must resign, which will count them out of the game.
-    //The only way for a player to leave without resigning is to close the app,
-    //Which a heartbeat system will handle.
+    gameState.players.removeAt(getPlayerIndex());
+    socket.write('''
+    {
+      "call": "leave",
+      "gameState": $gameState
+    }
+    ''');
+    stop();
   }
 
   endGame() {
