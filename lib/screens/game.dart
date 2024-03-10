@@ -122,7 +122,7 @@ class _GameState extends State<Game> {
                                     .next(timerKeys[0].currentState!.getTime());
                               }
                             },
-                            onTimeout: () => {widget.client.lost()},
+                            onTimeout: () => {widget.client.lost(0)},
                           )))),
               ButtonBar(alignment: MainAxisAlignment.center, children: [
                 IconButton(
@@ -166,7 +166,8 @@ class _GameState extends State<Game> {
                           gameStatus == GameStatus.finished) {
                         _showQuitConfirmDialog();
                       } else {
-                        widget.client.lost();
+                        widget.client
+                            .lost(timerKeys[0].currentState!.getTime());
                       }
                     },
                     icon: players[0].status == PlayerStatus.lost ||

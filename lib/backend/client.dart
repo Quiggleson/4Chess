@@ -248,11 +248,12 @@ class Client with ChangeNotifier {
     ''');
   }
 
-  lost() {
+  lost(double time) {
     debugPrint("Client Lost");
     int playerIndex = getPlayerIndex();
     Player player = gameState.players[playerIndex];
     player.status = PlayerStatus.lost;
+    player.time = time;
     List<Player> playersLeft = gameState.players
         .where((player) => player.status != PlayerStatus.lost)
         .toList(); //Get all players that are not lost
