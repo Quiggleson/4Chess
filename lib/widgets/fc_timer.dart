@@ -44,7 +44,7 @@ class FCTimerState extends State<FCTimer> {
     if (_timerRunning && widget.onStart != null && callbacks) {
       widget.onStart!(_time);
     }
-    if (!_timerRunning && widget.onStop != null && callbacks) {
+    if (!_timerRunning && widget.onStop != null && callbacks && _time > 0) {
       widget.onStop!(_time);
     }
 
