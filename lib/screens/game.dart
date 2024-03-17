@@ -1,7 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:fourchess/theme/fc_colors.dart';
-import 'package:fourchess/widgets/debugonly.dart';
 import 'package:fourchess/widgets/fc_alertdialog.dart';
 import 'package:fourchess/widgets/fc_button.dart';
 import 'package:fourchess/widgets/fc_timer.dart';
@@ -175,7 +174,6 @@ class _GameState extends State<Game> {
                         ? const Icon(Icons.close)
                         : Icon(MdiIcons.skullOutline)),
               ]),
-              DebugOnly(text: "show popup", onPress: _forceShowDialog),
               const Padding(padding: EdgeInsets.only(bottom: 10))
             ],
           ));
@@ -211,9 +209,5 @@ class _GameState extends State<Game> {
                     child: Text(AppLocalizations.of(context)!.no),
                   ),
                 ]));
-  }
-
-  _forceShowDialog(BuildContext context) {
-    FCAlertDialog.showTerminatedDialog(context, isHost: widget.isHost);
   }
 }

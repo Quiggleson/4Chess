@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:fourchess/screens/joinlobby.dart';
 import 'package:fourchess/theme/fc_colors.dart';
-import 'package:fourchess/widgets/debugonly.dart';
 import 'package:fourchess/widgets/fc_appbar.dart';
 import 'package:fourchess/widgets/fc_textfield.dart';
 import '../backend/client.dart';
@@ -57,7 +56,6 @@ class JoinSetupState extends State<JoinSetup> {
                 onChanged: (value) => setState(() => _roomCode = value),
                 maxLength: _roomcodeMaxLength,
               ),
-              DebugOnly(text: "force start game", onPress: _forceOnJoin),
               Visibility(
                   visible: error,
                   child: Text(AppLocalizations.of(context)!.unableToJoin,
