@@ -123,6 +123,7 @@ class Host {
     for (dynamic d in gameState["players"]) {
       debugPrint('Host adding player $d');
       players.add(Player(
+          userid: d["userid"],
           ip: d["ip"],
           name: d["name"],
           status: PlayerStatus.values
@@ -136,6 +137,7 @@ class Host {
     if (obj["roomCode"] == roomCode) {
       String newip = socket.remoteAddress.address.toString();
       Player player = Player(
+          userid: obj["gameState"]["players"][0]["userid"],
           name: obj["gameState"]["players"][0]["name"],
           ip: socket.remoteAddress.address.toString());
       player.time = gameState.initTime.toDouble();

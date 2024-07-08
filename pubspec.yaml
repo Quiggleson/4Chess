@@ -43,6 +43,7 @@ dependencies:
   loading_animation_widget:
   flutter_localizations:
     sdk: flutter
+  uuid: ^4.4.0
 
 dev_dependencies:
   flutter_test:

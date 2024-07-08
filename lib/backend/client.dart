@@ -3,39 +3,34 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import '../util/player.dart';
 import '../util/gamestate.dart';
+import 'package:uuid/uuid.dart';
 
 class Client with ChangeNotifier {
   final int port = 46100;
+  String userid = const Uuid().v4();
   late String ip;
-  // Flutter gets mad when this is late so throw a dummy gamestate in there
   GameState gameState = GameState();
   late Socket socket;
 
   Client({required String name, required String roomCode}) {
     getHostIp(roomCode).then((ip) {
-      debugPrint('About to reconnect');
       Socket.connect(ip, 38383, sourceAddress: InternetAddress.anyIPv4).then(
           (Socket socket) {
         debugPrint('Client has connected to server');
         this.socket = socket;
 
-        // NOT socket.address.address
-        // NOT socket.remoteAdress.address
-        // NOT socket.address.host
-        // NOT socket.remoteAddress.host, dang
         this.ip = socket.address.address.toString();
         debugPrint(
             'This is the client, looking for ip: ${socket.remoteAddress.host}');
-
-        Player player = Player(name: name, ip: ip);
         debugPrint('Making player $name with ip $ip');
+
+        Player player = Player(userid: userid, name: name, ip: ip);
 
         gameState = GameState(players: [player]);
 
-        // Join game
         join(roomCode);
       }, onError: (err) {
-        debugPrint('Oi there was an error connecting, $err');
+        debugPrint('[CONNECTION ERROR], $err');
       });
     });
   }
@@ -87,10 +82,7 @@ class Client with ChangeNotifier {
 
   int getPlayerIndex() {
     for (final (index, player) in gameState.players.indexed) {
-      debugPrint('getplayerindex gamestate: $gameState');
-      debugPrint('myip: ${this.ip} and playerip: ${player.ip}');
-      debugPrint('gamestate: ${gameState}');
-      if (player.ip == this.ip) {
+      if (player.userid == this.userid) {
         return index;
       }
     }
@@ -121,7 +113,7 @@ class Client with ChangeNotifier {
     debugPrint('Client sending $message');
     socket.write(message);
 
-    // Everytime host sends out data, this is where it listens
+    // Every time host sends out data, this is where it listens
     socket.listen((List<int> data) {
       const JsonDecoder decoder = JsonDecoder();
       final String message = utf8.decode(data).trim();
@@ -152,6 +144,7 @@ class Client with ChangeNotifier {
       List<Player> players = [];
       for (dynamic d in gameState["players"]) {
         players.add(Player(
+            userid: d["userid"],
             ip: d["ip"],
             name: d["name"],
             status: PlayerStatus.values
@@ -212,7 +205,7 @@ class Client with ChangeNotifier {
     int playerIndex = getPlayerIndex();
     int nextIndex = getNextIndex(playerIndex);
     if (nextIndex == -1) {
-      debugPrint('Something horribly wrong has happened');
+      debugPrint('[ERROR] Next player index is -1');
       return;
     }
 
@@ -227,7 +220,7 @@ class Client with ChangeNotifier {
       // Update next player
       gameState.players[nextIndex].status = PlayerStatus.turn;
     }
-    debugPrint('gs after next: $gameState');
+    debugPrint('[DEBUG] gamestate after next: $gameState');
 
     socket.write('''
     {
@@ -256,9 +249,9 @@ class Client with ChangeNotifier {
     player.time = time;
     List<Player> playersLeft = gameState.players
         .where((player) => player.status != PlayerStatus.lost)
-        .toList(); //Get all players that are not lost
+        .toList(); // Get all players that are not lost
     if (playersLeft.length == 1) {
-      //All but one player has lost, therefore game is over
+      // All but one player has lost, therefore game is over
       playersLeft[0].status = PlayerStatus.won;
       gameState.status = GameStatus.finished;
     } else {
@@ -281,7 +274,8 @@ class Client with ChangeNotifier {
       gameState.players[i].status = PlayerStatus.notTurn;
       gameState.players[i].time = gameState.initTime.toDouble();
     }
-    gameState.players[0].status = PlayerStatus.first; //slightly janky but works
+    gameState.players[0].status =
+        PlayerStatus.first; // Slightly janky but works
     socket.write('''
     {
       "call": "reset",
@@ -318,10 +312,10 @@ class Client with ChangeNotifier {
   //For testing UI
   GameState getFakeGameState() {
     GameState gs = GameState(initTime: 180, increment: 0, players: [
-      Player(name: "Deven", ip: '0.0.0.0'),
-      Player(name: "Robert", ip: '0.0.0.0'),
-      Player(name: "Aaron", ip: '0.0.0.0'),
-      Player(name: "Waldo", ip: '0.0.0.0'),
+      Player(userid: "1", name: "Deven", ip: '0.0.0.0'),
+      Player(userid: "2", name: "Robert", ip: '0.0.0.0'),
+      Player(userid: "3", name: "Aaron", ip: '0.0.0.0'),
+      Player(userid: "4", name: "Waldo", ip: '0.0.0.0'),
       /*Player("Deven", "1", PlayerStatus.first, 180),
           Player("Robert", "1", PlayerStatus.notTurn, 180),
           Player("Aaron", "1", PlayerStatus.notTurn, 180),
