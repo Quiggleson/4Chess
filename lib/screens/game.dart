@@ -111,7 +111,16 @@ class _GameState extends State<Game> {
                             enabled: players[0].status == PlayerStatus.first ||
                                 players[0].status == PlayerStatus.turn,
                             onStart: (startTime) {
-                              if (gameStatus == GameStatus.starting) {
+                              if (gameStatus == GameStatus.paused &&
+                                  timerKeys[0].currentState != null) {
+                                int currPlayerIndex = players.indexWhere(
+                                    (player) =>
+                                        player.status == PlayerStatus.turn);
+                                double time = timerKeys[currPlayerIndex]
+                                    .currentState!
+                                    .getTime();
+                                widget.client.togglePause(time);
+                              } else if (gameStatus == GameStatus.starting) {
                                 widget.client.startTimer();
                               }
                             },
