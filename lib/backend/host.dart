@@ -52,42 +52,49 @@ class Host {
       final String message = utf8.decode(data).trim();
       final Map<String, dynamic> obj = decoder.convert(message);
 
-      // Call the appropriate method
-      switch (obj["call"]) {
-        case "start":
-          updateGameState(obj["gameState"]);
-          onStart(obj);
-          break;
-        case "togglePause":
-          updateGameState(obj["gameState"]);
-          onTogglePause(obj);
-          break;
-        case "startTimer":
-          updateGameState(obj["gameState"]);
-          onStartTimer(obj);
-          break;
-        case "next":
-          updateGameState(obj["gameState"]);
-          onNext(obj);
-          break;
-        case "join":
-          onJoinGame(socket, obj);
-          break;
-        case "reorder":
-          updateGameState(obj["gameState"]);
-          onReorder(obj);
-        case "reset":
-          updateGameState(obj["gameState"]);
-          onReset(obj);
-        case "endGame":
-          updateGameState(obj["gameState"]);
-          onEndGame(obj);
-        case "leave":
-          updateGameState(obj["gameState"]);
-          onLeave(obj);
-        default:
-          throw Error();
+      if (obj["call"] == "join") {
+        onJoinGame(socket, obj);
+      } else {
+        updateGameState(obj["gameState"]);
+        onCall(obj["call"]);
       }
+
+      // // Call the appropriate method
+      // switch (obj["call"]) {
+      //   case "start":
+      //     updateGameState(obj["gameState"]);
+      //     onStart(obj);
+      //     break;
+      //   case "togglePause":
+      //     updateGameState(obj["gameState"]);
+      //     onTogglePause(obj);
+      //     break;
+      //   case "startTimer":
+      //     updateGameState(obj["gameState"]);
+      //     onStartTimer(obj);
+      //     break;
+      //   case "next":
+      //     updateGameState(obj["gameState"]);
+      //     onNext(obj);
+      //     break;
+      //   case "join":
+      //     onJoinGame(socket, obj);
+      //     break;
+      //   case "reorder":
+      //     updateGameState(obj["gameState"]);
+      //     onReorder(obj);
+      //   case "reset":
+      //     updateGameState(obj["gameState"]);
+      //     onReset(obj);
+      //   case "endGame":
+      //     updateGameState(obj["gameState"]);
+      //     onEndGame(obj);
+      //   case "leave":
+      //     updateGameState(obj["gameState"]);
+      //     onLeave(obj);
+      //   default:
+      //     throw Error();
+      // }
 
       // Handle errors
     }, onError: (error) {
@@ -163,87 +170,19 @@ class Host {
     }
   }
 
-  bool onStart(Map<String, dynamic> obj) {
-    debugPrint("Host onStart");
-    sockets.forEach((socket) => socket.write('''begin:{
+  void onCall(String call) {
+    debugPrint("[DEBUG] Host onCall $call");
+    for (var socket in sockets) {
+      socket.write('''begin:{
         "status": "200",
-        "call": "start",
+        "call": "$call",
         "gameState": $gameState
-      }'''));
-    return true;
-  }
-
-  bool onStartTimer(Map<String, dynamic> obj) {
-    debugPrint("Host onStartTimer");
-    sockets.forEach((socket) => socket.write('''begin:{
-        "status": "200",
-        "call": "startTimer",
-        "gameState": $gameState
-      }'''));
-    return true;
-  }
-
-  bool onTogglePause(Map<String, dynamic> obj) {
-    debugPrint("Host onPause");
-    sockets.forEach((socket) => socket.write('''begin:{
-        "status": "200",
-        "call": "togglePause",
-        "gameState": $gameState
-      }'''));
-    return true;
-  }
-
-  bool onNext(Map<String, dynamic> obj) {
-    debugPrint("[DEBUG] Host onNext");
-    sockets.forEach((socket) => socket.write('''begin:{
-        "status": "200",
-        "call": "next",
-        "gameState": $gameState
-      }'''));
-    return true;
-  }
-
-  bool onReset(Map<String, dynamic> obj) {
-    debugPrint("Host onReset");
-    sockets.forEach((socket) => socket.write('''begin:{
-        "status": "200",
-        "call": "reset",
-        "gameState": $gameState
-      }'''));
-    return true;
-  }
-
-  bool onEndGame(Map<String, dynamic> obj) {
-    debugPrint("Host onEndGame");
-    sockets.forEach((socket) => socket.write('''begin:{
-        "status": "200",
-        "call": "endGame",
-        "gameState": $gameState
-      }'''));
-    stop();
-    return true;
-  }
-
-  bool onReorder(Map<String, dynamic> obj) {
-    sockets.forEach((socket) => socket.write('''begin:{
-        "status": "200",
-        "call": "reorder",
-        "gameState": $gameState
-      }'''));
-    return true;
-  }
-
-  bool onLeave(Map<String, dynamic> obj) {
-    sockets.forEach((socket) => socket.write('''begin:{
-        "status": "200",
-        "call": "reorder",
-        "gameState": $gameState
-      }'''));
-    return true;
+      }''');
+    }
   }
 
   stop() {
-    debugPrint("Stopping host server");
+    debugPrint("[DEBUG] Stopping host server");
     server.close();
   }
 }

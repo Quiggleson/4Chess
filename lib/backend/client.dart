@@ -157,8 +157,7 @@ class Client with ChangeNotifier {
   }
 
   start() {
-    debugPrint("Client Start");
-    debugPrint('Just started the ip is $ip');
+    debugPrint("[DEBUG] Client Start");
     gameState.status = GameStatus.starting;
     gameState.players[0].status = PlayerStatus.first;
     notifyListeners();
@@ -171,7 +170,7 @@ class Client with ChangeNotifier {
   }
 
   startTimer() {
-    debugPrint("Client start timer");
+    debugPrint("[DEBUG] Client Start Timer");
     gameState.players[0].status = PlayerStatus.turn;
     gameState.status = GameStatus.inProgress;
     notifyListeners();
@@ -220,8 +219,6 @@ class Client with ChangeNotifier {
       // Update next player
       gameState.players[nextIndex].status = PlayerStatus.turn;
     }
-    debugPrint('[DEBUG] gamestate after next: $gameState');
-
     socket.write('''
     {
       "call": "next",
@@ -231,8 +228,7 @@ class Client with ChangeNotifier {
   }
 
   reorder(List<Player> players) {
-    debugPrint("Client Reorder");
-    debugPrint('ip is $ip');
+    debugPrint("[DEBUG] Client Reorder");
     socket.write('''
       {
         "call": "reorder",
@@ -243,8 +239,7 @@ class Client with ChangeNotifier {
 
   lost(double time) {
     debugPrint("[DEBUG] Client Lost");
-    int playerIndex = getPlayerIndex();
-    Player player = gameState.players[playerIndex];
+    Player player = gameState.players[getPlayerIndex()];
     PlayerStatus oldStatus = player.status;
     player.status = PlayerStatus.lost;
     player.time = time;
@@ -257,19 +252,20 @@ class Client with ChangeNotifier {
       gameState.status = GameStatus.finished;
     } else if (oldStatus == PlayerStatus.turn) {
       // Next player only if this client lost on their turn
-      int nextIndex = getNextIndex(playerIndex);
+      int nextIndex = getNextIndex(getPlayerIndex());
       gameState.players[nextIndex].status = PlayerStatus.turn;
     }
 
     socket.write('''
     {
-      "call": "next",
+      "call": "lost",
       "gameState": $gameState
     }
     ''');
   }
 
   reset() {
+    debugPrint("[DEBUG] Client Reset");
     gameState.status = GameStatus.starting;
     for (int i = 0; i < gameState.players.length; i++) {
       gameState.players[i].status = PlayerStatus.notTurn;
@@ -286,6 +282,7 @@ class Client with ChangeNotifier {
   }
 
   leave() {
+    debugPrint("[DEBUG] Client Leave");
     gameState.players.removeAt(getPlayerIndex());
     socket.write('''
     {
