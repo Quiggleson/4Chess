@@ -64,12 +64,12 @@ class _GameState extends State<Game> {
               timer.currentState!.setTime(player.time);
               if (gameStatus == GameStatus.paused ||
                   gameStatus == GameStatus.starting ||
-                  gameStatus == GameStatus.terminated) {
+                  gameStatus == GameStatus.terminated ||
+                  player.status != PlayerStatus.turn) {
                 timer.currentState!.stop(callbacks: false);
               } else if (player.status == PlayerStatus.turn) {
                 timer.currentState!.start();
               } else {
-                debugPrint("[DEBUG] playerstatus is not turn, stopping timer");
                 timer.currentState!.stop();
               }
             }
@@ -112,7 +112,8 @@ class _GameState extends State<Game> {
                             enabled: players[0].status == PlayerStatus.first ||
                                 players[0].status == PlayerStatus.turn,
                             onStart: (startTime) {
-                              if (gameStatus == GameStatus.paused &&
+                              if (widget.client.gameState.status ==
+                                      GameStatus.paused &&
                                   timerKeys[0].currentState != null) {
                                 int currPlayerIndex = players.indexWhere(
                                     (player) =>
@@ -127,17 +128,8 @@ class _GameState extends State<Game> {
                             },
                             onStop: (stopTime) {
                               if (gameStatus != GameStatus.paused) {
-                                // Only call next if it's this player's turn
-                                if (widget.client.gameState.players
-                                        .where((player) =>
-                                            player.userid ==
-                                            widget.client.userid)
-                                        .first
-                                        .status ==
-                                    PlayerStatus.turn) {
-                                  widget.client.next(
-                                      timerKeys[0].currentState!.getTime());
-                                }
+                                widget.client
+                                    .next(timerKeys[0].currentState!.getTime());
                               }
                             },
                             onTimeout: () => {widget.client.lost(0)},

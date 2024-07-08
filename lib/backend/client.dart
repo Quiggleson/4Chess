@@ -184,7 +184,7 @@ class Client with ChangeNotifier {
   }
 
   togglePause(double timeOfCurrentPlayer) {
-    debugPrint("Client Pause");
+    debugPrint("[DEBUG] Client Pause");
     gameState.status = gameState.status == GameStatus.paused
         ? GameStatus.inProgress
         : GameStatus.paused;
@@ -245,6 +245,7 @@ class Client with ChangeNotifier {
     debugPrint("[DEBUG] Client Lost");
     int playerIndex = getPlayerIndex();
     Player player = gameState.players[playerIndex];
+    PlayerStatus oldStatus = player.status;
     player.status = PlayerStatus.lost;
     player.time = time;
     List<Player> playersLeft = gameState.players
@@ -254,8 +255,8 @@ class Client with ChangeNotifier {
       // All but one player has lost, therefore game is over
       playersLeft[0].status = PlayerStatus.won;
       gameState.status = GameStatus.finished;
-    } else {
-      // The game continues, so get the next player and make it their turn
+    } else if (oldStatus == PlayerStatus.turn) {
+      // Next player only if this client lost on their turn
       int nextIndex = getNextIndex(playerIndex);
       gameState.players[nextIndex].status = PlayerStatus.turn;
     }
