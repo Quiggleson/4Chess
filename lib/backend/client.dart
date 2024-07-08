@@ -117,11 +117,11 @@ class Client with ChangeNotifier {
     socket.listen((List<int> data) {
       const JsonDecoder decoder = JsonDecoder();
       final String message = utf8.decode(data).trim();
-      debugPrint('Client Received: $message');
+      debugPrint('[DEBUG] Client Received: $message');
       List<String> messages = message.split("begin:").sublist(1);
       debugPrint(messages.toString());
       for (var m in messages) {
-        debugPrint('Dealing with message: $m');
+        debugPrint('[DEBUG] Dealing with message: $m');
         final Map<String, dynamic> obj = decoder.convert(m);
         if (obj["status"] == '200' && obj["call"] == "updateip") {
           ip = obj["newip"];
@@ -200,7 +200,7 @@ class Client with ChangeNotifier {
   }
 
   next(double time) {
-    debugPrint("Client Next");
+    debugPrint("[DEBUG] Client Next");
 
     int playerIndex = getPlayerIndex();
     int nextIndex = getNextIndex(playerIndex);
@@ -242,7 +242,7 @@ class Client with ChangeNotifier {
   }
 
   lost(double time) {
-    debugPrint("Client Lost");
+    debugPrint("[DEBUG] Client Lost");
     int playerIndex = getPlayerIndex();
     Player player = gameState.players[playerIndex];
     player.status = PlayerStatus.lost;

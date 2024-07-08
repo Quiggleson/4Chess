@@ -194,7 +194,7 @@ class Host {
   }
 
   bool onNext(Map<String, dynamic> obj) {
-    debugPrint("Host onNext");
+    debugPrint("[DEBUG] Host onNext");
     sockets.forEach((socket) => socket.write('''begin:{
         "status": "200",
         "call": "next",

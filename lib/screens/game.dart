@@ -69,6 +69,7 @@ class _GameState extends State<Game> {
               } else if (player.status == PlayerStatus.turn) {
                 timer.currentState!.start();
               } else {
+                debugPrint("[DEBUG] playerstatus is not turn, stopping timer");
                 timer.currentState!.stop();
               }
             }
@@ -126,8 +127,17 @@ class _GameState extends State<Game> {
                             },
                             onStop: (stopTime) {
                               if (gameStatus != GameStatus.paused) {
-                                widget.client
-                                    .next(timerKeys[0].currentState!.getTime());
+                                // Only call next if it's this player's turn
+                                if (widget.client.gameState.players
+                                        .where((player) =>
+                                            player.userid ==
+                                            widget.client.userid)
+                                        .first
+                                        .status ==
+                                    PlayerStatus.turn) {
+                                  widget.client.next(
+                                      timerKeys[0].currentState!.getTime());
+                                }
                               }
                             },
                             onTimeout: () => {widget.client.lost(0)},
