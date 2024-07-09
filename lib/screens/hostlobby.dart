@@ -143,7 +143,7 @@ class HostLobbyState extends State<HostLobby> {
     }
     Player item = playerList.removeAt(oldIndex);
     playerList.insert(newIndex, item);
-    widget.client.reorder(playerList);
+    widget.client.reorder();
   }
 
   _onStart() {

@@ -1,4 +1,7 @@
 import 'dart:convert';
+import 'package:fourchess/screens/game.dart';
+import 'package:fourchess/util/packet.dart';
+
 import '../util/player.dart';
 import 'dart:io';
 import '../util/gamestate.dart';
@@ -48,53 +51,17 @@ class Host {
   interpret(Socket socket) {
     socket.listen((List<int> data) {
       // Convert the message to a JSON object
-      const JsonDecoder decoder = JsonDecoder();
       final String message = utf8.decode(data).trim();
-      final Map<String, dynamic> obj = decoder.convert(message);
+      final Map<String, dynamic> packetMap =
+          jsonDecode(message) as Map<String, dynamic>;
+      final packet = Packet.fromJson(packetMap);
 
-      if (obj["call"] == "join") {
-        onJoinGame(socket, obj);
+      if (packet.call == "join") {
+        onJoinGame(socket, packet);
       } else {
-        updateGameState(obj["gameState"]);
-        onCall(obj["call"]);
+        gameState = packet.gameState!;
+        onCall(packet.call);
       }
-
-      // // Call the appropriate method
-      // switch (obj["call"]) {
-      //   case "start":
-      //     updateGameState(obj["gameState"]);
-      //     onStart(obj);
-      //     break;
-      //   case "togglePause":
-      //     updateGameState(obj["gameState"]);
-      //     onTogglePause(obj);
-      //     break;
-      //   case "startTimer":
-      //     updateGameState(obj["gameState"]);
-      //     onStartTimer(obj);
-      //     break;
-      //   case "next":
-      //     updateGameState(obj["gameState"]);
-      //     onNext(obj);
-      //     break;
-      //   case "join":
-      //     onJoinGame(socket, obj);
-      //     break;
-      //   case "reorder":
-      //     updateGameState(obj["gameState"]);
-      //     onReorder(obj);
-      //   case "reset":
-      //     updateGameState(obj["gameState"]);
-      //     onReset(obj);
-      //   case "endGame":
-      //     updateGameState(obj["gameState"]);
-      //     onEndGame(obj);
-      //   case "leave":
-      //     updateGameState(obj["gameState"]);
-      //     onLeave(obj);
-      //   default:
-      //     throw Error();
-      // }
 
       // Handle errors
     }, onError: (error) {
@@ -121,51 +88,23 @@ class Host {
     return code;
   }
 
-  updateGameState(Map<String, dynamic> gameState) {
-    this.gameState.initTime = gameState["initTime"];
-    this.gameState.increment = gameState["increment"];
-    this.gameState.status = GameStatus.values
-        .firstWhere((e) => e.toString() == gameState["status"]);
-    List<Player> players = [];
-    for (dynamic d in gameState["players"]) {
-      debugPrint('Host adding player $d');
-      players.add(Player(
-          userid: d["userid"],
-          ip: d["ip"],
-          name: d["name"],
-          status: PlayerStatus.values
-              .firstWhere((e) => e.toString() == d["status"]),
-          time: d["time"]));
-    }
-    this.gameState.players = players;
-  }
-
-  bool onJoinGame(Socket socket, Map<String, dynamic> obj) {
-    if (obj["roomCode"] == roomCode) {
+  bool onJoinGame(Socket socket, Packet packet) {
+    if (packet.roomCode == roomCode) {
       String newip = socket.remoteAddress.address.toString();
-      Player player = Player(
-          userid: obj["gameState"]["players"][0]["userid"],
-          name: obj["gameState"]["players"][0]["name"],
-          ip: socket.remoteAddress.address.toString());
+      Player player = packet.gameState!.players[0];
+      player.ip = socket.remoteAddress.address.toString();
       player.time = gameState.initTime.toDouble();
       gameState.addPlayer(player);
-      socket.write('''begin:{
-        "status": "200",
-        "call": "updateip",
-        "newip" : "$newip"
-        }
-      ''');
-      for (Socket s in sockets) {
-        s.write('''begin:{
-        "status": "200",
-        "call": "join",
-        "gameState" : $gameState
-        }
-      ''');
+      Packet p = Packet("updateip", null, status: "200", newip: newip);
+      socket.writeln(jsonEncode(p));
+      for (Socket socket in sockets) {
+        Packet p = Packet("join", gameState, status: "200");
+        socket.writeln(jsonEncode(p));
       }
       return true;
     } else {
-      socket.write('begin:{"status": "403"}');
+      Packet p = Packet("Error", null, status: "403");
+      socket.writeln(p);
       return false;
     }
   }
@@ -173,11 +112,8 @@ class Host {
   void onCall(String call) {
     debugPrint("[DEBUG] Host onCall $call");
     for (var socket in sockets) {
-      socket.write('''begin:{
-        "status": "200",
-        "call": "$call",
-        "gameState": $gameState
-      }''');
+      Packet packet = Packet(call, gameState, status: "200");
+      socket.writeln(jsonEncode(packet));
     }
   }
 

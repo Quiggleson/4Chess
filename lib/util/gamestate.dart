@@ -19,6 +19,22 @@ class GameState {
     players.add(player);
   }
 
+  GameState.fromJson(Map<String, dynamic> json)
+      : initTime = json['initTime'] as int,
+        increment = json['increment'] as int,
+        players = (json['players'] as List<dynamic>)
+            .map((player) => Player.fromJson(player as Map<String, dynamic>))
+            .toList(),
+        status =
+            GameStatus.values.firstWhere((e) => e.toString() == json['status']);
+
+  Map<String, dynamic> toJson() => {
+        'initTime': initTime,
+        'increment': increment,
+        'players': players,
+        'status': status.toString(),
+      };
+
   @override
   String toString() {
     //For debugging
