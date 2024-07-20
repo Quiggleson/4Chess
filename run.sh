@@ -12,9 +12,8 @@ tmux split-window -v
 
 for i in {0..3}; do
     tmux select-pane -t $i
-    tmux send-keys "flutter run" C-m
-    sleep 2
-    tmux send-keys "1" C-m # This line selects the device number. Change this accordingly for the device you want
+    tmux send-keys "flutter run -d linux" C-m
+    sleep 5
 done
 
 # Attach to the session
