@@ -12,12 +12,14 @@ class Client with ChangeNotifier {
   final int port = 38383;
   String userid = const Uuid().v4();
   late String ip;
-  String name;
   String roomCode;
   GameState gameState = GameState();
   late ClientConnection connection;
 
-  Client({required String this.name, required String this.roomCode}) {
+  Client({required String name, required String this.roomCode}) {
+    Player player = Player(userid: userid, name: name, ip: "");
+    gameState.addPlayer(player);
+
     getHostIp(roomCode).then((ip) {
       ClientConnection.initialize(ip, port, onConnection).then((c) {
         c.addEvent("updateip", onUpdateIp);
@@ -33,16 +35,13 @@ class Client with ChangeNotifier {
   }
 
   void onConnection(Connection connection) {
-    Player player = Player(userid: userid, name: name, ip: "");
-    gameState = GameState(players: [player]);
     Packet packet = Packet("join", gameState, roomCode: roomCode);
     connection.send(packet);
   }
 
   void onUpdateIp(Packet packet, Connection connection) {
     ip = packet.newip!;
-    Player player = Player(userid: userid, name: name, ip: ip);
-    gameState.players = [player];
+    gameState.players[0].ip = ip;
   }
 
   Future<String> getHostIp(String roomCode) async {
