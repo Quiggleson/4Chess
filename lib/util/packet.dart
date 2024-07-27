@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:fourchess/util/gamestate.dart';
 
 class Packet {
@@ -8,6 +10,10 @@ class Packet {
   final String? newip;
 
   Packet(this.call, this.gameState, {this.roomCode, this.newip, this.status});
+
+  Packet.fromData(List<int> data)
+      : this.fromJson(
+            jsonDecode(utf8.decode(data).trim()) as Map<String, dynamic>);
 
   Packet.fromJson(Map<String, dynamic> json)
       : call = json['call'] as String,
