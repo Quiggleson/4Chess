@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:fourchess/backend/connection.dart';
 import 'package:fourchess/util/packet.dart';
 
@@ -10,6 +11,7 @@ class ClientConnection {
 
   ClientConnection._(Connection connection) {
     _eventMap = {'heartbeat': _handleHeartbeat};
+    _connection = connection;
     connection.listen(_handlePacket);
     _initHeartbeatCheck();
   }
@@ -40,6 +42,7 @@ class ClientConnection {
   }
 
   void _handlePacket(Packet packet, Connection connection) {
+    debugPrint("[DEBUG] ClientConnection.dart:44 ${packet.call}");
     if (_eventMap[packet.call] != null) {
       _eventMap[packet.call]!(packet, connection);
     } else if (_defaultEvent != null) {

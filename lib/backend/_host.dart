@@ -56,8 +56,6 @@ class Host {
           jsonDecode(message) as Map<String, dynamic>;
       final packet = Packet.fromJson(packetMap);
 
-      debugPrint("[DEBUG] Host heard packet $packet");
-
       if (packet.call == "join") {
         onJoinGame(socket, packet);
       } else {
@@ -100,7 +98,7 @@ class Host {
       Packet p = Packet("updateip", null, status: "200", newip: newip);
       socket.writeln(jsonEncode(p));
       for (Socket socket in sockets) {
-        Packet p = Packet("updateGameState", gameState, status: "200");
+        Packet p = Packet("join", gameState, status: "200");
         socket.writeln(jsonEncode(p));
       }
       return true;
@@ -114,7 +112,7 @@ class Host {
   void onCall(String call) {
     debugPrint("[DEBUG] Host onCall $call");
     for (var socket in sockets) {
-      Packet packet = Packet("updateGameState", gameState, status: "200");
+      Packet packet = Packet(call, gameState, status: "200");
       socket.writeln(jsonEncode(packet));
     }
   }
