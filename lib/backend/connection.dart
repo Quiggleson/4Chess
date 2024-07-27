@@ -30,7 +30,6 @@ class Connection {
       for (var m in messages) {
         final Map<String, dynamic> packetMap =
             jsonDecode(m) as Map<String, dynamic>;
-        debugPrint("[DEBUG] Packet heard ${Packet.fromJson((packetMap))}");
         onPacket(Packet.fromJson(packetMap), Connection(socket));
       }
     });

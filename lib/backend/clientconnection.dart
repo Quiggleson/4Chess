@@ -42,7 +42,6 @@ class ClientConnection {
   }
 
   void _handlePacket(Packet packet, Connection connection) {
-    debugPrint("[DEBUG] ClientConnection.dart:44 ${packet.call}");
     if (_eventMap[packet.call] != null) {
       _eventMap[packet.call]!(packet, connection);
     } else if (_defaultEvent != null) {

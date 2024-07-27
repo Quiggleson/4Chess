@@ -56,8 +56,6 @@ class Host {
           jsonDecode(message) as Map<String, dynamic>;
       final packet = Packet.fromJson(packetMap);
 
-      debugPrint("[DEBUG] Host heard packet $packet");
-
       if (packet.call == "join") {
         onJoinGame(socket, packet);
       } else {
