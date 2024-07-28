@@ -21,12 +21,18 @@ class Client with ChangeNotifier {
     gameState.addPlayer(player);
 
     getHostIp(roomCode).then((ip) {
-      ClientConnection.initialize(ip, port, onConnection).then((c) {
-        c.addEvent("updateip", onUpdateIp);
-        c.addEvent("updateGameState", updateGameState);
+      ClientConnection.initialize(ip, port, (p0) => null).then((c) {
+        c.addEvent('updateip', onUpdateIp);
+        c.addEvent('updateGameState', updateGameState);
         connection = c;
+        joinGame();
       });
     });
+  }
+
+  void onUpdateIp(Packet packet, Connection connection) {
+    ip = packet.newip!;
+    gameState.players[0].ip = ip;
   }
 
   void updateGameState(Packet packet, Connection connection) {
@@ -34,14 +40,9 @@ class Client with ChangeNotifier {
     notifyListeners();
   }
 
-  void onConnection(Connection connection) {
+  void joinGame() {
     Packet packet = Packet("join", gameState, roomCode: roomCode);
-    connection.send(packet);
-  }
-
-  void onUpdateIp(Packet packet, Connection connection) {
-    ip = packet.newip!;
-    gameState.players[0].ip = ip;
+    connection.sendPacket(packet);
   }
 
   Future<String> getHostIp(String roomCode) async {
