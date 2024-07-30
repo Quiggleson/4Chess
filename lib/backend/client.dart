@@ -21,7 +21,7 @@ class Client with ChangeNotifier {
     gameState.addPlayer(player);
 
     getHostIp(roomCode).then((ip) {
-      ClientConnection.initialize(ip, port, (p0) => null).then((c) {
+      ClientConnection.initialize(ip, port).then((c) {
         c.addEvent('updateip', onUpdateIp);
         c.addEvent('updateGameState', updateGameState);
         connection = c;
@@ -30,12 +30,12 @@ class Client with ChangeNotifier {
     });
   }
 
-  void onUpdateIp(Packet packet, Connection connection) {
+  void onUpdateIp(Packet packet) {
     ip = packet.newip!;
     gameState.players[0].ip = ip;
   }
 
-  void updateGameState(Packet packet, Connection connection) {
+  void updateGameState(Packet packet) {
     gameState = packet.gameState!;
     notifyListeners();
   }

@@ -9,12 +9,14 @@ class Connection {
 
   Connection(this.socket);
 
-  static Future<Connection> initialize(
-      String ip, int port, Function(Connection) onConnect) async {
+  static Future<Connection> initialize(String ip, int port,
+      [Function(Connection)? onConnect]) async {
     Socket socket =
         await Socket.connect(ip, port, sourceAddress: InternetAddress.anyIPv4)
             .then((Socket s) {
-      onConnect(Connection(s));
+      if (onConnect != null) {
+        onConnect(Connection(s));
+      }
       return s;
     }, onError: (err) {
       debugPrint('[CONNECTION ERROR] $err');
