@@ -1,39 +1,48 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/foundation.dart';
+import 'package:fourchess/backend/clientconnection.dart';
+import 'package:fourchess/backend/connection.dart';
 import 'package:fourchess/util/packet.dart';
 import '../util/player.dart';
 import '../util/gamestate.dart';
 import 'package:uuid/uuid.dart';
 
 class Client with ChangeNotifier {
-  final int port = 46100;
+  final int port = 38383;
   String userid = const Uuid().v4();
   late String ip;
+  String roomCode;
   GameState gameState = GameState();
-  late Socket socket;
+  late ClientConnection connection;
 
-  Client({required String name, required String roomCode}) {
+  Client({required String name, required String this.roomCode}) {
+    Player player = Player(userid: userid, name: name, ip: "");
+    gameState.addPlayer(player);
+
     getHostIp(roomCode).then((ip) {
-      Socket.connect(ip, 38383, sourceAddress: InternetAddress.anyIPv4).then(
-          (Socket socket) {
-        debugPrint('Client has connected to server');
-        this.socket = socket;
-
-        this.ip = socket.address.address.toString();
-        debugPrint(
-            'This is the client, looking for ip: ${socket.remoteAddress.host}');
-        debugPrint('Making player $name with ip $ip');
-
-        Player player = Player(userid: userid, name: name, ip: ip);
-
-        gameState = GameState(players: [player]);
-
-        join(roomCode);
-      }, onError: (err) {
-        debugPrint('[CONNECTION ERROR], $err');
+      ClientConnection.initialize(ip, port).then((c) {
+        c.addEvent('updateip', onUpdateIp);
+        c.addEvent('updateGameState', updateGameState);
+        connection = c;
+        joinGame();
       });
     });
+  }
+
+  void onUpdateIp(Packet packet) {
+    ip = packet.newip!;
+    gameState.players[0].ip = ip;
+  }
+
+  void updateGameState(Packet packet) {
+    gameState = packet.gameState!;
+    notifyListeners();
+  }
+
+  void joinGame() {
+    Packet packet = Packet("join", gameState, roomCode: roomCode);
+    connection.sendPacket(packet);
   }
 
   Future<String> getHostIp(String roomCode) async {
@@ -82,42 +91,13 @@ class Client with ChangeNotifier {
     return -1;
   }
 
-  join(String roomCode) {
-    Packet packet = Packet("join", gameState, roomCode: roomCode);
-    socket.writeln(jsonEncode(packet));
-
-    // Every time host sends out data, this is where it listens
-    socket.listen((List<int> data) {
-      final String message = utf8.decode(data).trim();
-      List<String> messages = message.split("\n");
-
-      for (var m in messages) {
-        debugPrint('[DEBUG] Dealing with message: $m');
-
-        final Map<String, dynamic> packetMap =
-            jsonDecode(m) as Map<String, dynamic>;
-        Packet packet = Packet.fromJson(packetMap);
-
-        if (packet.status == '200' && packet.newip != null) {
-          ip = packet.newip!;
-          debugPrint('[DEBUG] New client ip: $ip');
-        } else if (packet.status == '200' && packet.gameState != null) {
-          gameState = packet.gameState!;
-          notifyListeners();
-        } else {
-          debugPrint("[DEBUG] $packet");
-        }
-      }
-    });
-  }
-
   start() {
     debugPrint("[DEBUG] Client Start");
     gameState.status = GameStatus.starting;
     gameState.players[0].status = PlayerStatus.first;
     notifyListeners();
     Packet packet = Packet("start", gameState);
-    socket.writeln(jsonEncode(packet));
+    connection.sendPacket(packet);
   }
 
   startTimer() {
@@ -126,7 +106,7 @@ class Client with ChangeNotifier {
     gameState.status = GameStatus.inProgress;
     notifyListeners();
     Packet packet = Packet("startTimer", gameState);
-    socket.writeln(jsonEncode(packet));
+    connection.sendPacket(packet);
   }
 
   togglePause(double timeOfCurrentPlayer) {
@@ -138,7 +118,7 @@ class Client with ChangeNotifier {
         .firstWhere((player) => player.status == PlayerStatus.turn)
         .time = timeOfCurrentPlayer;
     Packet packet = Packet("togglePause", gameState);
-    socket.writeln(jsonEncode(packet));
+    connection.sendPacket(packet);
   }
 
   next(double time) {
@@ -164,13 +144,13 @@ class Client with ChangeNotifier {
       gameState.players[nextIndex].status = PlayerStatus.turn;
     }
     Packet packet = Packet("next", gameState);
-    socket.writeln(jsonEncode(packet));
+    connection.sendPacket(packet);
   }
 
   reorder() {
     debugPrint("[DEBUG] Client Reorder");
     Packet packet = Packet("reorder", gameState);
-    socket.writeln(jsonEncode(packet));
+    connection.sendPacket(packet);
   }
 
   lost(double time) {
@@ -192,7 +172,7 @@ class Client with ChangeNotifier {
       gameState.players[nextIndex].status = PlayerStatus.turn;
     }
     Packet packet = Packet("lost", gameState);
-    socket.writeln(jsonEncode(packet));
+    connection.sendPacket(packet);
   }
 
   reset() {
@@ -205,21 +185,21 @@ class Client with ChangeNotifier {
     gameState.players[0].status =
         PlayerStatus.first; // Slightly janky but works
     Packet packet = Packet("reset", gameState);
-    socket.writeln(jsonEncode(packet));
+    connection.sendPacket(packet);
   }
 
   leave() {
     debugPrint("[DEBUG] Client Leave");
     gameState.players.removeAt(getPlayerIndex());
     Packet packet = Packet("leave", gameState);
-    socket.writeln(jsonEncode(packet));
+    connection.sendPacket(packet);
     stop();
   }
 
   endGame() {
     gameState.status = GameStatus.terminated;
     Packet packet = Packet("endGame", gameState);
-    socket.writeln(jsonEncode(packet));
+    connection.sendPacket(packet);
   }
 
   GameState getGameState() {
@@ -246,6 +226,6 @@ class Client with ChangeNotifier {
   }
 
   stop() {
-    socket.close();
+    connection.close();
   }
 }

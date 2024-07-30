@@ -1,30 +1,32 @@
+import 'package:flutter/foundation.dart';
 import 'package:fourchess/backend/connection.dart';
 import 'package:fourchess/util/packet.dart';
 
 class ClientConnection {
   late Connection _connection;
-  late Map<String, Function(Packet, Connection)> _eventMap;
-  Function(Packet, Connection)? _defaultEvent;
+  late Map<String, Function(Packet)> _eventMap;
+  Function(Packet)? _defaultEvent;
   Function()? _onDisconnect;
   Function()? _onReconnect;
 
   ClientConnection._(Connection connection) {
     _eventMap = {'heartbeat': _handleHeartbeat};
+    _connection = connection;
     connection.listen(_handlePacket);
     _initHeartbeatCheck();
   }
 
-  static Future<ClientConnection> initialize(
-      String ip, int port, Function(Connection) onConnection) async {
+  static Future<ClientConnection> initialize(String ip, int port,
+      [Function(Connection)? onConnection]) async {
     Connection connection = await Connection.initialize(ip, port, onConnection);
     return ClientConnection._(connection);
   }
 
-  void addEvent(String name, Function(Packet, Connection) onEvent) {
+  void addEvent(String name, Function(Packet) onEvent) {
     _eventMap[name] = onEvent;
   }
 
-  set addDefaultEvent(Function(Packet, Connection) onDefaultEvent) =>
+  set addDefaultEvent(Function(Packet) onDefaultEvent) =>
       _defaultEvent = onDefaultEvent;
 
   set onDisconnect(Function() onDisconnect) => _onDisconnect = onDisconnect;
@@ -41,15 +43,15 @@ class ClientConnection {
 
   void _handlePacket(Packet packet, Connection connection) {
     if (_eventMap[packet.call] != null) {
-      _eventMap[packet.call]!(packet, connection);
+      _eventMap[packet.call]!(packet);
     } else if (_defaultEvent != null) {
-      _defaultEvent!(packet, connection);
+      _defaultEvent!(packet);
     }
   }
 
-  void _handleHeartbeat(Packet packet, Connection connection) {
+  void _handleHeartbeat(Packet packet) {
     // Reset time since last heartbeat
-    connection.send(Packet('heartbeat', null));
+    _connection.send(Packet('heartbeat', null));
   }
 
   void _initHeartbeatCheck() {
