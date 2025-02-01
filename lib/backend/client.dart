@@ -21,7 +21,7 @@ class Client with ChangeNotifier {
     gameState.addPlayer(player);
 
     getHostIp(roomCode).then((ip) {
-      ClientConnection.initialize(ip, port).then((c) {
+      ClientConnection.initialize(ip, port, userid).then((c) {
         c.addEvent('updateip', onUpdateIp);
         c.addEvent('updateGameState', updateGameState);
         connection = c;
