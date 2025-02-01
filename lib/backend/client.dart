@@ -1,44 +1,54 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/foundation.dart';
+import 'package:fourchess/backend/clientconnection.dart';
+import 'package:fourchess/backend/connection.dart';
+import 'package:fourchess/util/packet.dart';
 import '../util/player.dart';
 import '../util/gamestate.dart';
+import 'package:uuid/uuid.dart';
 
-class Client {
-  final int port = 46100;
-  late final String ip;
-  // Flutter gets mad when this is late so throw a dummy gamestate in there
+class Client with ChangeNotifier {
+  final int port = 38383;
+  String userid = const Uuid().v4();
+  late String ip;
+  String roomCode;
   GameState gameState = GameState();
-  late Socket socket;
-  bool _isModified = false;
+  late ClientConnection connection;
 
-  Client({required String name, required String gameCode}) {
-    // Connect to host - populate ip, gameState, and socket
-    getHostIp(gameCode).then((ip) {
-      debugPrint('About to reconnect');
-      Socket.connect(ip, 38383, sourceAddress: InternetAddress.anyIPv4).then(
-          (Socket socket) {
-        debugPrint('Client has connected to server');
-        this.socket = socket;
+  Client({required String name, required String this.roomCode}) {
+    Player player = Player(userid: userid, name: name, ip: "");
+    gameState.addPlayer(player);
 
-        this.ip = socket.address.address.toString();
-
-        Player player = Player(name: name, ip: ip);
-
-        gameState = GameState(players: [player]);
-
-        // Join game
-        join(gameCode);
-      }, onError: (err) {
-        debugPrint('Oi there was an error connecting, $err');
+    getHostIp(roomCode).then((ip) {
+      ClientConnection.initialize(ip, port, userid).then((c) {
+        c.addEvent('updateip', onUpdateIp);
+        c.addEvent('updateGameState', updateGameState);
+        connection = c;
+        joinGame();
       });
     });
   }
 
-  Future<String> getHostIp(String gameCode) async {
-    int part2 = int.parse(gameCode.substring(0, 2), radix: 16);
-    int part3 = int.parse(gameCode.substring(2, 4), radix: 16);
-    int part4 = int.parse(gameCode.substring(4, 6), radix: 16);
+  void onUpdateIp(Packet packet) {
+    ip = packet.newip!;
+    gameState.players[0].ip = ip;
+  }
+
+  void updateGameState(Packet packet) {
+    gameState = packet.gameState!;
+    notifyListeners();
+  }
+
+  void joinGame() {
+    Packet packet = Packet("join", gameState, roomCode: roomCode);
+    connection.sendPacket(packet);
+  }
+
+  Future<String> getHostIp(String roomCode) async {
+    int part2 = int.parse(roomCode.substring(0, 2), radix: 16);
+    int part3 = int.parse(roomCode.substring(2, 4), radix: 16);
+    int part4 = int.parse(roomCode.substring(4, 6), radix: 16);
 
     List<String> possibleIps = [
       '192.$part2.$part3.$part4',
@@ -52,48 +62,18 @@ class Client {
         final socket = await Socket.connect(ipAddress, 38383,
             sourceAddress: InternetAddress.anyIPv4,
             timeout: const Duration(seconds: 1));
-        debugPrint('We found a good address');
         socket.close();
         return ipAddress;
       } catch (e) {
         debugPrint('Failed to connect to $ipAddress: $e');
       }
     }
-    return ''; // Return null if no connections were successful.
-
-    // Future<String>? ans;
-    // // Want to cycle through each possibleIp
-    // // wait for Socket.connect, if error continue, otherwise return
-    // possibleIps.forEach((ip) async {
-    //   ans = await Socket.connect(ip, 38383, sourceAddress: InternetAddress.anyIPv4)
-    //       .then((Socket socket) {
-    //     debugPrint('Tried and succeeded ip $ip');
-    //     socket.close();
-    //     //return ip;
-    //   }, onError: (err) {
-    //     debugPrint('Tried and failed IP $ip \n$err');
-    //   });
-    // });
-    // String real_ans = await ans ?? '';
-    // return real_ans;
-    // // debugPrint('Failed to get ip');
-    // // return '0.0.0.0';
-  }
-
-  bool isDirty() {
-    // debugPrint('Checking isdirty. _ismodified: $_isModified');
-    if (_isModified) {
-      _isModified = false;
-      return true;
-    }
-    return false;
+    return '';
   }
 
   int getPlayerIndex() {
     for (final (index, player) in gameState.players.indexed) {
-      debugPrint('getplayerindex gamestate: $gameState');
-      debugPrint('myip: $ip and playerip: ${player.ip}');
-      if (player.ip == ip) {
+      if (player.userid == this.userid) {
         return index;
       }
     }
@@ -111,88 +91,44 @@ class Client {
     return -1;
   }
 
-  // Send player data
-  join(String gameCode) {
-    String message = '''
-          {
-            "call": "join",
-            "gameCode": "$gameCode",
-            "gameState" : $gameState
-          }
-        ''';
-
-    debugPrint('Sending $message');
-    socket.write(message);
-
-    // Listen for response - everytime host sends out, this is where it listens
-    socket.listen((List<int> data) {
-      debugPrint('Im listening');
-      const JsonDecoder decoder = JsonDecoder();
-      final String message = utf8.decode(data).trim();
-      debugPrint('Received: $message');
-      final Map<String, dynamic> obj = decoder.convert(message);
-      if (obj["status"] == '200') {
-        update(obj["gameState"]);
-      } else {
-        debugPrint(obj.toString());
-      }
-    });
-  }
-
-  update(Map<String, dynamic> gameState) {
-    // Check if the proposed gameState is different and update the isModified flag
-    if (gameState != this.gameState.getJson()) {
-      this.gameState.initTime = gameState["initTime"];
-      this.gameState.increment = gameState["increment"];
-      this.gameState.status = GameStatus.values
-          .firstWhere((e) => e.toString() == gameState["status"]);
-      List<Player> players = [];
-      for (dynamic d in gameState["players"]) {
-        players.add(Player(
-            ip: d["ip"],
-            name: d["name"],
-            status: PlayerStatus.values
-                .firstWhere((e) => e.toString() == d["status"]),
-            time: d["time"]));
-      }
-      this.gameState.players = players;
-      _isModified = true;
-    }
-  }
-
   start() {
-    debugPrint("Client Start");
-    debugPrint('Just started the ip is $ip');
+    debugPrint("[DEBUG] Client Start");
     gameState.status = GameStatus.starting;
     gameState.players[0].status = PlayerStatus.first;
-    _isModified = true;
-    socket.write('''
-    {
-      "call": "start",
-      "gameState": $gameState
-    }
-    ''');
+    notifyListeners();
+    Packet packet = Packet("start", gameState);
+    connection.sendPacket(packet);
   }
 
-  pause() {
-    debugPrint("Client Pause");
-    gameState.status = GameStatus.paused;
-    socket.write('''
-    {
-      "call": "start",
-      "gameState": $gameState
-    }
-    ''');
+  startTimer() {
+    debugPrint("[DEBUG] Client Start Timer");
+    gameState.players[0].status = PlayerStatus.turn;
+    gameState.status = GameStatus.inProgress;
+    notifyListeners();
+    Packet packet = Packet("startTimer", gameState);
+    connection.sendPacket(packet);
+  }
+
+  togglePause(double timeOfCurrentPlayer) {
+    debugPrint("[DEBUG] Client Pause");
+    gameState.status = gameState.status == GameStatus.paused
+        ? GameStatus.inProgress
+        : GameStatus.paused;
+    gameState.players
+        .firstWhere((player) => player.status == PlayerStatus.turn)
+        .time = timeOfCurrentPlayer;
+    Packet packet = Packet("togglePause", gameState);
+    connection.sendPacket(packet);
   }
 
   next(double time) {
-    debugPrint("Client Next");
+    debugPrint("[DEBUG] Client Next");
 
     int playerIndex = getPlayerIndex();
     int nextIndex = getNextIndex(playerIndex);
 
     if (nextIndex == -1) {
-      debugPrint('Something horribly wrong has happened');
+      debugPrint('[ERROR] Next player index is -1');
       return;
     }
 
@@ -201,57 +137,69 @@ class Client {
     } else {
       // Update current player
       Player player = gameState.players[playerIndex];
-      player.time = time;
+      player.time = time + gameState.increment;
       player.status = PlayerStatus.notTurn;
 
       // Update next player
       gameState.players[nextIndex].status = PlayerStatus.turn;
     }
-    debugPrint('gs after next: $gameState');
-
-    socket.write('''
-    {
-      "call": "next",
-      "gameState": $gameState
-    }
-    ''');
+    Packet packet = Packet("next", gameState);
+    connection.sendPacket(packet);
   }
 
-  reorder(List<Player> players) {
-    debugPrint("Client Reorder");
-    debugPrint('ip is $ip');
-    socket.write('''
-      {
-        "call": "reorder",
-        "gameState": $gameState
-      }
-    ''');
+  reorder() {
+    debugPrint("[DEBUG] Client Reorder");
+    Packet packet = Packet("reorder", gameState);
+    connection.sendPacket(packet);
   }
 
-  lost() {
-    debugPrint("Client Lost");
-    int playerIndex = getPlayerIndex();
-    int nextIndex = getNextIndex(playerIndex);
-    if (nextIndex == playerIndex) {
+  lost(double time) {
+    debugPrint("[DEBUG] Client Lost");
+    Player player = gameState.players[getPlayerIndex()];
+    PlayerStatus oldStatus = player.status;
+    player.status = PlayerStatus.lost;
+    player.time = time;
+    List<Player> playersLeft = gameState.players
+        .where((player) => player.status != PlayerStatus.lost)
+        .toList(); // Get all players that are not lost
+    if (playersLeft.length == 1) {
+      // All but one player has lost, therefore game is over
+      playersLeft[0].status = PlayerStatus.won;
       gameState.status = GameStatus.finished;
-    } else {
-      Player player = gameState.players[playerIndex];
-      player.status = PlayerStatus.lost;
-      gameState.players[nextIndex].status = PlayerStatus.turn;
-
+    } else if (oldStatus == PlayerStatus.turn) {
+      // Next player only if this client lost on their turn
+      int nextIndex = getNextIndex(getPlayerIndex());
       gameState.players[nextIndex].status = PlayerStatus.turn;
     }
-
-    socket.write('''
-    {
-      "call": "next",
-      "gameState": $gameState
-    }
-    ''');
+    Packet packet = Packet("lost", gameState);
+    connection.sendPacket(packet);
   }
 
   reset() {
-    debugPrint("Client Reset");
+    debugPrint("[DEBUG] Client Reset");
+    gameState.status = GameStatus.starting;
+    for (int i = 0; i < gameState.players.length; i++) {
+      gameState.players[i].status = PlayerStatus.notTurn;
+      gameState.players[i].time = gameState.initTime.toDouble();
+    }
+    gameState.players[0].status =
+        PlayerStatus.first; // Slightly janky but works
+    Packet packet = Packet("reset", gameState);
+    connection.sendPacket(packet);
+  }
+
+  leave() {
+    debugPrint("[DEBUG] Client Leave");
+    gameState.players.removeAt(getPlayerIndex());
+    Packet packet = Packet("leave", gameState);
+    connection.sendPacket(packet);
+    stop();
+  }
+
+  endGame() {
+    gameState.status = GameStatus.terminated;
+    Packet packet = Packet("endGame", gameState);
+    connection.sendPacket(packet);
   }
 
   GameState getGameState() {
@@ -261,10 +209,10 @@ class Client {
   //For testing UI
   GameState getFakeGameState() {
     GameState gs = GameState(initTime: 180, increment: 0, players: [
-      Player(name: "Deven", ip: '0.0.0.0'),
-      Player(name: "Robert", ip: '0.0.0.0'),
-      Player(name: "Aaron", ip: '0.0.0.0'),
-      Player(name: "Waldo", ip: '0.0.0.0'),
+      Player(userid: "1", name: "Deven", ip: '0.0.0.0'),
+      Player(userid: "2", name: "Robert", ip: '0.0.0.0'),
+      Player(userid: "3", name: "Aaron", ip: '0.0.0.0'),
+      Player(userid: "4", name: "Waldo", ip: '0.0.0.0'),
       /*Player("Deven", "1", PlayerStatus.first, 180),
           Player("Robert", "1", PlayerStatus.notTurn, 180),
           Player("Aaron", "1", PlayerStatus.notTurn, 180),
@@ -278,6 +226,6 @@ class Client {
   }
 
   stop() {
-    socket.close();
+    connection.close();
   }
 }

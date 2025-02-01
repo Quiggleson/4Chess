@@ -1,100 +1,28 @@
-import 'dart:convert';
+import 'package:fourchess/backend/connection.dart';
+import 'package:fourchess/backend/serverconnection.dart';
+import 'package:fourchess/util/packet.dart';
+
 import '../util/player.dart';
-import 'dart:io';
+
 import '../util/gamestate.dart';
 import 'package:flutter/foundation.dart';
 import 'package:network_info_plus/network_info_plus.dart';
-import 'package:dart_ipify/dart_ipify.dart';
 
 class Host {
   final int port = 38383;
-  //late Future<String> gameCode;
-  late String gameCode;
-  late ServerSocket server;
+  late String roomCode;
+  late ServerConnection server;
   GameState gameState;
-  List<Socket> sockets = [];
 
   Host({required this.gameState}) {
-    //gameCode = getgameCode();
-    gameCode = 'FHQW';
-    listen(port);
-  }
-
-  listen(int port) {
-    // Start the server
-    ServerSocket.bind(InternetAddress.anyIPv4, port)
-        .then((ServerSocket server) {
-      this.server = server;
-      // Print ip if in debug mode
-      final info = NetworkInfo();
-      info.getWifiIP().then((ip) {
-        debugPrint('getwifiip: $ip');
-        List<String> parts = ip?.split('.') ?? ['0'];
-        String code = '';
-        for (var part in parts.sublist(2)) {
-          int i = int.parse(part);
-          code = code + i.toRadixString(16).padLeft(2, '0');
-        }
-        //gameCode = code;
-      });
-      Ipify.ipv4().then((ip) {
-        debugPrint('ipify: $ip');
-      });
-
-      debugPrint('Listening');
-
-      // Listen
-      server.listen((Socket socket) {
-        if (!sockets.contains(socket)) sockets.add(socket);
-        interpret(socket);
-      });
+    ServerConnection.initialize(port).then((s) {
+      s.addEvent("join", _onJoinGame);
+      s.addDefaultEvent = _onCall;
+      server = s;
     });
   }
 
-  // Interpret the call and call the appropriate method
-  interpret(Socket socket) {
-    socket.listen((List<int> data) {
-      // Convert the message to a JSON object
-      const JsonDecoder decoder = JsonDecoder();
-      final String message = utf8.decode(data).trim();
-      final Map<String, dynamic> obj = decoder.convert(message);
-      debugPrint('I am the host, I received object: $obj');
-
-      // Call the appropriate method
-      switch (obj["call"]) {
-        case "start":
-          updateGameState(obj["gameState"]);
-          onStart(obj);
-          break;
-        case "pause":
-          updateGameState(obj["gameState"]);
-          onPause(obj);
-          break;
-        case "next":
-          updateGameState(obj["gameState"]);
-          onNext(obj);
-          break;
-        case "join":
-          onJoinGame(socket, obj);
-          break;
-        case "reorder":
-          updateGameState(obj["gameState"]);
-          onReorder(obj);
-        default:
-          throw Error();
-      }
-
-      // Handle errors
-    }, onError: (error) {
-      debugPrint('Error listening to client: $error');
-    }, onDone: () {
-      debugPrint('Client disconnected');
-      sockets.remove(socket);
-      socket.close();
-    });
-  }
-
-  Future<String> getgameCode() async {
+  Future<String> getRoomCode() async {
     final info = NetworkInfo();
     String? ip = await info.getWifiIP();
 
@@ -105,91 +33,36 @@ class Host {
       int i = int.parse(part);
       code = code + i.toRadixString(16).padLeft(2, '0').toUpperCase();
     }
-    gameCode = code;
+    roomCode = code;
     return code;
   }
 
-  updateGameState(Map<String, dynamic> gameState) {
-    this.gameState.initTime = gameState["initTime"];
-    this.gameState.increment = gameState["increment"];
-    this.gameState.status = GameStatus.values
-        .firstWhere((e) => e.toString() == gameState["status"]);
-    List<Player> players = [];
-    for (dynamic d in gameState["players"]) {
-      debugPrint('Host adding player $d');
-      players.add(Player(
-          ip: d["ip"],
-          name: d["name"],
-          status: PlayerStatus.values
-              .firstWhere((e) => e.toString() == d["status"]),
-          time: d["time"]));
-    }
-    this.gameState.players = players;
-  }
-
-  bool onJoinGame(Socket socket, Map<String, dynamic> obj) {
-    if (obj["gameCode"] == gameCode) {
-      Player player = Player(
-          name: obj["gameState"]["players"][0]["name"],
-          ip: socket.remoteAddress.address.toString());
+  bool _onJoinGame(Packet packet, Connection connection) {
+    if (packet.roomCode == roomCode) {
+      Player player = packet.gameState!.players[0];
       player.time = gameState.initTime.toDouble();
       gameState.addPlayer(player);
-      debugPrint('About to write to sockets: $sockets');
-      sockets.forEach((s) {
-        s.write('''{
-        "status": "200",
-        "call": "join",
-        "gameState" : $gameState
-        }
-      ''');
-      });
+      Packet p = Packet("updateGameState", gameState, status: "200");
+      server.send(p);
       return true;
     } else {
-      socket.write('{"status": "403"}');
+      Packet p = Packet("Error", null, status: "403");
+      connection.send(p);
       return false;
     }
   }
 
-  bool onStart(Map<String, dynamic> obj) {
-    debugPrint("Host onStart");
-    sockets.forEach((socket) => socket.write('''{
-        "status": "200",
-        "call": "start",
-        "gameState": $gameState
-      }'''));
-    return true;
-  }
+  void _onDisconnect() {}
 
-  bool onPause(Map<String, dynamic> obj) {
-    debugPrint("Host onPause");
-    sockets.forEach((socket) => socket.write('''{
-        "status": "200",
-        "call": "pause",
-        "gameState": $gameState
-      }'''));
-    return true;
-  }
-
-  bool onNext(Map<String, dynamic> obj) {
-    debugPrint("Host onNext");
-    sockets.forEach((socket) => socket.write('''{
-        "status": "200",
-        "call": "next",
-        "gameState": $gameState
-      }'''));
-    return true;
-  }
-
-  bool onReorder(Map<String, dynamic> obj) {
-    sockets.forEach((socket) => socket.write('''{
-        "status": "200",
-        "call": "reorder",
-        "gameState": $gameState
-      }'''));
-    return true;
+  void _onCall(Packet packet, Connection connection) {
+    debugPrint("[DEBUG] Host onCall ${packet.call}");
+    gameState = packet.gameState!;
+    Packet p = Packet("updateGameState", gameState, status: "200");
+    server.send(p);
   }
 
   stop() {
+    debugPrint("[DEBUG] Stopping host server");
     server.close();
   }
 }

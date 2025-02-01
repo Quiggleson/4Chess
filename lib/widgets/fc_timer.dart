@@ -5,7 +5,6 @@ import 'dart:async';
 class FCTimer extends StatefulWidget {
   const FCTimer(
       {required this.initialTime,
-      this.running = false,
       this.formatMethod,
       this.onTimeout,
       this.style,
@@ -18,7 +17,6 @@ class FCTimer extends StatefulWidget {
   final double initialTime;
   final ButtonStyle? style;
   final bool enabled;
-  final bool running;
   final Function(double)? formatMethod;
   final Function(double)? onStart;
   final Function(double)? onStop;
@@ -31,25 +29,24 @@ class FCTimer extends StatefulWidget {
 
 class FCTimerState extends State<FCTimer> {
   late bool _timerRunning;
-  double? _time;
+  late double _time;
 
   @override
   initState() {
-    _timerRunning = widget.running;
     _time = widget.initialTime;
-
-    if (_timerRunning) {
-      start();
-    }
-
+    _timerRunning = false;
     super.initState();
   }
 
-  void toggle() {
+  void _toggle(bool callbacks) {
     _timerRunning = !_timerRunning;
 
-    if (_timerRunning && widget.onStart != null) widget.onStart!(_time!);
-    if (!_timerRunning && widget.onStop != null) widget.onStop!(_time!);
+    if (_timerRunning && widget.onStart != null && callbacks) {
+      widget.onStart!(_time);
+    }
+    if (!_timerRunning && widget.onStop != null && callbacks && _time > 0) {
+      widget.onStop!(_time);
+    }
 
     Timer.periodic(const Duration(milliseconds: 100), (timer) {
       if (!_timerRunning) {
@@ -63,19 +60,19 @@ class FCTimerState extends State<FCTimer> {
       }
 
       setState(() {
-        _time = (_time! - .1 < 0) ? 0 : _time! - .1;
-        if (widget.onTick != null) widget.onTick!(_time!);
+        _time = (_time - .1 < 0) ? 0 : _time - .1;
+        if (widget.onTick != null) widget.onTick!(_time);
       });
     });
   }
 
-  void stop() {
+  void stop({bool callbacks = true}) {
     //print("TIMER STOP CALLED");
-    if (_timerRunning) toggle();
+    if (_timerRunning) _toggle(callbacks);
   }
 
-  void start() {
-    if (!_timerRunning) toggle();
+  void start({bool callbacks = true}) {
+    if (!_timerRunning) _toggle(callbacks);
   }
 
   void reset() {
@@ -88,7 +85,7 @@ class FCTimerState extends State<FCTimer> {
   }
 
   double getTime() {
-    return _time!;
+    return _time;
   }
 
   bool isRunning() {
@@ -124,12 +121,10 @@ class FCTimerState extends State<FCTimer> {
 
   @override
   Widget build(BuildContext context) {
-    _time ??= widget.initialTime;
-
     return FCButton(
       style: widget.style,
-      onPressed: widget.enabled ? toggle : null,
-      child: Text(convertSecondsToTime(_time!)),
+      onPressed: widget.enabled ? () => _toggle(true) : null,
+      child: Text(convertSecondsToTime(_time)),
     );
   }
 }

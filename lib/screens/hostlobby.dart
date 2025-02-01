@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:fourchess/screens/game.dart';
 import 'package:fourchess/util/gamestate.dart';
 import 'package:fourchess/widgets/fc_appbar.dart';
+import 'package:fourchess/widgets/fc_backbutton.dart';
 import 'package:fourchess/widgets/fc_button.dart';
 import 'package:fourchess/widgets/fc_loadinganimation.dart';
 import 'package:fourchess/widgets/fc_numbereditem.dart';
@@ -9,12 +10,13 @@ import 'dart:async';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import '../backend/client.dart';
 import '../util/player.dart';
+import 'package:fourchess/widgets/fc_alertdialog.dart';
 
 class HostLobby extends StatefulWidget {
-  HostLobby({super.key, required this.gameCode, required this.client});
+  HostLobby({super.key, required this.roomCode, required this.client});
 
   final Client client;
-  final String gameCode;
+  final String roomCode;
 
   @override
   HostLobbyState createState() => HostLobbyState();
@@ -22,57 +24,37 @@ class HostLobby extends StatefulWidget {
 
 // CREATE ORANGEG ANIMATION THINGY WHEN WE HAVE TIME
 class HostLobbyState extends State<HostLobby> {
-  late List<Player> playerList;
-
-  bool starting = false;
-  double elapsedTime = 0;
+  bool starting = false; //Triggers the loading animation
 
   @override
   void initState() {
-    playerList = widget.client.getGameState().players;
-    Timer.periodic(const Duration(milliseconds: 500), (Timer timer) {
-      //This code will run 10 times a second when the host menu starts
-      if (widget.client.isDirty()) {
-        setState(() {
-          if (widget.client.gameState.status == GameStatus.setup) {
-            playerList = widget.client.getGameState().players;
-          }
-          if (starting) {
-            elapsedTime += .5;
-
-            if (mounted &&
-                widget.client.gameState.status == GameStatus.starting) {
-              debugPrint('I am the front end and I heard client is dirty');
-              Navigator.of(context).push(
-                MaterialPageRoute(
-                  //if (status.isGood)
-                  builder: (context) => Game(
-                      client: widget.client,
-                      id: widget.client.getPlayerIndex(),
-                      isHost: true),
-                ),
-              );
-              timer.cancel();
-            }
-
-            debugPrint(
-                "Time elapsed since attempting to start game: $elapsedTime");
-
-            if (elapsedTime > 10 && mounted) {
-              //We have taken more than 10 seconds to connect, probably a network
-              //issue
-              debugPrint("Failed to start game");
-              starting = false;
-              elapsedTime = 0;
-            }
-          }
-          if (!mounted) {
-            debugPrint("User has left the host lobby screen");
-            timer.cancel();
-          }
-        });
+    void goToGame() {
+      if (ModalRoute.of(context)!.isCurrent &&
+          widget.client.gameState.status == GameStatus.starting) {
+        Navigator.of(context).push(
+          MaterialPageRoute(
+            //if (status.isGood)
+            builder: (context) => Game(
+                client: widget.client,
+                id: widget.client.getPlayerIndex(),
+                isHost: true),
+          ),
+        );
+        widget.client.removeListener(goToGame);
       }
-    });
+    }
+
+    void gameTerminated() {
+      if (ModalRoute.of(context)!.isCurrent &&
+          widget.client.getGameState().status == GameStatus.terminated) {
+        debugPrint('Im the front end and I know the game state is terminated');
+        //FCAlertDialog.showTerminatedDialog(context, isHost: true); Do we really want to do this?
+        widget.client.removeListener(gameTerminated);
+      }
+    }
+
+    widget.client.addListener(goToGame);
+    widget.client.addListener(gameTerminated);
     super.initState();
   }
 
@@ -80,47 +62,64 @@ class HostLobbyState extends State<HostLobby> {
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: FCAppBar(
-          title: Text(AppLocalizations.of(context)!.code(widget.gameCode)),
-          toolbarHeight: 140,
-        ),
+            title: Text(AppLocalizations.of(context)!.code(widget.roomCode)),
+            toolbarHeight: 140,
+            leading: FCBackButton(onPressed: () => widget.client.endGame())),
         body: Padding(
             padding: const EdgeInsets.all(30),
             child:
                 Column(mainAxisAlignment: MainAxisAlignment.start, children: [
-              Text(
-                  (4 - playerList.length == 0)
-                      ? AppLocalizations.of(context)!.startGame
-                      : AppLocalizations.of(context)!
-                          .nPlayers(4 - playerList.length),
-                  style: const TextStyle(fontSize: 24),
-                  textAlign: TextAlign.center),
+              ListenableBuilder(
+                  listenable: widget.client,
+                  builder: (_, __) {
+                    List<Player> playerList =
+                        widget.client.getGameState().players;
+                    return Text(
+                        (4 - playerList.length == 0)
+                            ? AppLocalizations.of(context)!.startGame
+                            : AppLocalizations.of(context)!
+                                .nPlayers(4 - playerList.length),
+                        style: const TextStyle(fontSize: 24),
+                        textAlign: TextAlign.center);
+                  }),
               const Padding(padding: EdgeInsets.only(top: 20)),
               Expanded(child: LayoutBuilder(builder: (context, constraints) {
                 //debugPrint('HEIGHT ${constraints.maxHeight.toString()}');
-                return ReorderableListView(
-                  buildDefaultDragHandles: false,
-                  physics: const BouncingScrollPhysics(),
-                  proxyDecorator: (child, index, animation) => child,
-                  children: [
-                    for (int i = 0; i < playerList.length; i++)
-                      Padding(
-                        key: Key("$i"),
-                        padding: const EdgeInsets.only(top: 10, bottom: 10),
-                        child: FCNumberedItem(
-                            leading: ReorderableDragStartListener(
-                              index: i,
-                              child: const Icon(Icons.drag_handle),
-                            ),
-                            height: (constraints.maxHeight -
-                                    (playerList.length) * 20) /
-                                4,
-                            content: playerList[i].name,
-                            number: i + 1),
-                      )
-                  ],
-                  onReorder: (int oldIndex, int newIndex) =>
-                      _onReorder(oldIndex, newIndex),
-                );
+                return ListenableBuilder(
+                    listenable: widget.client,
+                    builder: (_, __) {
+                      if (widget.client.gameState.status == GameStatus.setup) {
+                        List<Player> playerList =
+                            widget.client.getGameState().players;
+                        return ReorderableListView(
+                          buildDefaultDragHandles: false,
+                          physics: const BouncingScrollPhysics(),
+                          proxyDecorator: (child, _, __) => child,
+                          children: [
+                            for (int i = 0; i < playerList.length; i++)
+                              Padding(
+                                key: Key("$i"),
+                                padding:
+                                    const EdgeInsets.only(top: 10, bottom: 10),
+                                child: FCNumberedItem(
+                                    leading: ReorderableDragStartListener(
+                                      index: i,
+                                      child: const Icon(Icons.drag_handle),
+                                    ),
+                                    height: (constraints.maxHeight -
+                                            (playerList.length) * 20) /
+                                        4,
+                                    content: playerList[i].name,
+                                    number: i + 1),
+                              )
+                          ],
+                          onReorder: (int oldIndex, int newIndex) =>
+                              _onReorder(oldIndex, newIndex),
+                        );
+                      } else {
+                        return const SizedBox.shrink(); //Empty widget
+                      }
+                    });
               })),
               const Padding(padding: EdgeInsets.only(top: 20)),
               Text(AppLocalizations.of(context)!.dragDrop,
@@ -130,36 +129,33 @@ class HostLobbyState extends State<HostLobby> {
               starting
                   ? const FCLoadingAnimation()
                   : FCButton(
-                      onPressed:
-                          playerList.isEmpty ? null : () => _onStart(context),
+                      onPressed: widget.client.getGameState().players.isEmpty
+                          ? null
+                          : () => _onStart(),
                       child: Text(AppLocalizations.of(context)!.start))
             ])));
   }
 
   _onReorder(int oldIndex, int newIndex) {
-    //----- this chunk may not be necessary depending on how fast the async update happens
-    setState(() {
-      if (oldIndex < newIndex) {
-        newIndex -= 1;
-      }
-      Player item = playerList.removeAt(oldIndex);
-      playerList.insert(newIndex, item);
-      //------
-
-      widget.client.reorder(playerList);
-    });
+    List<Player> playerList = widget.client.getGameState().players;
+    if (oldIndex < newIndex) {
+      newIndex -= 1;
+    }
+    Player item = playerList.removeAt(oldIndex);
+    playerList.insert(newIndex, item);
+    widget.client.reorder();
   }
 
-  _onStart(BuildContext context) {
+  _onStart() {
     widget.client.start();
     setState(() => starting = true);
-
-    //FORCING THE JOIN OF THE NEXT PAGE - THIS IS PURELY FOR TESTING PURPOSES
-    // Navigator.of(context).push(
-    //   MaterialPageRoute(
-    //     //if (status.isGood)
-    //     builder: (context) => Game(client: widget.client, id: 0, isHost: true),
-    //   ),
-    // );
+    Timer(const Duration(milliseconds: 10000), () {
+      if (!ModalRoute.of(context)!.isCurrent) {
+        debugPrint(
+            "Game has started successfully or user has left the screen"); //In either case, we do nothing
+        return;
+      }
+      setState(() => starting = false);
+    });
   }
 }
