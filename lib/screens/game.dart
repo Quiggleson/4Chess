@@ -1,6 +1,7 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:fourchess/theme/fc_colors.dart';
-import 'package:fourchess/widgets/fc_alartdialog.dart';
+import 'package:fourchess/widgets/fc_alertdialog.dart';
 import 'package:fourchess/widgets/fc_button.dart';
 import 'package:fourchess/widgets/fc_timer.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
@@ -24,198 +25,200 @@ class Game extends StatefulWidget {
 }
 
 class _GameState extends State<Game> {
-  late GameState gameState;
-  late GameStatus gameStatus;
-  late List<Player> rotatedPlayers;
   late List<GlobalKey<FCTimerState>> timerKeys;
+  late int numPlayers;
 
   @override
   void initState() {
-    super.initState();
-
-    rotatedPlayers = _rotateArrayAroundIndex(
-        widget.client.getGameState().players, widget.id);
-
-    timerKeys = [
-      for (int i = 0; i < rotatedPlayers.length; i++) GlobalKey<FCTimerState>()
-    ];
-
-    _updateUi();
-
-    Timer.periodic(const Duration(milliseconds: 100), (timer) {
-      if (!mounted) {
-        timer.cancel();
-        debugPrint("User has left the game screen");
-      }
-      if (widget.client.isDirty() && mounted) {
-        _updateUi();
+    widget.client.addListener(() {
+      if (widget.client.getGameState().status == GameStatus.terminated) {
+        FCAlertDialog.showTerminatedDialog(context, isHost: widget.isHost);
       }
     });
+    numPlayers = widget.client.getGameState().players.length;
+    timerKeys = [
+      for (int i = 0; i < numPlayers; i++) GlobalKey<FCTimerState>()
+    ];
+    super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
-    Player self = rotatedPlayers[0];
-    GlobalKey<FCTimerState> selfTimer = timerKeys[0];
+    return ListenableBuilder(
+        listenable: widget.client,
+        builder: (_, __) {
+          GameState state = widget.client.getGameState();
+          GameStatus gameStatus = state.status;
 
-    return Scaffold(
-        body: Column(
-      children: [
-        _buildPlayerRow(),
-        Expanded(
-            child: Padding(
-                padding: const EdgeInsets.only(top: 20, bottom: 10),
-                child: Container(
-                    padding: const EdgeInsets.all(20),
-                    decoration: const BoxDecoration(
-                        color: Color.fromRGBO(130, 195, 255, .5)),
-                    child: FCTimer(
-                      running: self.status == PlayerStatus.turn &&
-                          gameStatus == GameStatus.inProgress,
-                      initialTime: self.time,
-                      style: FCButton.styleFrom(
-                          textStyle: const TextStyle(fontSize: 56),
-                          backgroundColor:
-                              FCColors.fromPlayerStatus[self.status],
-                          disabledBackgroundColor:
-                              FCColors.fromPlayerStatus[self.status]),
-                      key: selfTimer,
-                      enabled: self.status == PlayerStatus.first ||
-                          self.status == PlayerStatus.turn,
-                      onStop: (stopTime) {
-                        widget.client.next(selfTimer.currentState!.getTime());
-                      },
-                      onTimeout: () => {widget.client.lost()},
-                    )))),
-        ButtonBar(alignment: MainAxisAlignment.center, children: [
-          IconButton(
-            //PAUSE/RESUME
-            iconSize: 80,
-            onPressed: gameStatus == GameStatus.starting ||
-                    gameStatus == GameStatus.finished
-                ? null
-                : () {
-                    widget.client.pause();
-                  },
-            icon: Icon(gameStatus == GameStatus.inProgress ||
-                    gameStatus == GameStatus.finished
-                ? Icons.pause_sharp
-                : Icons.play_arrow_sharp),
-          ),
-          Visibility(
-            //Must hide the reset button if we are not the host
-            visible: widget.isHost,
-            child: IconButton(
-              //RESET BUTTON
-              iconSize: 80,
-              onPressed: gameStatus == GameStatus.starting
-                  ? null
-                  : () {
-                      widget.client.reset();
-                    },
-              icon: const Icon(Icons.restore_sharp),
-            ),
-          ),
-          IconButton(
-              //RESIGNS
-              iconSize: 80,
-              onPressed: gameStatus == GameStatus.finished
-                  ? null
-                  : () {
-                      widget.client.lost();
-                      if (self.status == PlayerStatus.lost) {
-                        setState(() {
-                          _showDialog();
-                        });
+          //create updated array where current player is index 0
+          //MOVE THIS TO INITSTATE
+          List<Player> players = [
+            for (int i = 0; i < numPlayers; i++)
+              state.players[(widget.id + i) % numPlayers]
+          ];
+
+          for (int i = 0; i < numPlayers; i++) {
+            Player player = players[i];
+            GlobalKey<FCTimerState> timer = timerKeys[i];
+            if (timer.currentState != null) {
+              timer.currentState!.setTime(player.time);
+              if (gameStatus == GameStatus.paused ||
+                  gameStatus == GameStatus.starting ||
+                  gameStatus == GameStatus.terminated ||
+                  player.status != PlayerStatus.turn) {
+                timer.currentState!.stop(callbacks: false);
+              } else if (player.status == PlayerStatus.turn) {
+                timer.currentState!.start();
+              } else {
+                timer.currentState!.stop();
+              }
+            }
+          }
+
+          return Scaffold(
+              body: Column(
+            children: [
+              Builder(builder: (context) {
+                List<Widget> bar = [];
+                for (int i = 1; i < numPlayers; i++) {
+                  bar.add(OtherPlayerTimer(
+                    timerState: timerKeys[i],
+                    playerInfo: players[i],
+                    gameStatus: gameStatus,
+                  ));
+
+                  if (i != numPlayers - 1) {
+                    bar.add(const Padding(padding: EdgeInsets.only(right: 20)));
+                  }
+                }
+                return Row(children: bar);
+              }),
+              Expanded(
+                  child: Padding(
+                      padding: const EdgeInsets.only(top: 20, bottom: 10),
+                      child: Container(
+                          padding: const EdgeInsets.all(20),
+                          decoration: const BoxDecoration(
+                              color: Color.fromRGBO(130, 195, 255, .5)),
+                          child: FCTimer(
+                            initialTime: players[0].time,
+                            style: FCButton.styleFrom(
+                                textStyle: const TextStyle(fontSize: 56),
+                                backgroundColor: FCColors
+                                    .fromPlayerStatus[players[0].status],
+                                disabledBackgroundColor: FCColors
+                                    .fromPlayerStatus[players[0].status]),
+                            key: timerKeys[0],
+                            enabled: players[0].status == PlayerStatus.first ||
+                                players[0].status == PlayerStatus.turn,
+                            onStart: (startTime) {
+                              if (widget.client.gameState.status ==
+                                      GameStatus.paused &&
+                                  timerKeys[0].currentState != null) {
+                                int currPlayerIndex = players.indexWhere(
+                                    (player) =>
+                                        player.status == PlayerStatus.turn);
+                                double time = timerKeys[currPlayerIndex]
+                                    .currentState!
+                                    .getTime();
+                                widget.client.togglePause(time);
+                              } else if (gameStatus == GameStatus.starting) {
+                                widget.client.startTimer();
+                              }
+                            },
+                            onStop: (stopTime) {
+                              if (gameStatus != GameStatus.paused) {
+                                widget.client
+                                    .next(timerKeys[0].currentState!.getTime());
+                              }
+                            },
+                            onTimeout: () => {widget.client.lost(0)},
+                          )))),
+              ButtonBar(alignment: MainAxisAlignment.center, children: [
+                IconButton(
+                  //PAUSE/RESUME
+                  iconSize: 80,
+                  onPressed: gameStatus == GameStatus.starting ||
+                          gameStatus == GameStatus.finished
+                      ? null
+                      : () {
+                          if (timerKeys[0].currentState != null) {
+                            int currPlayerIndex = players.indexWhere(
+                                (player) => player.status == PlayerStatus.turn);
+                            double time = timerKeys[currPlayerIndex]
+                                .currentState!
+                                .getTime();
+                            widget.client.togglePause(time);
+                          }
+                        },
+                  icon: Icon(gameStatus == GameStatus.inProgress ||
+                          gameStatus == GameStatus.finished
+                      ? Icons.pause_sharp
+                      : Icons.play_arrow_sharp),
+                ),
+                Visibility(
+                  //Must hide the reset button if we are not the host
+                  visible: widget.isHost,
+                  child: IconButton(
+                    //RESET BUTTON
+                    iconSize: 80,
+                    onPressed: gameStatus == GameStatus.starting
+                        ? null
+                        : () => widget.client.reset(),
+                    icon: const Icon(Icons.restore_sharp),
+                  ),
+                ),
+                IconButton(
+                    //RESIGNS
+                    iconSize: 80,
+                    onPressed: () {
+                      if (players[0].status == PlayerStatus.lost ||
+                          gameStatus == GameStatus.finished) {
+                        _showQuitConfirmDialog();
+                      } else {
+                        widget.client
+                            .lost(timerKeys[0].currentState!.getTime());
                       }
                     },
-              icon: self.status == PlayerStatus.lost
-                  ? const Icon(Icons.close)
-                  : Icon(MdiIcons.skullOutline)),
-        ]),
-        const Padding(padding: EdgeInsets.only(bottom: 10))
-      ],
-    ));
-  }
-
-  //update ui for everything that can change
-  void _updateUi() {
-    gameState = widget.client.getGameState();
-    setState(() {
-      gameStatus = gameState.status;
-
-      for (int i = 0; i < timerKeys.length; i++) {
-        //set appropriate timer state
-        GlobalKey<FCTimerState> timerKey = timerKeys[i];
-        Player player = rotatedPlayers[i];
-
-        if (timerKey.currentState != null) {
-          timerKey.currentState!.setTime(player.time);
-
-          if (player.status != PlayerStatus.turn) {
-            timerKey.currentState!.stop();
-          } else {
-            timerKey.currentState!.start();
-          }
-        }
-      }
-    });
-  }
-
-  //Build player row
-  Row _buildPlayerRow() {
-    List<Widget> bar = [];
-
-    for (int i = 1; i < rotatedPlayers.length; i++) {
-      bar.add(OtherPlayerTimer(
-        timerState: timerKeys[i],
-        playerInfo: rotatedPlayers[i],
-        gameStatus: gameStatus,
-      ));
-
-      if (i != rotatedPlayers.length - 1) {
-        bar.add(const Padding(padding: EdgeInsets.only(right: 20)));
-      }
-    }
-
-    return Row(children: bar);
+                    icon: players[0].status == PlayerStatus.lost ||
+                            gameStatus == GameStatus.finished
+                        ? const Icon(Icons.close)
+                        : Icon(MdiIcons.skullOutline)),
+              ]),
+              const Padding(padding: EdgeInsets.only(bottom: 10))
+            ],
+          ));
+        });
   }
 
   //Todo: understandand and fix warning that pops up whenever this is called
-  void _showDialog() {
+  void _showQuitConfirmDialog() {
     String message = widget.isHost
         ? AppLocalizations.of(context)!.endGameForAll
         : AppLocalizations.of(context)!.quitGame;
     showDialog(
         context: context,
-        builder: (BuildContext context) =>
-            FCAlertDialog(message: message, actions: <Widget>[
-              FCButton(
-                onPressed: () =>
-                    Navigator.popUntil(context, ModalRoute.withName('/')),
-                child: Text(AppLocalizations.of(context)!.yes),
-              ),
-              const Padding(padding: EdgeInsets.only(top: 20)),
-              FCButton(
-                onPressed: () => Navigator.pop(context, 'No'),
-                child: Text(AppLocalizations.of(context)!.no),
-              ),
-            ]));
-  }
+        builder: (BuildContext context) => FCAlertDialog(
+                message: message,
+                title: AppLocalizations.of(context)!.confirm,
+                actions: <Widget>[
+                  FCButton(
+                    onPressed: () {
+                      if (widget.isHost) {
+                        widget.client.endGame();
+                      } else {
+                        widget.client.leave();
+                      }
 
-  List<T> _rotateArrayAroundIndex<T>(List<T> array, int index) {
-    if (array.isEmpty || index < 0 || index >= array.length) {
-      throw ArgumentError('Invalid index or empty array');
-    }
-
-    List<T> result = [];
-
-    for (int i = 0; i < array.length; i++) {
-      int currIndex =
-          i + index < array.length ? i + index : i + index - array.length;
-      result.add(array[currIndex]);
-    }
-
-    return result;
+                      Navigator.popUntil(context, ModalRoute.withName('/'));
+                    },
+                    child: Text(AppLocalizations.of(context)!.yes),
+                  ),
+                  const Padding(padding: EdgeInsets.only(top: 20)),
+                  FCButton(
+                    onPressed: () => Navigator.pop(context, 'No'),
+                    child: Text(AppLocalizations.of(context)!.no),
+                  ),
+                ]));
   }
 }
