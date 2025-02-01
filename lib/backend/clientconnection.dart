@@ -16,9 +16,10 @@ class ClientConnection {
     _initHeartbeatCheck();
   }
 
-  static Future<ClientConnection> initialize(String ip, int port,
+  static Future<ClientConnection> initialize(String ip, int port, String id,
       [Function(Connection)? onConnection]) async {
-    Connection connection = await Connection.initialize(ip, port, onConnection);
+    Connection connection =
+        await Connection.initialize(ip, port, id, onConnection);
     return ClientConnection._(connection);
   }
 

@@ -52,6 +52,8 @@ class Host {
     }
   }
 
+  void _onDisconnect() {}
+
   void _onCall(Packet packet, Connection connection) {
     debugPrint("[DEBUG] Host onCall ${packet.call}");
     gameState = packet.gameState!;

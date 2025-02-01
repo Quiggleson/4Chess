@@ -6,23 +6,24 @@ import 'package:fourchess/util/packet.dart';
 
 class Connection {
   final Socket socket;
+  final String id;
 
-  Connection(this.socket);
+  Connection(this.socket, this.id);
 
-  static Future<Connection> initialize(String ip, int port,
+  static Future<Connection> initialize(String ip, int port, String id,
       [Function(Connection)? onConnect]) async {
     Socket socket =
         await Socket.connect(ip, port, sourceAddress: InternetAddress.anyIPv4)
             .then((Socket s) {
       if (onConnect != null) {
-        onConnect(Connection(s));
+        onConnect(Connection(s, id));
       }
       return s;
     }, onError: (err) {
       debugPrint('[CONNECTION ERROR] $err');
     });
 
-    return Connection(socket);
+    return Connection(socket, id);
   }
 
   void listen(Function(Packet, Connection) onPacket) {
@@ -32,7 +33,7 @@ class Connection {
       for (var m in messages) {
         final Map<String, dynamic> packetMap =
             jsonDecode(m) as Map<String, dynamic>;
-        onPacket(Packet.fromJson(packetMap), Connection(socket));
+        onPacket(Packet.fromJson(packetMap), Connection(socket, id));
       }
     });
   }

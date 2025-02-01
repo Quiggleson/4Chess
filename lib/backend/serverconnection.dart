@@ -1,22 +1,29 @@
+import 'dart:async';
 import 'dart:io';
 import 'package:fourchess/backend/connection.dart';
 import 'package:fourchess/util/packet.dart';
 
 class ServerConnection {
-  final List<Connection> _connections = [];
+  final Map<Connection, int> _connectionsHeartbeatMap = {};
   late ServerSocket _server;
-  final Map<String, Function(Packet, Connection)> _eventMap = {};
+  late Map<String, Function(Packet, Connection)> _eventMap;
   Function(Packet, Connection)? _defaultEvent;
   Function()? _onDisconnect;
   Function()? _onReconnect;
 
+  final int MILLIS_TO_WAIT_FOR_CLIENT = 3000;
+  final int MILLIS_BETWEEN_HEARTBEATS = 1000;
+
   ServerConnection._(ServerSocket serverSocket) {
     _server = serverSocket;
 
+    _eventMap = {'heartbeat': _handleHeartbeat};
+
     _server.listen((Socket socket) {
-      Connection connection = Connection(socket);
+      Connection connection = Connection(socket, "host");
       connection.listen(_handlePacket);
-      _connections.add(connection);
+      _connectionsHeartbeatMap[connection] =
+          DateTime.now().millisecondsSinceEpoch;
     });
   }
 
@@ -37,7 +44,7 @@ class ServerConnection {
   set onReconnect(Function() onReconnect) => _onReconnect = onReconnect;
 
   void send(Packet packet) {
-    for (var connection in _connections) {
+    for (var connection in _connectionsHeartbeatMap.keys) {
       connection.send(packet);
     }
   }
@@ -54,14 +61,32 @@ class ServerConnection {
     }
   }
 
-  void _sendHeartbeat(Packet packet, Connection connection) {
-    // Reset time since last heartbeat
-    send(Packet('heartbeat', null));
-  }
-
   void _initHeartbeat() {
+    Timer.periodic(Duration(milliseconds: MILLIS_BETWEEN_HEARTBEATS), (_) {
+      send(Packet('heartbeat', null));
+
+      for (var connectionHeartBeat in _connectionsHeartbeatMap.entries) {
+        Connection connection = connectionHeartBeat.key;
+        int timeSinceLastClientHeartbeat = connectionHeartBeat.value;
+
+        if (timeSinceLastClientHeartbeat > MILLIS_TO_WAIT_FOR_CLIENT) {
+          if (_onDisconnect != null) {
+            _onDisconnect!();
+          }
+        }
+      }
+    });
     // Starts a timer, that maybe once a second, will check on our heartbeat.
     // If nothing is heard after x seconds, trigger onDisconnect
     // If we are able to reconnect, trigger onReconnect.
   }
+
+  void _handleHeartbeat(Packet packet, Connection connection) {
+    if (_connectionsHeartbeatMap.containsKey(connection)) {
+      _connectionsHeartbeatMap[connection] =
+          DateTime.now().millisecondsSinceEpoch;
+    }
+  }
 }
+
+//TODO - CREATE A VERSION OF CONNECTION WITH EASILY ACCESSIBLE METADATA
